@@ -173,6 +173,54 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .navbtn[disabled]{opacity:.38}
 .navpos{flex:0 0 auto;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums;min-width:52px;text-align:center}
 
+
+/* ---------- blocs pédagogiques ---------- */
+.une{
+  border:2px solid var(--blue);border-radius:14px;padding:12px 14px;margin:0 0 14px;
+  font-size:17px;line-height:1.5;background:color-mix(in srgb,var(--blue) 7%,transparent);
+}
+.une .t{display:block;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:800;color:var(--blue);margin-bottom:5px}
+.blk{margin:0 0 16px}
+.blk>h3{
+  font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);
+  font-weight:800;margin:0 0 8px;display:flex;align-items:center;gap:8px;
+}
+.blk>h3::after{content:"";flex:1;height:1px;background:var(--line)}
+.blk p{margin:0 0 10px;font-size:16.5px;line-height:1.6}
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:st}
+ol.steps li{
+  counter-increment:st;position:relative;padding:0 0 14px 42px;font-size:16.5px;line-height:1.55;
+}
+ol.steps li::before{
+  content:counter(st);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;
+  background:var(--blue);color:#fff;font-size:14px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+ol.steps li::after{
+  content:"";position:absolute;left:13px;top:32px;bottom:2px;width:2px;background:var(--line);
+}
+ol.steps li:last-child{padding-bottom:0}
+ol.steps li:last-child::after{display:none}
+ol.steps li b{font-weight:700}
+ol.steps li .q{display:block;font-size:14px;color:var(--ink2);font-style:italic;margin-bottom:3px}
+ul.keys{list-style:none;margin:0;padding:0}
+ul.keys li{position:relative;padding:0 0 9px 26px;font-size:16px;line-height:1.5}
+ul.keys li::before{content:"◆";position:absolute;left:2px;top:0;color:var(--green);font-size:13px}
+details.plus{border:1px solid var(--line);border-radius:13px;background:var(--panel2);margin:0 0 16px;overflow:hidden}
+details.plus>summary{
+  list-style:none;cursor:pointer;min-height:48px;display:flex;align-items:center;gap:8px;
+  padding:12px 14px;font-size:15.5px;font-weight:600;
+}
+details.plus>summary::-webkit-details-marker{display:none}
+details.plus>summary::before{content:"▸";color:var(--ink2);font-size:13px;transition:transform .18s}
+details.plus[open]>summary::before{transform:rotate(90deg)}
+details.plus .body{padding:0 14px 14px;font-size:15.5px;line-height:1.6}
+details.plus .body p{margin:0 0 10px}
+.src{font-size:13.5px;line-height:1.45;color:var(--ink2);border-top:1px dashed var(--line);padding-top:9px;margin-top:10px}
+.src b{color:var(--ink);font-weight:600}
+.vocab{border-bottom:2px dotted var(--blue);cursor:help}
+.inlinebtn{background:none;border:0;color:var(--blue);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:0}
+
 .chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid currentColor}
 .c-blue{color:var(--blue)} .c-green{color:var(--green)} .c-purple{color:var(--purple)} .c-red{color:var(--red)} .c-grey{color:var(--grey)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -303,6 +351,13 @@ function curve(a,b,bow,o){ o=o||{}; const c=o.c||C.ink;
   return `<path d="M${E(a[0])},${E(a[1])} Q${E(cx)},${E(cy)} ${E(b[0])},${E(b[1])}" fill="none"`
    + ` stroke="${c}" stroke-width="${o.w||2.1}" stroke-linecap="round" marker-end="${head}"/>`;
 }
+/* liaison de coordination courbe (pointillés, sans tête) */
+function arcSeg(a,b,bow,o){ o=o||{};
+  const [p,q]=trim(a,b,o.s,o.e);
+  const mx=(p[0]+q[0])/2, my=(p[1]+q[1])/2, n=norm(p,q,bow);
+  return `<path d="M${E(p[0])},${E(p[1])} Q${E(mx+n[0])},${E(my+n[1])} ${E(q[0])},${E(q[1])}" fill="none"`
+   + ` stroke="${o.c||C.ink}" stroke-width="${o.w||2.2}" stroke-dasharray="${o.dash||'4 3'}"/>`;
+}
 /* flèche de réaction horizontale avec légende */
 function rxnArrow(x1,x2,y,top,bot,o){ o=o||{};
   let s = arrow([x1,y],[x2,y],{c:o.c||C.ink,w:2.2});
@@ -385,7 +440,6 @@ const oxC2O=(P)=>add(add(P,RING.C2),[16,-21]);
 const SECTIONS=[];
 const S=(d)=>SECTIONS.push(d);
 function el(tag,cls,html){const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e;}
-
 /* ==========================================================================
    Section 0 — Vue d'ensemble des trois stratégies
    ========================================================================== */
@@ -451,42 +505,6 @@ function figStrategie(kind){
   }
   return svg(W,H,s,{alt:'schéma de la stratégie '+kind});
 }
-S({
-  grp:'0 — Vue d\'ensemble', title:'Les trois stratégies, côte à côte',
-  consigne:'Appuie sur « auxiliaire », « réactif » puis « catalyseur » et compare les quatre lignes du tableau.',
-  build(host){
-    const row=el('div','btnrow');
-    const fig=el('div','figbox');
-    const info=el('div','');
-    let cur='aux';
-    const draw=()=>{
-      fig.innerHTML=figStrategie(cur);
-      const d=STRAT[cur];
-      info.innerHTML=`<table class="dat"><tbody>
-        <tr><td>Quantité d'agent chiral</td><td>${d.agent}</td></tr>
-        <tr><td>Nombre d'étapes</td><td>${d.etapes}</td></tr>
-        <tr><td>Relation entre les 2 produits</td><td>${d.relation}</td></tr>
-        <tr><td>Séparables&nbsp;?</td><td>${d.sep}</td></tr>
-        <tr><td>Type de contrôle</td><td>${d.ctrl}</td></tr>
-        </tbody></table>
-        <div class="statusline" style="margin-top:12px">
-        <span style="color:var(--ok)">➕</span> ${d.plus}<br>
-        <span style="color:var(--red)">➖</span> ${d.moins}</div>`;
-      [...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));
-    };
-    ['aux','reac','cata'].forEach(k=>{
-      const b=el('button','btn','') ; b.textContent=STRAT[k].nom.split(' ')[0];
-      b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
-    });
-    host.appendChild(row); host.appendChild(fig); host.appendChild(info); draw();
-  },
-  expl:`<p>Les trois stratégies répondent à la même question : comment fabriquer <b>un</b> énantiomère plutôt que son image dans le miroir. La différence tient à l'endroit où l'on place l'information chirale.</p>
-  <p>Avec un <b>auxiliaire</b>, on la colle temporairement sur le substrat : la réaction devient diastéréosélective, donc contrôlée par le substrat lui‑même. Avec un <b>réactif</b> ou un <b>catalyseur</b>, l'information reste à l'extérieur et n'agit qu'au moment de l'état de transition.</p>
-  <p>Conséquence pratique : l'auxiliaire donne des diastéréoisomères, qu'on peut purifier ; les deux autres donnent des énantiomères, qu'on ne peut pas séparer sur silice. C'est exactement le compromis entre « sélectivité rattrapable » et « économie d'étapes ».</p>`,
-  quiz:{q:'Pourquoi la voie auxiliaire tolère-t-elle une sélectivité moyenne alors que la voie catalytique ne le tolère pas&nbsp;?',
-        a:'Parce que P–A* est un mélange de <b>diastéréoisomères</b> : ils ont des propriétés physiques différentes et se séparent sur colonne, donc un d.r. de 90:10 peut devenir 100:0 après purification. En catalyse on obtient des <b>énantiomères</b> : ils ont les mêmes propriétés physiques en milieu achiral, l\'e.e. mesuré est donc l\'e.e. final.'}
-});
-
 /* ---- Section 0b : diastéréoisomères vs énantiomères ---- */
 function figRelation(kind){
   const W=360; let s='';
@@ -515,25 +533,6 @@ function figRelation(kind){
   s+=txt([180,216],'⇒ ÉNANTIOMÈRES : inséparables en milieu achiral',{fs:12.5,fw:700,c:C.red});
   return svg(W,H,s,{alt:'deux énantiomères'});
 }
-S({
-  grp:'0 — Vue d\'ensemble', title:'Pourquoi P–A* donne des diastéréoisomères',
-  consigne:'Bascule entre les deux boutons et regarde combien de centres stéréogènes porte le produit.',
-  build(host){
-    const row=el('div','btnrow'), fig=el('div','figbox');
-    let cur='aux';
-    const draw=()=>{fig.innerHTML=figRelation(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
-    [['aux','Avec auxiliaire'],['ec','Réactif ou catalyseur']].forEach(([k,t])=>{
-      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
-    });
-    host.appendChild(row); host.appendChild(fig); draw();
-  },
-  expl:`<p>Tout se joue sur le nombre de centres stéréogènes du produit brut. L'auxiliaire en apporte déjà un, de configuration fixée et connue ; la réaction en crée un second.</p>
-  <p>Deux molécules qui partagent un centre et diffèrent par l'autre ne sont pas images l'une de l'autre dans un miroir : ce sont des <b>diastéréoisomères</b>. Elles ont des polarités, des points de fusion et des R<sub>f</sub> différents, donc une colonne suffit à les séparer.</p>
-  <p>Sans auxiliaire, le produit n'a qu'un seul centre : les deux formes sont <b>énantiomères</b>, rigoureusement identiques tant qu'on ne les met pas dans un environnement chiral. D'où l'obligation d'une sélectivité très élevée dès la réaction.</p>`,
-  quiz:{q:'Après clivage de l\'auxiliaire, que deviennent les deux diastéréoisomères P–A*&nbsp;?',
-        a:'Ils deviennent les deux <b>énantiomères</b> de P*. Le clivage supprime le centre stéréogène de l\'auxiliaire : il ne reste que le centre créé pendant la réaction. C\'est bien pour cela qu\'on purifie <i>avant</i> le clivage.'}
-});
-
 /* ==========================================================================
    Section 1 — Auxiliaire d'Evans
    ========================================================================== */
@@ -572,26 +571,6 @@ function figEnolate(geo){
   s+=txt([180,216],cap[2],{fs:11.5,c:C.ink2});
   return svg(W,H,s,{alt:'énolate '+geo});
 }
-S({
-  grp:'1 — Auxiliaire d\'Evans', title:'Énolate Z ou énolate E ?',
-  consigne:'Appuie sur « énolate E » et regarde où apparaît la zone rouge.',
-  build(host){
-    const row=el('div','btnrow'), fig=el('div','figbox'); let cur='Z';
-    const draw=()=>{fig.innerHTML=figEnolate(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
-    [['Z','Énolate Z (cis)'],['E','Énolate E (trans)']].forEach(([k,t])=>{
-      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
-    });
-    host.appendChild(row); host.appendChild(fig); draw();
-  },
-  expl:`<p>LDA arrache le proton en α, et il faut d'abord savoir de quelle façon : c'est la géométrie de l'énolate qui décidera de la suite, puisque les deux géométries présentent des faces opposées à l'électrophile.</p>
-  <p>Dans l'état de transition de déprotonation, le méthyle en α doit se placer quelque part. S'il se met du côté de l'azote, il se retrouve en relation 1,3 avec le gros cycle oxazolidinone : c'est la <b>tension allylique A(1,3)</b>, très coûteuse.</p>
-  <p>Le système évite donc cet arrangement et forme uniquement l'énolate <b>Z(O)</b>, où O⊖ et CH₃ sont du même côté. C'est le <b>modèle d'Ireland</b>. Une seule géométrie d'énolate = un seul jeu de faces = une bonne sélectivité possible.</p>`,
-  quiz:{q:'Dans l\'énolate Z, CH₃ et O⊖ sont du même côté. Pourquoi cela veut-il dire que CH₃ est <i>loin</i> de l\'oxazolidinone&nbsp;?',
-        a:'Parce que sur le carbone de l\'énolate, O⊖ et l\'azote de l\'oxazolidinone sont forcément de part et d\'autre de la double liaison. Si CH₃ est du côté de O⊖, il est donc du côté opposé à l\'azote — donc opposé au cycle.'},
-  flag:'⚠️ Tes notes écrivent « c\'est le modèle de Halland ». Le modèle qui prédit la géométrie de l\'énolate s\'appelle le <b>modèle d\'Ireland</b>.'
-});
-
-/* 1b/1d. Chélate lithié vu de profil (la tranche du plan de l'énolate) */
 const AUXDEF={
   ipr:{nom:'Valinol', sub:'iPr', groupes:'iPr (C4)', dir:-1, face:'du dessous', bloq:'du dessus',
        cfg:'(S)-4-isopropyl-oxazolidin-2-one', alpha:'(R)'},
@@ -629,20 +608,6 @@ function figProfil(auxKey,opt){
   s+=txt([180,H-8],'vue « par la tranche » : tout le chélate est dans le plan',{fs:11,c:C.ink2});
   return svg(W,H,s,{alt:'chélate vu de profil, auxiliaire '+A.nom});
 }
-S({
-  grp:'1 — Auxiliaire d\'Evans', title:'Le chélate lithié, vu de profil',
-  consigne:'Regarde le schéma par la tranche : le plan est la barre grise, l\'iPr en dépasse vers le haut.',
-  build(host){ const fig=el('div','figbox'); fig.innerHTML=figProfil('ipr'); host.appendChild(fig);
-    host.appendChild(el('div','statusline','<b>Valinol :</b> iPr au‑dessus du plan → face du dessus bloquée → E⊕ arrive par‑dessous → Cα de configuration <b>(R)</b>.'));
-  },
-  expl:`<p>Le lithium n'est pas un spectateur : il tient ensemble l'oxygène de l'énolate et celui du carbamate du cycle. Ce pont (les deux traits pointillés violets) verrouille la rotation autour de la liaison N–C et fige l'oxazolidinone dans le plan de l'énolate.</p>
-  <p>Une fois cette conformation figée, le seul groupe qui sorte du plan est l'isopropyle porté par C4. Il occupe entièrement une face de l'énolate — c'est la zone rouge.</p>
-  <p>L'électrophile n'a donc plus le choix : il attaque Cα par la face restée libre, ici celle du dessous. C'est tout le mécanisme de l'induction asymétrique, et c'est pour cela qu'on obtient un seul diastéréoisomère à 99:1.</p>`,
-  quiz:{q:'Si on remplaçait le lithium par un contre-ion qui ne chélate pas, que se passerait-il&nbsp;?',
-        a:'Sans chélation, la liaison N–C(énolate) peut tourner : l\'oxazolidinone n\'est plus bloquée dans une seule orientation, donc l\'iPr ne garde plus toujours la même face. La discrimination des deux faces s\'effondre et le d.r. chute.'}
-});
-
-/* 1c. Animation pas à pas de l'alkylation d'Evans */
 const EV={P:[56,86],N:[93,86],Cac:[127,70],Oac:[129,40],Ca:[161,86],Me:[195,70],Hc:[161,118],
           C2Oc:[80,65],Li:[99,33]};
 function evansStep(k){
@@ -669,8 +634,8 @@ function evansStep(k){
   if(k===0){
     s+=txt([268,150],'LDA',{fs:14,fw:700});
     s+=txt([268,167],'(base encombrée)',{fs:11,c:C.ink2});
-    s+=curve([236,140],[174,124],18,{c:C.ink,half:true});
-    s+=curve([158,106],[146,81],-13,{c:C.ink,half:true});
+    s+=curve([236,140],[174,124],18,{c:C.ink});
+    s+=curve([158,106],[146,81],-13,{c:C.ink});
   }
   if(k===2){ s+=txt([180,H-38],'rotation autour de N–C : les deux O se tournent vers Li',{fs:11.5,c:C.purple}); }
   if(k===3){
@@ -691,28 +656,6 @@ function evansStep(k){
   s+=txt([180,H-14],cap,{fs:13.5,fw:700});
   return svg(W,H,s,{alt:cap});
 }
-S({
-  grp:'1 — Auxiliaire d\'Evans', title:'Le mécanisme, étape par étape',
-  consigne:'Appuie sur « étape suivante » cinq fois et suis les flèches courbes.',
-  build(host){
-    const fig=el('div','figbox'), row=el('div','btnrow');
-    let k=0;
-    const prev=el('button','btn'), next=el('button','btn'), reset=el('button','btn');
-    prev.textContent='‹ Étape'; next.textContent='Étape suivante ›'; reset.textContent='⟲';
-    reset.style.flex='0 0 56px';
-    const draw=()=>{fig.innerHTML=evansStep(k); prev.disabled=(k===0); next.disabled=(k===4);
-      prev.style.opacity=k===0?.4:1; next.style.opacity=k===4?.4:1;};
-    prev.onclick=()=>{if(k>0){k--;draw();}}; next.onclick=()=>{if(k<4){k++;draw();}}; reset.onclick=()=>{k=0;draw();};
-    row.appendChild(prev); row.appendChild(next); row.appendChild(reset);
-    host.appendChild(fig); host.appendChild(row); draw();
-  },
-  expl:`<p>Étape 1 : LDA, trop encombrée pour additionner sur le carbonyle, ne peut qu'arracher le proton en α. Étape 2 : l'énolate formé est exclusivement Z, pour la raison A(1,3) vue juste avant.</p>
-  <p>Étape 3 : le lithium referme un cycle à six chaînons en attrapant les deux oxygènes. C'est le moment clé, parce que c'est lui qui interdit la rotation et fixe la position de l'isopropyle.</p>
-  <p>Étape 4 : l'électrophile arrive par la face opposée à l'iPr. Étape 5 : le carbone α est devenu stéréogène, et on le dessine avec E en pointillés puisque l'iPr, lui, est en gras.</p>`,
-  quiz:{q:'Pourquoi LDA n\'additionne-t-elle pas sur le carbonyle au lieu de déprotoner&nbsp;?',
-        a:'Parce qu\'elle est très encombrée (deux isopropyles sur l\'azote) : l\'addition l\'obligerait à s\'approcher du carbone du carbonyle, très gêné. Arracher un proton en α, beaucoup plus accessible, est cinétiquement bien plus facile. C\'est une base forte mais un mauvais nucléophile.'}
-});
-
 /* 1d. Valinol vs noréphédrine : le produit dessiné */
 function figProduit(auxKey,Etxt){
   const W=360,H=196; let s=''; const up=(auxKey==='ipr');
@@ -730,31 +673,6 @@ function figProduit(auxKey,Etxt){
   s+=txt([180,H-18],up?'⇒ Cα = (R)':'⇒ Cα = (S)',{fs:14,fw:700});
   return svg(W,H,s,{alt:'produit majoritaire'});
 }
-S({
-  grp:'1 — Auxiliaire d\'Evans', title:'Valinol ou noréphédrine : on choisit l\'énantiomère',
-  consigne:'Appuie sur « valinol » puis sur « noréphédrine » et regarde de quel côté arrive E.',
-  build(host){
-    const row=el('div','btnrow'), f1=el('div','figbox'), f2=el('div','figbox'), st=el('div','statusline');
-    let cur='ipr';
-    const draw=()=>{
-      const A=AUXDEF[cur];
-      f1.innerHTML=figProfil(cur); f2.innerHTML=figProduit(cur);
-      st.innerHTML=`<b>${A.nom} :</b> ${A.groupes} ${cur==='ipr'?'au‑dessus':'au‑dessous'} du plan → face ${A.bloq} bloquée → face ${A.face} libre → Cα = <b>${A.alpha}</b> → après clivage, <b>l'énantiomère opposé</b> de l'acide.`;
-      [...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));
-    };
-    [['ipr','Valinol'],['nor','Noréphédrine']].forEach(([k,t])=>{
-      const b=el('button','btn blue'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
-    });
-    host.appendChild(row); host.appendChild(f1); host.appendChild(el('div','',''));
-    host.appendChild(f2); host.appendChild(st); draw();
-  },
-  expl:`<p>Les deux auxiliaires ne sont pas énantiomères l'un de l'autre — l'un a un iPr en C4, l'autre un méthyle en C4 et un phényle en C5 — mais ils sont <b>pseudo‑énantiomères</b> : leurs groupes encombrants pointent vers des faces opposées.</p>
-  <p>Résultat : la face grisée change de côté, la flèche verte aussi, et le produit passe du coin plein au trait hachuré. C'est le même mécanisme, simplement retourné.</p>
-  <p>Après clivage, les deux produits donnent les deux énantiomères du même acide. C'est pour cela que le tableau des inconvénients mentionne « il faut avoir accès aux deux énantiomères de l'auxiliaire » : ici on s'en tire avec deux auxiliaires différents, tous deux issus d'acides aminés bon marché.</p>`,
-  quiz:{q:'Les produits obtenus avec le valinol et avec la noréphédrine sont-ils énantiomères&nbsp;?',
-        a:'Non, pas tels quels : ce sont des <b>diastéréoisomères</b>, puisque les auxiliaires eux‑mêmes sont différents. Ils ne deviennent énantiomères qu\'<b>après le clivage</b>, quand il ne reste plus que le centre créé pendant l\'alkylation.'}
-});
-
 /* 1e. Tableau interactif des électrophiles */
 const ELECTRO=[
   {e:'PhCH₂–Br', nom:'bromure de benzyle', dr:'99 : 1', drn:99, rdt:'92 %',
@@ -764,27 +682,6 @@ const ELECTRO=[
   {e:'Et–I', nom:'iodoéthane', dr:'94 : 6', drn:94, rdt:'36 %',
    why:'Halogénure <b>primaire simple</b> : aucune stabilisation de l\'état de transition, donc bien moins réactif. Il faut chauffer ou attendre, l\'énolate a le temps de se dégrader, d\'où le rendement de 36 %. Plus petit, il distingue aussi moins bien les deux faces.'}
 ];
-S({
-  grp:'1 — Auxiliaire d\'Evans', title:'Quel électrophile choisir ?',
-  consigne:'Touche une ligne du tableau pour comprendre son d.r. et son rendement.',
-  build(host){
-    const box=el('div'), why=el('div','statusline'); let cur=0;
-    const draw=()=>{
-      box.innerHTML=`<table class="dat"><thead><tr><th>Électrophile</th><th class="num">d.r.</th><th class="num">Rdt</th></tr></thead><tbody>`
-      + ELECTRO.map((x,i)=>`<tr data-i="${i}" class="${i===cur?'sel':''}"><td style="color:var(--green);font-weight:600">${x.e}</td><td class="num">${x.dr}</td><td class="num">${x.rdt}</td></tr>`).join('')
-      +`</tbody></table>`;
-      box.querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>{cur=+tr.dataset.i;draw();});
-      why.innerHTML=`<b>${ELECTRO[cur].nom}</b> — ${ELECTRO[cur].why}`;
-    };
-    host.appendChild(box); host.appendChild(why); draw();
-  },
-  expl:`<p>Les trois électrophiles suivent le même mécanisme : une substitution nucléophile d'ordre 2 où l'énolate joue le rôle du nucléophile. Ce qui change, c'est la facilité avec laquelle la liaison C–X se rompt.</p>
-  <p>Benzyle et allyle stabilisent l'état de transition par conjugaison ; l'iodoéthane, non. D'où la chute nette du rendement (92 % → 36 %), qui reflète la <b>réactivité</b>, pas la sélectivité.</p>
-  <p>Le d.r. baisse aussi, mais bien moins (99:1 → 94:6) : la discrimination des faces est gouvernée par l'auxiliaire, pas par l'électrophile. Un électrophile plus gros aide un peu, c'est tout.</p>`,
-  quiz:{q:'Le rendement chute de 92 % à 36 % entre PhCH₂Br et EtI, mais le d.r. ne passe que de 99:1 à 94:6. Que faut-il en conclure&nbsp;?',
-        a:'Que rendement et sélectivité sont deux choses indépendantes. Le rendement mesure la <b>réactivité</b> de l\'électrophile ; le d.r. mesure la capacité de l\'auxiliaire à <b>distinguer les deux faces</b>. Un mauvais électrophile réagit mal mais réagit quand même du bon côté.'}
-});
-
 /* 1f. Roue des clivages */
 const CLIV=[
   {k:'red', reac:'LiAlH₄ ou LiBH₄', court:['LiAlH₄','LiBH₄'], head:'HO–CH₂', prod:'alcool primaire',
@@ -848,25 +745,6 @@ function figCleavProd(sel){
   s+=txtLines([272,150],['auxiliaire','récupéré (N–H)'],{fs:11,c:C.blue,fw:700,lh:14});
   return svg(W,H,s,{alt:'produit du clivage'});
 }
-S({
-  grp:'1 — Auxiliaire d\'Evans', title:'La roue des clivages',
-  consigne:'Touche un secteur de la roue pour voir le produit correspondant.',
-  build(host){
-    const f1=el('div','figbox'), f2=el('div','figbox'), st=el('div','statusline'); let sel='red';
-    const draw=()=>{
-      f1.innerHTML=figRoue(sel); f2.innerHTML=figCleavProd(sel);
-      const c=CLIV.find(x=>x.k===sel);
-      st.innerHTML=`<b>${c.reac}</b> → ${c.prod}.<br>${c.why}`;
-      f1.querySelectorAll('[data-k]').forEach(p=>p.addEventListener('click',()=>{sel=p.dataset.k;draw();}));
-    };
-    host.appendChild(f1); host.appendChild(f2); host.appendChild(st); draw();
-  },
-  expl:`<p>L'imide d'Evans porte deux carbonyles : celui de la chaîne (exocyclique) et celui du cycle. Tout l'art du clivage consiste à n'attaquer que le premier, sinon on détruit l'auxiliaire au lieu de le récupérer.</p>
-  <p>On y arrive de deux façons : avec un nucléophile petit et très réactif mais peu basique (HOO⊖), ou avec un hydrure qui vise le carbonyle le plus électrophile. Le centre stéréogène créé en α n'est jamais touché : il reste intact.</p>
-  <p>Choisir le réactif, c'est donc choisir le niveau d'oxydation de sortie : alcool, aldéhyde, acide, ester ou cétone — à partir d'un seul et même intermédiaire.</p>`,
-  quiz:{q:'Pourquoi utilise-t-on LiOOH plutôt que LiOH tout seul pour obtenir l\'acide&nbsp;?',
-        a:'Parce que HOO⊖ est un nucléophile bien plus fort que HO⊖ (effet α : le doublet de l\'oxygène voisin) tout en étant <b>moins basique</b>. Il attaque donc vite et sélectivement le carbonyle exocyclique. HO⊖, plus basique et moins nucléophile, finit par ouvrir aussi le cycle oxazolidinone — on perd l\'auxiliaire.'}
-});
 
 /* ==========================================================================
    Section 5 — Contrôle cinétique : le diagramme d'énergie
@@ -902,19 +780,1710 @@ function figEnergie(ddG,T_K){
   s+=txt([112,yT1-14],'ET₁',{fs:12.5,fw:700});
   s+=txt([252,yT2-14],'ET₂',{fs:12.5,fw:700});
   s+=txt([180,yA+17],'A (substrat)',{fs:12,fw:700});
-  s+=txt([76,yP-14],'P majoritaire',{fs:11.5,fw:700,c:C.green});
-  s+=txt([288,yP-14],'P minoritaire',{fs:11.5,fw:700,c:C.ink2});
+  s+=txt([80,yP-16],'P majoritaire',{fs:11.5,fw:700,c:C.green});
+  s+=txt([284,yP-16],'P minoritaire',{fs:11.5,fw:700,c:C.ink2});
   s+=txtLines([180,240],
      ['ET₁ et ET₂ sont diastéréoisomères ⇒ ΔΔG‡ ≠ 0','P maj. et P min. sont énantiomères ⇒ même énergie'],
      {fs:11.5,c:C.ink2,lh:15});
   return svg(W,H,s,{alt:'diagramme énergétique'});
 }
+/* ==========================================================================
+   Figures du groupe A — les bases
+   ========================================================================== */
+
+/* A1 : pourquoi une réaction ordinaire donne 50/50 */
+function figMiroir(mode){
+  const W=360,H=306,chiral=(mode==='chiral'); let s='';
+  /* substrat prochiral : PhCHO */
+  const Cc=[180,74], Oo=[180,36], Ph=[134,100], Hh=[222,100];
+  s+=dbond(Cc,Oo,{e:10}); s+=lab(Oo,'O',{fs:14});
+  s+=bond(Cc,Ph,{e:14}); s+=lab(Ph,'Ph',{fs:13,r:14});
+  s+=bond(Cc,Hh,{e:9});  s+=lab(Hh,'H',{fs:13});
+  s+=txt([180,14],'substrat PROCHIRAL : le C=O est plan',{fs:11.5,c:C.ink2});
+  /* deux approches */
+  const nu = chiral ? 'Nu*' : 'Nu';
+  s+=arrow([74,58],[152,62],{c:C.green,w:2.4});
+  s+=lab([58,52],nu,{fs:12.5,c:C.green,fw:700,r:16});
+  s+=txt([96,44],'par l\'avant',{fs:10.5,c:C.green});
+  s+=arrow([286,58],[208,62],{c:C.green,w:2.4,dash:'5 4'});
+  s+=lab([304,52],nu,{fs:12.5,c:C.green,fw:700,r:16});
+  s+=txt([262,44],'par l\'arrière',{fs:10.5,c:C.green});
+  /* miroir */
+  s+=seg([180,128],[180,246],{c:C.grey,dash:'6 5',w:1.6});
+  s+=txt([180,262],'miroir',{fs:11,c:C.grey});
+  /* produits */
+  s+=stereoC([90,180],{l:'Ph',r:'OH',d:'Nu',dC:C.green,tag:'un énantiomère'});
+  s+=stereoC([270,180],{l:'OH',r:'Ph',d:'Nu',dC:C.green,tag:'l\'autre'});
+  /* verdict */
+  if(!chiral){
+    s+=`<rect x="18" y="272" width="324" height="28" rx="9" fill="none" stroke="${C.grey}" stroke-width="1.5"/>`;
+    s+=txt([180,286],'le dessin entier a un plan de symétrie → 50 : 50',{fs:12,fw:700,c:C.grey});
+  } else {
+    s+=`<rect x="18" y="272" width="324" height="28" rx="9" fill="none" stroke="${C.blue}" stroke-width="1.8"/>`;
+    s+=txt([180,286],'Nu* n\'a pas de miroir → symétrie cassée',{fs:12,fw:700,c:C.blue});
+  }
+  return svg(W,H,s,{alt:'attaque des deux faces'});
+}
+
+/* A2 : homotope / énantiotope / diastéréotope */
+const TOPO={
+  homo:{nom:'Homotopes', l:'Cl', r:'Cl', lC:null, box:false,
+        verdict:'les deux produits sont LA MÊME molécule',
+        vC:'grey', mol:'dichlorométhane  Cl–CH₂–Cl',
+        why:'Les deux H occupent des places équivalentes : une rotation de 180° autour de l\'axe vertical échange l\'un avec l\'autre sans rien changer. Aucun réactif, même chiral, même une enzyme, ne peut les distinguer.'},
+  enantio:{nom:'Énantiotopes', l:'CH₃', r:'OH', box:false,
+        verdict:'les deux produits sont ÉNANTIOMÈRES',
+        vC:'blue', mol:'éthanol  CH₃–CH₂–OH',
+        why:'Les deux H sont échangés par un plan de symétrie, pas par une rotation. Un réactif achiral ne les distingue pas (50/50), mais un réactif CHIRAL, lui, les distingue — c\'est exactement ce que fait le complexe sec-BuLi·spartéine de Hoppe.'},
+  diastereo:{nom:'Diastéréotopes', l:'C* (R)', r:'OH', box:true,
+        verdict:'les deux produits sont DIASTÉRÉOISOMÈRES',
+        vC:'green', mol:'un CH₂ voisin d\'un centre stéréogène',
+        why:'Il y a déjà un centre stéréogène dans la molécule : plus aucune symétrie ne relie les deux H. Ils ont même des déplacements chimiques différents en RMN. Même un réactif achiral les distingue.'}
+};
+function figTopicite(kind){
+  const W=360,H=300,T=TOPO[kind]; let s='';
+  /* substrat */
+  const Lp=[86,86], Cp=[150,110], Rp=[214,86];
+  if(T.box){
+    s+=`<rect x="34" y="68" width="76" height="34" rx="9" fill="none" stroke="${C.blue}" stroke-width="2"/>`;
+    s+=txt([72,85],'C* (R)',{fs:13,fw:700,c:C.blue});
+    s+=bond([110,86],Cp,{e:3});
+  } else {
+    s+=bond(Lp,Cp,{s:16,e:3}); s+=lab(Lp,T.l,{fs:13,r:16});
+  }
+  s+=bond(Cp,Rp,{s:3,e:16}); s+=lab(Rp,T.r,{fs:13,r:16});
+  s+=bond(Cp,[150,66],{e:10}); s+=lab([150,66],'Hₐ',{fs:13,c:C.red,fw:700,r:11});
+  s+=bond(Cp,[150,154],{e:10}); s+=lab([150,154],'H_b'.replace('_b','ᵦ'),{fs:13,c:C.purple,fw:700,r:11});
+  s+=txt([180,26],T.mol,{fs:12.5,fw:700});
+  s+=txt([180,44],'on remplace UN des deux H par Br',{fs:11.5,c:C.ink2});
+  /* flèches */
+  s+=arrow([120,170],[86,196],{c:C.red,w:2.2});
+  s+=txt([66,176],'Hₐ → Br',{fs:11,c:C.red,fw:700});
+  s+=arrow([200,170],[256,196],{c:C.purple,w:2.2});
+  s+=txt([286,176],'Hᵦ → Br',{fs:11,c:C.purple,fw:700});
+  /* produits */
+  const lbl = T.box ? '' : T.l;
+  s+=stereoC([80,238],{l:lbl,r:T.r,d:'Br',dC:C.ink,lr:16,rr:16});
+  s+=stereoC([264,238],{l:lbl,r:T.r,d:'Br',dC:C.ink,hash:true,lr:16,rr:16});
+  if(T.box){
+    s+=`<rect x="14" y="206" width="54" height="26" rx="8" fill="none" stroke="${C.blue}" stroke-width="1.6"/>`;
+    s+=txt([41,219],'C*(R)',{fs:10.5,fw:700,c:C.blue});
+    s+=`<rect x="198" y="206" width="54" height="26" rx="8" fill="none" stroke="${C.blue}" stroke-width="1.6"/>`;
+    s+=txt([225,219],'C*(R)',{fs:10.5,fw:700,c:C.blue});
+  }
+  const col = T.vC==='grey'?C.grey:(T.vC==='blue'?C.blue:C.green);
+  if(kind==='homo') s+=txt([180,276],'(les deux Cl sont identiques : pas de centre stéréogène)',{fs:10.5,c:C.ink2});
+  s+=txt([180,292],T.verdict,{fs:12.5,fw:700,c:col});
+  return svg(W,H,s,{alt:'topicité : '+T.nom});
+}
+
+/* A3 : faces Re et Si */
+function figReSi(face){
+  const W=360,H=302,re=(face==='Re'); let s='';
+  const cx=180,cy=146,R=66;
+  s+=`<circle cx="${cx}" cy="${cy}" r="112" fill="var(--panel2)" stroke="${C.line}" stroke-dasharray="6 5"/>`;
+  /* a = O (en haut) ; b = CH3 ; c = H — b et c permutés selon la face regardée */
+  const pa=polar(cx,cy,R,0);
+  const pb=polar(cx,cy,R,re?120:240);
+  const pc=polar(cx,cy,R,re?240:120);
+  s+=dbond([cx,cy],pa,{s:13,e:16});
+  s+=bond([cx,cy],pb,{s:13,e:re?19:14});
+  s+=bond([cx,cy],pc,{s:13,e:re?14:19});
+  s+=lab([cx,cy],'C',{fs:15,fw:700,r:12});
+  s+=lab(pa,'O',{fs:15,fw:700,r:15,c:C.red});
+  s+=lab(pb,'CH₃',{fs:12.5,fw:700,r:19});
+  s+=lab(pc,'H',{fs:14,fw:700,r:13});
+  const ma=polar(cx,cy,R+22,0), mb=polar(cx,cy,R+24,re?120:240), mc=polar(cx,cy,R+22,re?240:120);
+  s+=txt(ma,'a',{fs:13,fw:800,c:C.blue});
+  s+=txt(mb,'b',{fs:13,fw:800,c:C.blue});
+  s+=txt(mc,'c',{fs:13,fw:800,c:C.blue});
+  /* arc de rotation a -> b -> c */
+  const rr=100;
+  const A=polar(cx,cy,rr,re?20:-20), B=polar(cx,cy,rr,re?220:-220);
+  s+=`<path d="M${E(A[0])},${E(A[1])} A${rr},${rr} 0 1 ${re?1:0} ${E(B[0])},${E(B[1])}" fill="none" stroke="${C.blue}" stroke-width="3" opacity=".85" marker-end="url(#mkBlue)"/>`;
+  s+=txt([180,20],re?'tu regardes la face Re':'tu regardes la face Si',{fs:14.5,fw:800,c:C.blue});
+  s+=txtLines([180,270],
+    re?['a → b → c dans le SENS DES AIGUILLES','d\'une montre  →  face Re']
+      :['a → b → c dans le SENS INVERSE','des aiguilles  →  face Si'],
+    {fs:12,fw:700,lh:16});
+  s+=txt([180,40],'a = O  >  b = CH₃  >  c = H   (priorités CIP)',{fs:10.5,c:C.ink2});
+  return svg(W,H,s,{alt:'face '+face});
+}
+
+/* A4 : ce que veut dire un e.e., en 100 molécules */
+function figCentMolecules(ee){
+  const W=360,H=218; let s='';
+  const maj=Math.round((100+ee)/2), min=100-maj;
+  const r=7, gapx=23, gapy=14.5, x0=76, y0=48;
+  for(let i=0;i<100;i++){
+    const col=i%10, row=(i/10)|0;
+    const cx=x0+col*gapx, cy=y0+row*gapy;
+    const isMaj = i<maj;
+    s+=`<circle cx="${E(cx)}" cy="${E(cy)}" r="${r}" fill="${isMaj?C.blue:'var(--panel2)'}" stroke="${isMaj?C.blue:C.grey}" stroke-width="1.5"/>`;
+  }
+  s+=txtLines([180,12],['100 molécules de produit :',
+    maj+' d\'un énantiomère, '+min+' de l\'autre'],{fs:12,fw:700,lh:15});
+  s+=txt([180,H-14],`e.r. = ${maj} : ${min}   •   e.e. = ${ee.toFixed(1).replace('.',',')} %`,{fs:13,fw:700,c:C.blue});
+  return svg(W,H,s,{alt:'100 molécules'});
+}
+
+/* Cahier des charges d'un bon auxiliaire (Procter, tableau 2.1) */
+const CAHIER=[
+  ['Énantiomériquement pur','Sinon tu fabriques les deux produits en même temps : la sélectivité de la réaction ne sert plus à rien.'],
+  ['Pas cher, disponible en quantité','On en met un équivalent entier, et on le jette (ou on le recycle) à la fin. Les acides aminés et les sucres sont parfaits : la nature les fait déjà énantiopurs.'],
+  ['Facile à accrocher sur le substrat','Ici : une simple acylation de l\'azote de l\'oxazolidinone.'],
+  ['Sélectivité forte ET prévisible','« Prévisible » compte autant que « forte » : il faut pouvoir décider à l\'avance quel énantiomère on veut.'],
+  ['Diastéréoisomère majoritaire facile à purifier','C\'est l\'avantage décisif de la voie auxiliaire : on peut remonter le d.r. par chromatographie.'],
+  ['Clivage sans perte de pureté','Le clivage ne doit pas toucher au centre créé, sinon on perd tout à la dernière étape.'],
+  ['Auxiliaire récupérable','Pour l\'économie d\'atomes, et parce qu\'il est souvent le réactif le plus cher du schéma.']
+];
+
+/* ==========================================================================
+   Figures — auxiliaire d'Ellman
+   ========================================================================== */
+
+/* petit groupe tert-butyle bleu */
+function tBu(P,dir,wedgeType){
+  const tip=add(P,[dir[0],dir[1]]);
+  let s='';
+  s+= wedgeType==='hash' ? hashb(P,tip,{e:11,c:C.blue}) :
+      wedgeType==='wedge'? wedge(P,tip,{e:11,c:C.blue}) : bond(P,tip,{e:11,c:C.blue});
+  s+=lab(tip,'tBu',{fs:12,c:C.blue,fw:700,r:15});
+  return s;
+}
+
+/* D1 : condensation aldéhyde + sulfinamide, rôle du desséchant */
+function figEllmanEq(mode){
+  const W=360,H=250,avec=(mode==='avec'); let s='';
+  /* aldéhyde */
+  const a1=[26,86],a2=[52,70],a3=[78,86];
+  s+=bond(a1,a2,{}); s+=bond(a2,a3,{});
+  s+=dbond(a3,[104,70],{e:9}); s+=lab([104,70],'O',{fs:12.5});
+  s+=bond(a3,[78,114],{e:9}); s+=lab([78,114],'H',{fs:12});
+  s+=txt([62,138],'propanal',{fs:10.5,c:C.ink2});
+  s+=txt([128,90],'+',{fs:17,fw:700,c:C.ink2});
+  /* sulfinamide */
+  const Sp=[186,88];
+  s+=lab(Sp,'S',{fs:15,fw:700,c:C.blue});
+  s+=tBu(Sp,[-4,-40],'wedge');
+  s+=dbond(Sp,[216,104],{s:10,e:9,c:C.blue}); s+=lab([216,104],'O',{fs:12.5,c:C.blue});
+  s+=bond(Sp,[158,108],{s:10,e:16,c:C.blue}); s+=lab([158,108],'NH₂',{fs:12,c:C.blue,r:17});
+  s+=txt([186,138],'(R)-tert-butanesulfinamide',{fs:10.5,c:C.blue});
+  /* équilibre */
+  const y=176;
+  s+=arrow([96,y-6],[214,y-6],{c:avec?C.green:C.ink2,w:avec?3:1.6});
+  s+=arrow([214,y+8],[96,y+8],{c:avec?C.ink2:C.red,w:avec?1.2:3});
+  s+=txt([155,y-20],'MgSO₄, CH₂Cl₂',{fs:11.5,fw:700});
+  /* produits */
+  s+=txt([278,y-8],'imine',{fs:12,fw:700});
+  s+=txt([278,y+10],'+  H₂O',{fs:12,fw:700,c:avec?C.grey:C.red});
+  if(avec){
+    s+=`<rect x="238" y="212" width="86" height="28" rx="9" fill="none" stroke="${C.green}" stroke-width="2"/>`;
+    s+=txt([281,226],'MgSO₄ · n H₂O',{fs:10.5,c:C.green,fw:700});
+    s+=arrow([292,196],[288,208],{c:C.green,w:2});
+    s+=txt([140,226],'l\'eau est piégée → l\'équilibre avance',{fs:11,fw:700,c:C.green});
+  } else {
+    s+=stericZone(288,186,38,15,{});
+    s+=txt([150,226],'l\'eau reste là → l\'imine se réhydrolyse',{fs:11,fw:700,c:C.red});
+  }
+  return svg(W,H,s,{alt:'condensation, desséchant '+mode});
+}
+
+/* D1bis : le soufre stéréogène */
+function figSoufre(){
+  const W=360,H=176; let s='';
+  const Sp=[150,92];
+  s+=lab(Sp,'S',{fs:19,fw:700,c:C.blue,r:15});
+  s+=tBu(Sp,[-52,-46],'wedge');
+  s+=dbond(Sp,[210,120],{s:15,e:10,c:C.blue}); s+=lab([210,120],'O',{fs:14,c:C.blue,fw:700});
+  s+=hashb(Sp,[96,132],{s:14,e:12,c:C.blue}); s+=lab([96,132],'N',{fs:14,c:C.blue,fw:700});
+  s+=seg([150,77],[150,58],{c:C.ink2,w:1.2,dash:'2 3'});
+  s+=`<circle cx="145" cy="52" r="3.4" fill="${C.ink}"/><circle cx="157" cy="52" r="3.4" fill="${C.ink}"/>`;
+  s+=txt([150,34],'doublet libre',{fs:11.5,fw:700});
+  s+=txt([258,64],'4 « substituants »',{fs:11.5,fw:700});
+  s+=txtLines([258,82],['différents autour de S','⇒ S stéréogène'],{fs:11,c:C.ink2,lh:14});
+  s+=txt([180,H-12],'ici la configuration est (R) — elle ne change plus de toute la séquence',{fs:11,c:C.ink2});
+  return svg(W,H,s,{alt:'soufre stéréogène'});
+}
+
+/* D2/D3 : état de transition chélaté à 6 chaînons */
+function figEllmanTS(solv){
+  const W=360,H=292,chel=(solv==='dcm'); let s='';
+  const cx=180,cy=140,r=58;
+  const P=(a)=>polar(cx,cy,r,a);
+  const Sp=P(-60), Nn=P(0), Cc=P(60), Rr=P(120), Mg=P(180), Oo=P(240);
+  s+=seg([26,42],[18,42],{w:2}); s+=seg([18,42],[18,240],{w:2}); s+=seg([18,240],[26,240],{w:2});
+  s+=seg([334,42],[342,42],{w:2}); s+=seg([342,42],[342,240],{w:2}); s+=seg([342,240],[334,240],{w:2});
+  s+=txt([350,36],'‡',{fs:15,fw:700});
+  s+=bond(Sp,Nn,{s:11,e:11,c:C.blue});
+  s+=dbondIn(Nn,Cc,1,{s:11,e:11});
+  s+=bond(Cc,Rr,{s:11,e:12,c:C.green,dash:'5 4',w:2.4,op:chel?1:.3});
+  s+=bond(Rr,Mg,{s:12,e:14,c:C.purple,op:chel?1:.3});
+  s+=bond(Mg,Oo,{s:14,e:11,c:C.purple,dash:'5 4',w:2.4,op:chel?1:.22});
+  s+=dbond(Oo,Sp,{s:11,e:11,c:C.blue});
+  s+=lab(Sp,'S',{fs:15,fw:700,c:C.blue});
+  s+=lab(Nn,'N',{fs:14,fw:700,c:C.blue});
+  s+=lab(Cc,'C',{fs:14,fw:700});
+  s+=lab(Rr,'R',{fs:14,fw:700,c:C.green});
+  s+=lab(Mg,'Mg',{fs:13,fw:700,c:C.purple,r:14});
+  s+=lab(Oo,'O',{fs:14,fw:700,c:C.blue});
+  s+=tBu(Sp,[-44,-24],'hash');
+  s+=bond(Cc,add(Cc,[40,-20]),{s:11,e:13}); s+=lab(add(Cc,[40,-20]),'Et',{fs:12,r:13});
+  s+=bond(Mg,add(Mg,[0,32]),{s:14,e:11,c:C.purple}); s+=lab(add(Mg,[0,32]),'Br',{fs:12,c:C.purple,r:12});
+  if(chel){
+    s+=txt([300,158],'liaison en',{fs:10.5,fw:700,c:C.green});
+    s+=txt([300,172],'formation',{fs:10.5,fw:700,c:C.green});
+    s+=seg([274,160],[248,150],{c:C.green,dash:'3 3',w:1.2});
+    s+=txtLines([180,256],['CH₂Cl₂ : le magnésium tient l\'oxygène du sulfinyle.',
+      'Le cycle à 6 se referme, une seule face est accessible.'],{fs:11,c:C.green,lh:15});
+  } else {
+    s+=lab([104,196],'THF',{fs:11,c:C.red,fw:700,r:16});
+    s+=lab([88,152],'THF',{fs:11,c:C.red,fw:700,r:16});
+    s+=arrow([118,192],[Mg[0]-20,Mg[1]+2],{c:C.red,w:2});
+    s+=arrow([98,162],[Mg[0]-28,Mg[1]-12],{c:C.red,w:2});
+    s+=seg([146,174],[164,192],{c:C.red,w:3}); s+=seg([164,174],[146,192],{c:C.red,w:3});
+    s+=txtLines([180,256],['THF : le solvant se fixe sur Mg à la place de l\'oxygène.',
+      'Le cycle ne se forme plus → sélectivité dégradée ou inversée.'],{fs:11,c:C.red,lh:15});
+  }
+  s+=txt([180,26],chel?'état de transition chélaté à 6 chaînons':'état de transition ouvert, non chélaté',{fs:12.5,fw:700});
+  return svg(W,H,s,{alt:'état de transition Ellman, '+solv});
+}
+
+/* D4 : clivage de l'auxiliaire d'Ellman */
+function figEllmanCleav(){
+  const W=360,H=216; let s='';
+  /* sulfinamide produit */
+  const Sp=[92,70];
+  s+=lab(Sp,'S',{fs:14,fw:700,c:C.blue});
+  s+=tBu(Sp,[-2,-38],'wedge');
+  s+=dbond(Sp,[122,86],{s:10,e:9,c:C.blue}); s+=lab([122,86],'O',{fs:12,c:C.blue});
+  s+=bond(Sp,[64,90],{s:10,e:12,c:C.blue}); s+=lab([64,90],'NH',{fs:11.5,c:C.blue,r:14});
+  s+=bond([64,90],[40,112],{s:12,e:3});
+  s+=bond([40,112],[14,96],{}); s+=bond([40,112],[44,142],{e:12});
+  s+=lab([44,142],'R',{fs:13,c:C.green,fw:700});
+  s+=txt([100,168],'sulfinamide (d.r. 93:7 à 96:4)',{fs:10,c:C.ink2});
+  /* flèche */
+  s+=rxnArrow(160,244,92,['HCl (4 M)'],['MeOH, t.a.'],{fs:11});
+  /* amine */
+  s+=lab([292,70],'NH₂',{fs:13,fw:700,r:17});
+  s+=bond([292,70],[286,102],{s:15,e:3});
+  s+=bond([286,102],[258,88],{}); s+=bond([286,102],[292,134],{e:12});
+  s+=lab([292,134],'R',{fs:13,c:C.green,fw:700});
+  s+=txtLines([282,168],['amine chirale','(chlorhydrate)'],{fs:10.5,c:C.ink2,lh:13});
+  s+=txtLines([180,H-22],['le soufre part en tert-butanesulfinate de méthyle :',
+    'aucune liaison du carbone stéréogène n\'est touchée'],{fs:10.5,c:C.ink2,lh:13});
+  return svg(W,H,s,{alt:'clivage Ellman'});
+}
+
+/* ==========================================================================
+   Figures — réactif chiral : Hoppe / (−)-spartéine
+   ========================================================================== */
+
+/* groupe carbamate cyclique (spiro-oxazolidine), dessiné en entier */
+function cbyFull(){
+  let s='';
+  const C2=[98,84],O1=[66,88],C5=[58,120],C4=[88,134],Nn=[108,112];
+  const hx=[[122,70],[122,42],[98,28],[74,42],[74,70]];
+  s+=bond(C2,hx[0],{}); s+=bond(hx[0],hx[1],{}); s+=bond(hx[1],hx[2],{});
+  s+=bond(hx[2],hx[3],{}); s+=bond(hx[3],hx[4],{}); s+=bond(hx[4],C2,{});
+  s+=bond(C2,O1,{e:9}); s+=bond(O1,C5,{s:9}); s+=bond(C5,C4,{}); s+=bond(C4,Nn,{e:9}); s+=bond(Nn,C2,{s:9});
+  s+=lab(O1,'O',{fs:12}); s+=lab(Nn,'N',{fs:12});
+  return s;
+}
+/* E1 : les deux protons énantiotopiques et les deux produits */
+function figHoppeTopic(sel){
+  const W=360,H=364; let s='';
+  const Nn=[108,112], Cb=[138,100], Ob=[138,72], Oe=[166,120], Ca=[206,140];
+  const Me=[246,120], Ha=[182,178], Hb=[230,178];
+  s+=cbyFull();
+  s+=bond(Nn,Cb,{s:9}); s+=dbond(Cb,Ob,{e:9}); s+=lab(Ob,'O',{fs:12});
+  s+=bond(Cb,Oe,{e:9}); s+=lab(Oe,'O',{fs:12});
+  s+=bond(Oe,Ca,{s:9}); s+=bond(Ca,Me,{e:13}); s+=lab(Me,'CH₃',{fs:12,r:14});
+  s+=wedge(Ca,Ha,{e:11,c:C.red}); s+=lab(Ha,'Hₐ',{fs:12.5,c:C.red,fw:700,r:12});
+  s+=hashb(Ca,Hb,{e:11,c:C.purple}); s+=lab(Hb,'Hᵦ',{fs:12.5,c:C.purple,fw:700,r:12});
+  s+=txt([180,18],'carbamate de départ : le CH₂ porte 2 protons',{fs:12,fw:700});
+  s+=txt([248,196],'énantiotopes',{fs:11.5,fw:700,c:C.ink2});
+  /* miroir + produits */
+  s+=seg([180,222],[180,330],{c:C.grey,dash:'6 5',w:1.6});
+  const mk=(cx,cy,mirror,tag,on)=>{
+    let t='';
+    const dOx = mirror? [40,-20]:[-40,-20], dMe = mirror? [-40,-20]:[40,-20];
+    const dCo = mirror? [24,38]:[-24,38];
+    const Ox=add([cx,cy],dOx), M=add([cx,cy],dMe), Co=add([cx,cy],dCo);
+    if(on) t+=`<rect x="${cx-72}" y="${cy-48}" width="144" height="112" rx="12" fill="none" stroke="${C.green}" stroke-width="2"/>`;
+    t+=bond([cx,cy],Ox,{e:20}); t+=lab(Ox,'O–Cb',{fs:11,r:21});
+    t+=bond([cx,cy],M,{e:15}); t+=lab(M,'CH₃',{fs:11,r:15});
+    t+=wedge([cx,cy],Co,{e:16,c:C.green}); t+=lab(Co,'CO₂H',{fs:11,c:C.green,fw:700,r:18});
+    t+=txt([cx,cy+64],tag,{fs:13,fw:800});
+    return t;
+  };
+  s+=mk(90,254,false,'(S)',sel==='a');
+  s+=mk(270,254,true,'(R)',sel==='b');
+  s+=txt([90,338],'si on enlève Hₐ',{fs:11,c:C.red,fw:700});
+  s+=txt([270,338],'si on enlève Hᵦ',{fs:11,c:C.purple,fw:700});
+  s+=txt([180,358],'les deux produits sont ÉNANTIOMÈRES',{fs:11.5,fw:700,c:C.ink2});
+  return svg(W,H,s,{alt:'protons énantiotopiques'});
+}
+
+/* E2a : (−)-spartéine, squelette tel que dessiné dans les notes */
+function figSparteine(){
+  const W=360,H=200; let s='';
+  const o=[36,52];
+  const P=(x,y)=>[o[0]+x,o[1]+y];
+  const A1=P(0,26),A2=P(47,0),A3=P(102,25),N1=P(104,73),A5=P(53,98),A6=P(0,75);
+  const B1=P(128,5),Cg=P(156,4),B2=P(184,3),N2=P(207,26);
+  const B3=P(135,94),Ch=P(161,94),B4=P(187,94);
+  const R2=P(243,2),R3=P(284,26),R4=P(284,75),R5=P(245,98),R6=P(209,82);
+  const bl={c:C.blue,w:2.4};
+  [[A1,A2],[A2,A3],[A3,N1],[N1,A5],[A5,A6],[A6,A1],
+   [A3,B1],[B1,Cg],[Cg,B2],[B2,N2],
+   [N1,B3],[B3,Ch],[Ch,B4],[B4,R6],
+   [N2,R2],[R2,R3],[R3,R4],[R4,R5],[R5,R6],[R6,N2]].forEach(([a,b])=>{ s+=bond(a,b,bl); });
+  s+=wedge(B1,B4,Object.assign({wide:6},bl));
+  s+=wedge(A3,P(100,-16),Object.assign({e:10},bl)); s+=lab(P(100,-22),'H',{fs:12,c:C.blue,fw:700});
+  s+=wedge(R6,P(208,106),Object.assign({e:10},bl)); s+=lab(P(208,112),'H',{fs:12,c:C.blue,fw:700});
+  s+=lab(N1,'N',{fs:13,c:C.blue,fw:700}); s+=lab(N2,'N',{fs:13,c:C.blue,fw:700});
+  s+=txt([180,H-12],'(−)-spartéine — diamine naturelle, extraite du lupin',{fs:11.5,c:C.blue,fw:700});
+  return svg(W,H,s,{alt:'sparteine'});
+}
+/* E2b : le complexe sec-BuLi · spartéine (schéma) */
+function figComplexe(){
+  const W=360,H=226; let s='';
+  s+=`<path d="M40,64 C40,26 108,18 140,34 C176,52 176,152 140,178 C104,202 40,190 40,148 Z"
+       fill="none" stroke="${C.blue}" stroke-width="2.6"/>`;
+  s+=txt([92,96],'(−)-spartéine',{fs:12.5,fw:700,c:C.blue});
+  s+=txtLines([92,116],['cage rigide,','dissymétrique'],{fs:11,c:C.blue,lh:14});
+  s+=lab([160,80],'N',{fs:13,c:C.blue,fw:700});
+  s+=lab([160,142],'N',{fs:13,c:C.blue,fw:700});
+  s+=lab([222,110],'Li',{fs:14,c:C.purple,fw:700,r:13});
+  s+=seg([172,86],[209,105],{c:C.purple,dash:'4 3',w:2.3});
+  s+=seg([172,136],[209,117],{c:C.purple,dash:'4 3',w:2.3});
+  s+=bond([222,110],[276,110],{s:13,e:22,c:C.green});
+  s+=lab([292,110],'sec-Bu',{fs:12,c:C.green,fw:700,r:24});
+  s+=stericZone(232,70,44,20,{});
+  s+=txt([248,44],'un côté encombré',{fs:10.5,c:C.red,fw:700});
+  s+=arrow([250,170],[228,132],{c:C.green,w:2.2});
+  s+=txt([268,182],'un côté libre',{fs:10.5,c:C.green,fw:700});
+  s+=txt([180,H-10],'schéma : le lithium est logé dans une poche chirale',{fs:11,c:C.ink2});
+  return svg(W,H,s,{alt:'complexe sec-BuLi sparteine'});
+}
+
+/* E3 : mécanisme de Hoppe, pas à pas */
+const HP={Ca:[200,130],Oe:[160,110],Me:[240,110],Cb:[128,132],Oc:[152,164],
+          Ha:[176,168],Hb:[224,168],Li:[226,170]};
+function hoppeCore(){
+  let s='';
+  const {Ca,Oe,Me,Cb,Oc}=HP;
+  s+=`<rect x="34" y="84" width="62" height="32" rx="9" fill="none" stroke="${C.ink2}" stroke-width="1.6"/>`;
+  s+=txt([65,100],'cycle',{fs:10.5,c:C.ink2});
+  s+=bond([96,100],Cb,{e:3});
+  s+=dbond(Cb,Oc,{e:9}); s+=lab(Oc,'O',{fs:12});
+  s+=bond(Cb,Oe,{e:9}); s+=lab(Oe,'O',{fs:12});
+  s+=bond(Oe,Ca,{s:9}); s+=bond(Ca,Me,{e:14}); s+=lab(Me,'CH₃',{fs:11.5,r:14});
+  return s;
+}
+function figHoppeMech(k){
+  const W=360,H=262; let s=''; const {Ca,Oc,Ha,Hb,Li}=HP;
+  s+=hoppeCore();
+  if(k===0){
+    s+=wedge(Ca,Ha,{e:11,c:C.red}); s+=lab(Ha,'Hₐ',{fs:12,c:C.red,fw:700,r:12});
+    s+=hashb(Ca,Hb,{e:11,c:C.purple}); s+=lab(Hb,'Hᵦ',{fs:12,c:C.purple,fw:700,r:12});
+    s+=lab([300,208],'sec-BuLi',{fs:12,c:C.green,fw:700,r:30});
+    s+=txt([300,230],'· (−)-spartéine',{fs:11,c:C.blue,fw:700});
+    s+=curve([266,196],[238,180],18,{c:C.ink});
+    s+=txt([180,26],'1. un seul des deux protons est arraché',{fs:12.5,fw:700});
+    s+=txt([180,44],'le complexe chiral distingue Hₐ de Hᵦ',{fs:11,c:C.ink2});
+  }
+  if(k>=1&&k<=2){
+    s+=wedge(Ca,Ha,{e:9,c:C.ink}); s+=lab(Ha,'H',{fs:12,fw:700});
+    s+=hashb(Ca,Li,{e:12,c:C.purple}); s+=lab(Li,'Li',{fs:12,c:C.purple,fw:700,r:11});
+    s+=arcSeg(Oc,Li,26,{s:11,e:13,c:C.purple,w:2.2});
+    s+=txt([132,226],'chélate à 5 chaînons',{fs:11,c:C.purple,fw:700});
+    s+=seg([166,218],[184,200],{c:C.purple,dash:'3 3',w:1.2});
+  }
+  if(k===1){
+    s+=txt([180,26],'2. le carbanion est chélaté par le carbamate',{fs:12.5,fw:700});
+    s+=txt([180,44],'→ il ne s\'épimérise pas : configuration stable',{fs:11,c:C.ink2});
+  }
+  if(k===2){
+    s+=lab([308,200],'CO₂',{fs:13,c:C.green,fw:700,r:18});
+    s+=curve([282,196],[244,180],16,{c:C.green});
+    s+=txt([180,26],'3. CO₂ prend exactement la place du lithium',{fs:12.5,fw:700});
+    s+=txt([180,44],'même face : la configuration est RETENUE',{fs:11,c:C.green,fw:700});
+  }
+  if(k===3){
+    s+=wedge(Ca,Ha,{e:9,c:C.ink}); s+=lab(Ha,'H',{fs:12,fw:700});
+    s+=hashb(Ca,[230,176],{e:18,c:C.green});
+    s+=lab([234,182],'CO₂H',{fs:12,c:C.green,fw:700,r:21});
+    s+=txt([180,26],'4. après HCl : l\'acide, e.e. > 95 %',{fs:12.5,fw:700});
+    s+=txt([180,44],'descripteur (R) — mais attention, voir la section suivante',{fs:11,c:C.ink2});
+  }
+  return svg(W,H,s,{alt:'mécanisme de Hoppe, étape '+(k+1)});
+}
+
+/* E4 : le descripteur change alors que la configuration ne change pas */
+function figCIPswap(){
+  const W=360,H=270; let s='';
+  const panel=(cx,title,items,col)=>{
+    let t='';
+    t+=`<rect x="${cx-84}" y="36" width="168" height="196" rx="14" fill="none" stroke="${col}" stroke-width="2"/>`;
+    t+=txt([cx,58],title,{fs:12.5,fw:700,c:col});
+    items.forEach((it,i)=>{
+      t+=txt([cx-66,90+i*32],String(i+1),{fs:13,fw:800,c:col,anchor:'start'});
+      t+=txt([cx-44,90+i*32],it,{fs:12.5,anchor:'start'});
+    });
+    return t;
+  };
+  s+=txt([180,18],'Même molécule, même géométrie — priorités différentes',{fs:12,fw:700});
+  s+=panel(94,'intermédiaire lithié',['O du carbamate','CH₃','Li  (Z = 3)','H'],C.purple);
+  s+=panel(266,'produit carboxylé',['O du carbamate','CO₂H','CH₃','H'],C.green);
+  s+=arrow([182,140],[194,140],{c:C.ink2,w:2});
+  s+=txtLines([180,250],['Li était 3ᵉ, CO₂H devient 2ᵉ : les rangs 2 et 3 s\'échangent.',
+    'Le descripteur bascule alors que rien n\'a bougé dans l\'espace.'],{fs:11,c:C.ink2,lh:15});
+  return svg(W,H,s,{alt:'inversion du descripteur CIP'});
+}
+
+/* ==========================================================================
+   Figures — TADDOL / chalcone, puis Sharpless
+   ========================================================================== */
+
+/* époxyde trans dessiné sans ambiguïté : sommet O, substituants gras/pointillé */
+function epoxTrans(P,lTxt,rTxt,lWedge,tags,col){
+  const C3=[P[0]-26,P[1]], C2=[P[0]+26,P[1]], Oo=[P[0],P[1]-30];
+  let s='';
+  s+=bond(C3,C2,{}); s+=bond(C3,Oo,{e:9}); s+=bond(C2,Oo,{e:9});
+  s+=lab(Oo,'O',{fs:13,fw:700});
+  const Lp=add(C3,[-34,26]), Rp=add(C2,[34,26]);
+  s+= lWedge? wedge(C3,Lp,{e:16}) : hashb(C3,Lp,{e:16});
+  s+= lWedge? hashb(C2,Rp,{e:18,c:col||C.ink}) : wedge(C2,Rp,{e:18,c:col||C.ink});
+  s+=lab(Lp,lTxt,{fs:11.5,fw:700,r:17});
+  s+=lab(Rp,rTxt,{fs:11.5,fw:700,r:19,c:col});
+  if(tags){ s+=txt(add(C3,[-20,-6]),tags[0],{fs:12,fw:800,c:C.red});
+            s+=txt(add(C2,[20,-6]),tags[1],{fs:12,fw:800,c:C.red}); }
+  return s;
+}
+
+/* F0 : l'hydroperoxyde de TADDOL */
+function figTaddol(){
+  const W=360,H=210; let s='';
+  const O1=[104,120],C2=[86,94],O3=[110,70],C4=[140,80],C5=[138,112];
+  s+=bond(O1,C2,{s:9,e:3}); s+=bond(C2,O3,{s:3,e:9}); s+=bond(O3,C4,{s:9});
+  s+=bond(C4,C5,{}); s+=bond(C5,O1,{e:9});
+  s+=lab(O1,'O',{fs:12}); s+=lab(O3,'O',{fs:12});
+  s+=bond(C2,[56,84],{e:3}); s+=bond(C2,[72,66],{e:3});
+  s+=txt([46,78],'Me',{fs:10.5,anchor:'end'}); s+=txt([64,56],'Me',{fs:10.5});
+  /* branche OOH */
+  const Q1=[176,62];
+  s+=wedge(C4,Q1,{e:3,c:C.ink});
+  s+=bond(Q1,[206,46],{e:12}); s+=lab([210,44],'OOH',{fs:11.5,fw:700,c:C.green,r:20});
+  s+=bond(Q1,[172,30],{e:11}); s+=lab([172,26],'Ph',{fs:11,r:12});
+  s+=bond(Q1,[204,78],{e:11}); s+=lab([206,80],'Ph',{fs:11,r:12});
+  /* branche OH */
+  const Q2=[168,136];
+  s+=hashb(C5,Q2,{e:3,c:C.ink});
+  s+=bond(Q2,[200,150],{e:11}); s+=lab([204,152],'OH',{fs:11.5,fw:700,r:14});
+  s+=bond(Q2,[162,168],{e:11}); s+=lab([162,172],'Ph',{fs:11,r:12});
+  s+=bond(Q2,[196,116],{e:11}); s+=lab([198,114],'Ph',{fs:11,r:12});
+  s+=txt([180,H-28],'hydroperoxyde dérivé du TADDOL (1,5 équiv)',{fs:11.5,fw:700});
+  s+=txt([180,H-10],'la chiralité est dans le diol, l\'oxygène transféré est en vert',{fs:10.5,c:C.ink2});
+  return svg(W,H,s,{alt:'TADDOL-OOH'});
+}
+
+/* F1 : mécanisme de Weitz–Scheffer, pas à pas */
+const WZ={Ph1:[52,116],Cb:[96,132],Ca:[136,114],Cc:[176,132],Oc:[176,164],Ph2:[220,118]};
+function weitzSkel(enolate){
+  const {Ph1,Cb,Ca,Cc,Oc,Ph2}=WZ; let t='';
+  t+=lab(Ph1,'Ph',{fs:12,fw:700,r:15});
+  t+=bond(Ph1,Cb,{s:15});
+  if(enolate){
+    t+=bond(Cb,Ca,{}); t+=dbondIn(Ca,Cc,-1,{});
+    t+=bond(Cc,Oc,{e:9}); t+=lab(Oc,'O',{fs:12}); t+=txt([194,168],'⊖',{fs:11,c:C.ink2});
+    t+=lab([206,182],'Li',{fs:11,c:C.purple,fw:700,r:10});
+  } else {
+    t+=dbondIn(Cb,Ca,-1,{}); t+=bond(Ca,Cc,{});
+    t+=dbond(Cc,Oc,{e:9}); t+=lab(Oc,'O',{fs:12});
+  }
+  t+=bond(Cc,Ph2,{e:15}); t+=lab(Ph2,'Ph',{fs:12,fw:700,r:15});
+  t+=txt([84,150],'β',{fs:12,fw:800,c:C.ink2});
+  t+=txt([152,100],'α',{fs:12,fw:800,c:C.ink2});
+  return t;
+}
+function figWeitz(k){
+  const W=360,H=272; let s=''; const {Cb,Ca,Cc,Oc}=WZ;
+  if(k===0){
+    s+=`<rect x="46" y="96" width="96" height="34" rx="10" fill="none" stroke="${C.blue}" stroke-width="2"/>`;
+    s+=txt([94,113],'TADDOL',{fs:12.5,fw:700,c:C.blue});
+    s+=bond([142,113],[176,113],{e:3});
+    s+=lab([196,113],'O–O–H',{fs:12.5,fw:700,c:C.green,r:28});
+    s+=lab([290,160],'n-BuLi',{fs:12.5,fw:700,r:28});
+    s+=curve([262,150],[234,124],-18,{c:C.ink});
+    s+=txt([180,206],'1. n-BuLi arrache le proton de l\'hydroperoxyde',{fs:12.5,fw:700});
+    s+=txtLines([180,232],['On obtient le nucléophile TADDOL–O–O⊖ Li⁺ :',
+      'c\'est lui qui porte l\'information chirale.'],{fs:11,c:C.ink2,lh:15});
+  }
+  if(k===1){
+    s+=weitzSkel(false);
+    s+=lab([282,72],'ROO⊖',{fs:12.5,fw:700,c:C.green,r:26});
+    s+=curve([252,82],[110,118],46,{c:C.green});
+    s+=curve([116,130],[158,130],28,{c:C.ink,w:2.2});
+    s+=curve([180,146],[192,164],-14,{c:C.ink,w:2.2});
+    s+=`<rect x="12" y="196" width="336" height="30" rx="10" fill="none" stroke="${C.red}" stroke-width="2"/>`;
+    s+=txt([180,211],'2. addition 1,4 — ÉTAPE STÉRÉODÉTERMINANTE',{fs:12,fw:800,c:C.red});
+    s+=txtLines([180,246],['ROO⊖ choisit une face de Cβ. Les deux faces mènent à',
+      'des ET diastéréoisomères : c\'est ici que tout se joue.'],{fs:11,c:C.ink2,lh:15});
+  }
+  if(k===2){
+    s+=weitzSkel(true);
+    s+=hashb(Cb,[90,174],{e:13,c:C.green}); s+=lab([86,182],'OOR',{fs:11.5,c:C.green,fw:700,r:19});
+    s+=`<path d="M104,96 A26,26 0 1 1 132,92" fill="none" stroke="${C.purple}" stroke-width="2.2" marker-end="url(#mkPurple)"/>`;
+    s+=txt([118,68],'rotation libre',{fs:11,c:C.purple,fw:700});
+    s+=txt([180,216],'3. rotation autour de Cα–Cβ',{fs:12.5,fw:700});
+    s+=txtLines([180,240],['La liaison Cα–Cβ est devenue simple : elle tourne.',
+      'La molécule choisit la conformation la moins gênée.'],{fs:11,c:C.ink2,lh:15});
+  }
+  if(k===3){
+    s+=weitzSkel(true);
+    s+=hashb(Cb,[86,170],{e:11,c:C.green}); s+=lab([84,176],'O',{fs:12,c:C.green,fw:700});
+    s+=arcSeg([84,176],[124,196],-16,{s:10,e:16,c:C.green,w:2.2});
+    s+=lab([134,200],'OR',{fs:11.5,c:C.green,fw:700,r:15});
+    s+=curve([130,132],[92,162],-24,{c:C.green});
+    s+=txt([180,228],'4. fermeture : Cα attaque l\'oxygène le plus proche',{fs:12.5,fw:700});
+    s+=txtLines([180,250],['RO⊖ (le TADDOL) part : la liaison O–O est faible.',
+      'Le cycle à trois se referme.'],{fs:11,c:C.ink2,lh:15});
+  }
+  if(k===4){
+    s+=epoxTrans([150,116],'Ph','C(O)Ph',true,['R','S'],C.ink);
+    s+=txt([180,196],'5. époxyde TRANS, e.r. = 98,5 : 1,5',{fs:12.5,fw:700});
+    s+=txtLines([180,224],['(2S,3R) — vérifié par RDKit sur ce dessin.',
+      'Trans parce que la rotation a choisi la conformation anti.'],{fs:11,c:C.ink2,lh:15});
+  }
+  return svg(W,H,s,{alt:'mécanisme de Weitz-Scheffer, étape '+(k+1)});
+}
+
+/* ---------------- Sharpless ---------------- */
+/* H1 : moyen mnémotechnique */
+function figSharpMnemo(det){
+  const W=360,H=366,plus=(det==='L'); let s='';
+  s+=`<path d="M30,158 L104,92 L336,92 L262,158 Z" fill="var(--panel2)" stroke="${C.line}" stroke-width="1.6"/>`;
+  const R=[104,126], C3=[140,144], C2=[176,128], C1=[212,146], OH=[246,134];
+  s+=lab(R,'C₇H₁₅',{fs:11.5,fw:700,r:24});
+  s+=bond(R,C3,{s:24,e:3}); s+=dbondIn(C3,C2,-1,{}); s+=bond(C2,C1,{s:3}); s+=bond(C1,OH,{e:14});
+  s+=lab(OH,'OH',{fs:12,fw:700,r:15});
+  s+=txt([332,176],'CH₂OH toujours en bas à droite',{fs:10,c:C.ink2,anchor:'end'});
+  if(plus){
+    s+=arrow([158,226],[158,152],{c:C.green,w:3});
+    s+=lab([158,242],'O',{fs:14,c:C.green,fw:700,r:13});
+    s+=txt([180,262],'L-(+)-DET : l\'oxygène arrive par-DESSOUS',{fs:12,fw:700,c:C.green});
+  } else {
+    s+=arrow([158,36],[158,118],{c:C.green,w:3});
+    s+=lab([158,22],'O',{fs:14,c:C.green,fw:700,r:13});
+    s+=txt([180,262],'D-(−)-DET : l\'oxygène arrive par-DESSUS',{fs:12,fw:700,c:C.green});
+  }
+  s+=epoxTrans([142,316],'C₇H₁₅','CH₂OH',!plus,plus?['S','S']:['R','R'],C.ink);
+  s+=txt([306,310],plus?'(2S,3S)':'(2R,3R)',{fs:13.5,fw:800,c:C.red});
+  s+=txt([306,330],'e.e. 96 %',{fs:11,c:C.ink2});
+  return svg(W,H,s,{alt:'mnémotechnique de Sharpless, '+det});
+}
+
+/* H2 : cycle catalytique simplifié */
+const CYCLE=[
+ {t:'Ti(OiPr)₄ + 2 tartrate', d:'Le titane(IV) échange très vite ses alcoolates. Avec le tartrate, l\'équilibre est déplacé vers le chélate : il se forme Ti(tartrate)₂(OR)₂, un complexe neutre. Le tartrate est <b>dianionique</b> (ses deux OH alcooliques sont déprotonés), le titane reste au degré <b>+IV</b>.'},
+ {t:'+ t-BuOOH', d:'Un nouvel échange de ligand : le tert-butylhydroperoxyde remplace un alcoolate. C\'est lui qui porte l\'oxygène à transférer.'},
+ {t:'+ alcool allylique', d:'Deuxième échange : l\'alcool allylique se fixe à son tour sur le titane, par son OH. Le complexe est alors « complètement chargé ».'},
+ {t:'transfert de O', d:'Substrat et oxydant sont maintenant tenus par le <b>même</b> métal, à distance fixe et dans une orientation imposée par le tartrate. L\'oxygène passe de l\'hydroperoxyde à la double liaison : une seule face est atteignable.'},
+ {t:'libération', d:'L\'époxy-alcool et le tert-butanolate partent, remplacés par de nouvelles molécules de substrat et d\'oxydant. Le complexe est prêt pour un nouveau tour : il est bien <b>catalytique</b>.'}
+];
+function figCycle(k){
+  const W=360,H=300,cx=180,cy=152,R=100; let s='';
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${C.line}" stroke-width="2" stroke-dasharray="7 6"/>`;
+  for(let i=0;i<5;i++){
+    const a=i*72, p=polar(cx,cy,R,a), on=(i===k);
+    s+=`<circle cx="${E(p[0])}" cy="${E(p[1])}" r="${on?19:14}" fill="${on?C.purple:'var(--panel)'}" stroke="${on?C.purple:C.line}" stroke-width="2"/>`;
+    s+=txt(p,String(i+1),{fs:on?14:12,fw:800,c:on?'#fff':C.ink2});
+    const a2=a+36, q1=polar(cx,cy,R,a+12), q2=polar(cx,cy,R,a+60);
+    s+=`<path d="M${E(q1[0])},${E(q1[1])} A${R},${R} 0 0 1 ${E(q2[0])},${E(q2[1])}" fill="none" stroke="${C.purple}" stroke-width="2" opacity=".55" marker-end="url(#mkPurple)"/>`;
+  }
+  s+=lab([cx,cy-12],'Ti(IV)',{fs:14,fw:700,c:C.purple,r:0,nobg:true});
+  s+=txt([cx,cy+8],'+ tartrate',{fs:11.5,c:C.blue,fw:700});
+  s+=txt([cx,cy+24],'(ligand chiral)',{fs:10,c:C.blue});
+  const words=CYCLE[k].t;
+  s+=txt([180,278],(k+1)+'. '+words,{fs:12.5,fw:700});
+  s+=txt([180,20],'cycle catalytique — 7,3 mol % de Ti seulement',{fs:11,c:C.ink2});
+  return svg(W,H,s,{alt:'cycle catalytique, étape '+(k+1)});
+}
+
+/* H3 : tamis moléculaire */
+function figSieves(on){
+  const W=360,H=232; let s='';
+  s+=lab([92,70],'Ti(IV)',{fs:13,fw:700,c:C.purple,r:26});
+  s+=txt([92,112],'+ tartrate',{fs:10.5,c:C.blue,fw:700});
+  if(on){
+    s+=`<rect x="208" y="46" width="118" height="50" rx="12" fill="none" stroke="${C.green}" stroke-width="2.2"/>`;
+    s+=txt([267,66],'tamis 4 Å',{fs:12.5,fw:700,c:C.green});
+    s+=txt([267,84],'piège H₂O',{fs:11,c:C.green});
+    s+=lab([162,150],'H₂O',{fs:12,fw:700,r:18,c:C.ink2});
+    s+=arrow([184,142],[238,104],{c:C.green,w:2.4});
+    s+=txt([180,196],'le titane reste actif → vraie catalyse',{fs:12.5,fw:700,c:C.green});
+    s+=txt([180,216],'7,3 mol % suffisent pour tout transformer',{fs:10.5,c:C.ink2});
+  } else {
+    s+=lab([252,70],'H₂O',{fs:12,fw:700,r:18,c:C.red});
+    s+=arrow([228,70],[128,70],{c:C.red,w:2.6});
+    s+=stericZone(92,70,44,26,{});
+    s+=txt([180,150],'l\'eau hydrolyse les liaisons Ti–O',{fs:12,fw:700,c:C.red});
+    s+=txt([180,170],'→ oxydes / hydroxydes de titane insolubles',{fs:11,c:C.red});
+    s+=txt([180,204],'le catalyseur meurt → il en faut 1 équivalent',{fs:12.5,fw:700,c:C.red});
+    s+=txt([180,222],'ce n\'est plus de la catalyse',{fs:10.5,c:C.ink2});
+  }
+  return svg(W,H,s,{alt:'tamis moléculaire '+(on?'présent':'absent')});
+}
+
+/* H4 : tartrate en excès ou titane en excès */
+function figRatio(mode){
+  const W=360,H=256,bon=(mode==='tart'); let s='';
+  s+=`<rect x="20" y="36" width="150" height="122" rx="14" fill="none" stroke="${bon?C.green:C.line}" stroke-width="${bon?2.4:1.6}"/>`;
+  s+=txt([95,56],'voie chirale',{fs:12.5,fw:700,c:bon?C.green:C.ink2});
+  s+=txt([95,92],'Ti · tartrate',{fs:13,fw:700,c:C.purple});
+  s+=txt([95,122],'une seule face',{fs:11,c:C.ink2});
+  s+=txt([95,142],'→ e.e. élevé',{fs:11.5,fw:700,c:bon?C.green:C.ink2});
+  s+=`<rect x="190" y="36" width="150" height="122" rx="14" fill="none" stroke="${bon?C.line:C.red}" stroke-width="${bon?1.6:2.4}"/>`;
+  s+=txt([265,56],'voie racémique',{fs:12.5,fw:700,c:bon?C.ink2:C.red});
+  s+=txt([265,92],'Ti libre',{fs:13,fw:700,c:C.purple});
+  s+=txt([265,122],'aucune chiralité',{fs:11,c:C.ink2});
+  s+=txt([265,142],'→ 50 : 50',{fs:11.5,fw:700,c:bon?C.ink2:C.red});
+  s+=txt([180,180],'part du substrat qui emprunte chaque voie',{fs:10.5,c:C.ink2});
+  const w1=bon?134:52, w2=bon?18:112;
+  s+=`<rect x="20" y="190" width="${w1}" height="20" rx="6" fill="${C.green}"/>`;
+  s+=`<rect x="${340-w2}" y="190" width="${w2}" height="20" rx="6" fill="${C.red}"/>`;
+  s+=txtLines([180,230],
+     bon?['tartrate en léger excès (1,1 à 1,2 pour 1 Ti)','→ tout le titane est ligandé']
+        :['titane en excès → une partie reste nue','et travaille sans aucune sélectivité'],
+     {fs:11.5,fw:700,c:bon?C.green:C.red,lh:16});
+  return svg(W,H,s,{alt:'rapport tartrate / titane'});
+}
+
+/* ==========================================================================
+   GROUPE A — Les bases (le pourquoi)
+   ========================================================================== */
+const GA='A — Les bases';
+
 S({
-  grp:'5 — Contrôle cinétique', title:'Le diagramme d\'énergie (version corrigée)',
+  grp:GA, title:'Pourquoi une réaction ordinaire donne toujours 50 : 50',
+  consigne:'Appuie sur « réactif chiral » et regarde ce qui disparaît en bas du schéma.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'); let cur='achiral';
+    const draw=()=>{fig.innerHTML=figMiroir(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
+    [['achiral','Réactif achiral'],['chiral','Réactif chiral']].forEach(([k,t])=>{
+      const b=el('button','btn green'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); draw();
+  },
+  une:'Tant que le système réactionnel tout entier possède un miroir, les deux énantiomères se forment exactement à la même vitesse. Faire de la synthèse asymétrique, c\'est supprimer ce miroir.',
+  probleme:'<p>On part du benzaldéhyde. Son carbone n\'est pas stéréogène : il est sp², donc <b>plan</b>. Mais dès qu\'un nucléophile s\'additionne dessus, il devient tétraédrique et donc stéréogène. On dit que le substrat est <b>prochiral</b> : il ne demande qu\'à devenir chiral.</p><p>Le problème, c\'est qu\'il y a deux façons d\'arriver sur un plan : par-dessus ou par-dessous.</p>',
+  etapes:[
+   {q:'Pourquoi obtient-on deux produits différents ?',
+    t:'Le nucléophile peut attaquer l\'une ou l\'autre face du carbonyle. Les deux produits ainsi formés sont images l\'un de l\'autre dans un miroir : ce sont les <b>deux énantiomères</b>.'},
+   {q:'Pourquoi exactement 50 : 50, et pas 60 : 40 ?',
+    t:'Avec un réactif achiral, le dessin complet — substrat, réactif, solvant — possède un plan de symétrie. Les deux chemins sont donc <b>images l\'un de l\'autre</b>. Deux objets en miroir ont rigoureusement la même énergie, donc les deux vitesses sont rigoureusement égales.'},
+   {q:'Peut-on s\'en sortir en jouant sur la température, la pression, le solvant ?',
+    t:'Non, et c\'est important : tant que tous ces paramètres sont achiraux, ils agissent <b>identiquement</b> sur les deux chemins. Rien d\'achiral ne peut départager deux images miroir. Le racémique n\'est pas un accident, c\'est une obligation.'},
+   {q:'Alors que faut-il faire ?',
+    t:'Introduire dans le système quelque chose de <b>chiral et énantiopur</b> : un auxiliaire fixé sur le substrat, un réactif, ou un catalyseur. Le plan de symétrie du dessin disparaît, les deux chemins cessent d\'être images l\'un de l\'autre — et plus rien n\'oblige leurs énergies à être égales.'}
+  ],
+  retenir:[
+   'Substrat prochiral + environnement 100 % achiral = racémique, sans exception.',
+   'La chiralité ne se crée pas à partir de rien : il faut en <b>apporter</b> une, énantiopure.',
+   'Toute la suite du chapitre n\'est qu\'une réponse à la question : <b>où</b> place-t-on cette chiralité — sur le substrat, dans le réactif, ou dans le catalyseur ?'
+  ],
+  plus:{titre:'La phrase qui résume tout le chapitre',
+    body:'<p>Procter l\'écrit ainsi : <i>« any feature of the reacting system which would cause the possible transition states for the reaction to be <b>diastereoisomeric</b> (where they would normally be <b>enantiomeric</b>) could lead to the preferential formation of one diastereoisomer or enantiomer. »</i></p><p>Traduction : peu importe <i>ce que</i> tu ajoutes de chiral, et peu importe <i>où</i>. Ce qui compte, c\'est le résultat sur les <b>états de transition</b>. Tant qu\'ils sont énantiomères, ils sont égaux en énergie. Dès qu\'ils deviennent diastéréoisomères, ils n\'ont plus aucune raison de l\'être — et l\'un des deux l\'emporte.</p><p>C\'est aussi pour cela qu\'on parle d\'un substrat <b>prochiral</b> et pas simplement « achiral » : il possède deux faces (ou deux atomes) qui vont devenir distinguables.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i>, chapitre 2 « Principles »</b>, p. 5–6.'},
+  quiz:{q:'Si on fait la réaction dans un solvant chiral énantiopur, peut-on obtenir un excès&nbsp;?',
+        a:'Oui, en principe : le solvant solvate les réactifs, donc il fait partie de l\'état de transition. Les deux ET deviennent diastéréoisomères et un excès devient possible. En pratique les excès obtenus sont faibles et imprévisibles, et il existe très peu de solvants à la fois chiraux, énantiopurs, bon marché et utilisables — Procter la cite comme une curiosité, pas comme une méthode.'}
+});
+
+S({
+  grp:GA, title:'Homotopes, énantiotopes, diastéréotopes',
+  consigne:'Choisis un des trois cas et regarde les deux produits obtenus en bas.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'), why=el('div','statusline'); let cur='homo';
+    const draw=()=>{
+      fig.innerHTML=figTopicite(cur);
+      why.innerHTML='<b>'+TOPO[cur].nom+'.</b> '+TOPO[cur].why;
+      [...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));
+    };
+    [['homo','Cas 1'],['enantio','Cas 2'],['diastereo','Cas 3']].forEach(([k,t])=>{
+      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); host.appendChild(why); draw();
+  },
+  une:'Deux atomes qui se ressemblent ne sont pas forcément interchangeables. Le test est toujours le même : on en remplace un, puis l\'autre, et on compare les deux produits.',
+  probleme:'<p>Dans l\'éthanol CH₃–CH₂–OH, les deux hydrogènes du CH₂ ont l\'air rigoureusement identiques. Pourtant une enzyme (l\'alcool déshydrogénase de levure) sait parfaitement les distinguer, et le complexe sec-BuLi·spartéine de Hoppe aussi — tu le verras en section D.</p><p>Il faut donc un vocabulaire pour dire <i>à quel point</i> deux atomes se ressemblent. Ce vocabulaire s\'applique aussi aux deux <b>faces</b> d\'une double liaison, ce qui le rend indispensable pour tout le chapitre.</p>',
+  etapes:[
+   {q:'Quel est le test ?',
+    t:'On remplace mentalement un des deux atomes par un groupe nouveau (ici Br), puis on recommence avec l\'autre. On compare ensuite les deux produits obtenus. Il n\'y a que <b>trois réponses possibles</b> — d\'où trois noms.'},
+   {q:'Premier cas : la même molécule.',
+    t:'Les deux atomes sont <b>homotopes</b>. On passe de l\'un à l\'autre par une simple <b>rotation</b> de la molécule : ils occupent véritablement la même place. Aucun réactif, même chiral, même une enzyme, ne peut les distinguer.'},
+   {q:'Deuxième cas : deux énantiomères.',
+    t:'Les deux atomes sont <b>énantiotopes</b>. On passe de l\'un à l\'autre par un <b>plan de symétrie</b>, jamais par une rotation. Un réactif achiral ne les distingue pas (50/50), mais un réactif chiral, lui, les distingue.'},
+   {q:'Troisième cas : deux diastéréoisomères.',
+    t:'Les deux atomes sont <b>diastéréotopes</b>. Aucune symétrie ne les relie, parce que la molécule contient déjà un centre stéréogène ailleurs. Même un réactif <b>achiral</b> les distingue — et on les voit d\'ailleurs comme deux signaux séparés en RMN.'}
+  ],
+  retenir:[
+   'Homotopes = même place. Énantiotopes = places en miroir. Diastéréotopes = places réellement différentes.',
+   'Énantiotopes → il faut apporter un réactif <b>chiral</b>. C\'est la stratégie du réactif chiral (Hoppe).',
+   'Diastéréotopes → le substrat contient déjà l\'information. C\'est la stratégie de l\'auxiliaire (Evans).',
+   'Tout ceci vaut aussi pour les deux <b>faces</b> d\'un C=O ou d\'un C=C, pas seulement pour des atomes.'
+  ],
+  plus:{titre:'Les descripteurs pro-R / pro-S, et un piège',
+    body:'<p>Pour nommer individuellement deux ligands hétérotopes, on utilise <b>pro-R</b> et <b>pro-S</b> : on donne arbitrairement la priorité supérieure à l\'un des deux et on applique CIP. Si le centre devient (R), le ligand promu est pro-R.</p><p>Le piège : il n\'existe <b>aucune correspondance générale</b> entre pro-R/pro-S (qui nomme des ligands) et Re/Si (qui nomme des faces). Robinson insiste dessus. Elles ne coïncident que si les ligands hétérotopes sont de priorité la plus haute ou la plus basse.</p><p>Deuxième subtilité : la topicité observée dépend de l\'échelle de temps. Les trois H d\'un méthyle sont diastéréotopes à l\'instant t (leurs liaisons C–H n\'ont pas la même longueur), mais la rotation est si rapide qu\'en RMN on ne voit qu\'un seul signal moyenné.</p>',
+    src:'<b>Robinson, <i>Organic Stereochemistry</i> (Oxford Chemistry Primers 88)</b>, §4.8 « Stereoheterotopic ligands » et §4.9–4.10, p. 54–57.'},
+  quiz:{q:'Pourquoi l\'auxiliaire d\'Evans transforme-t-il un problème d\'énantiotopie en problème de diastéréotopie&nbsp;?',
+        a:'Parce qu\'en accrochant un auxiliaire énantiopur sur le substrat, on introduit un centre stéréogène <b>dans la molécule elle-même</b>. Les deux faces de l\'énolate, qui étaient énantiotopes, deviennent <b>diastéréotopes</b> : plus aucune symétrie ne les relie. Du coup un réactif parfaitement achiral (E–X) suffit à les distinguer. C\'est exactement pour cela que le schéma de la diapo dit « achiral reagent ».'}
+});
+
+S({
+  grp:GA, title:'Les faces Re et Si',
+  consigne:'Bascule entre « face Re » et « face Si » et suis la flèche bleue.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'); let cur='Re';
+    const draw=()=>{fig.innerHTML=figReSi(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
+    [['Re','Face Re'],['Si','Face Si']].forEach(([k,t])=>{
+      const b=el('button','btn blue'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig);
+    host.appendChild(el('div','note','<b>À ne pas confondre.</b> <i>Re</i> et <i>Si</i> nomment une <b>face</b>, donc un côté du plan, <i>avant</i> la réaction. <i>R</i> et <i>S</i> nomment un <b>centre tétraédrique</b>, donc une molécule, <i>après</i> la réaction. Il n\'existe pas de règle automatique qui passe de l\'un à l\'autre.'));
+    draw();
+  },
+  une:'Re et Si nomment les deux côtés d\'un atome plan, comme R et S nomment les deux versions d\'un centre tétraédrique.',
+  probleme:'<p>Quand tes notes écrivent « addition on the Si face » pour l\'auxiliaire d\'Ellman, il faut savoir de quel côté on parle. Sans ce vocabulaire, impossible de vérifier soi‑même un mécanisme : on est obligé de faire confiance au dessin.</p>',
+  etapes:[
+   {q:'De quoi part-on ?',
+    t:'D\'un atome trigonal — typiquement le carbone d\'un C=O ou d\'un C=N. Il est sp², donc <b>plan</b>, avec trois substituants autour de lui.'},
+   {q:'Première étape : classer.',
+    t:'On applique les règles CIP aux trois substituants : a &gt; b &gt; c. Sur l\'éthanal ci‑dessus : a = O (dédoublé par la double liaison), b = CH₃, c = H.'},
+   {q:'Deuxième étape : se placer d\'un côté.',
+    t:'On regarde le plan depuis l\'un des deux côtés. Si la séquence a → b → c tourne <b>dans le sens des aiguilles d\'une montre</b>, on est en face de la face <b>Re</b>. Si elle tourne dans l\'autre sens, c\'est la face <b>Si</b>.'},
+   {q:'Et ensuite ?',
+    t:'Dire « le nucléophile attaque par la face Re » décrit complètement la stéréochimie de l\'étape. Mais pour donner le descripteur R ou S du produit, il faut <b>refaire</b> un classement CIP sur le nouveau centre, en tenant compte du groupe qui vient d\'arriver.'}
+  ],
+  retenir:[
+   'Re / Si = une face (avant). R / S = un centre (après).',
+   'Attaquer la face Re ne donne pas forcément un produit (R) : il faut reclasser.',
+   'Les deux faces d\'un C=O sont énantiotopes si la molécule est achirale, diastéréotopes si elle contient déjà un centre stéréogène — c\'est toute l\'astuce de l\'auxiliaire.'
+  ],
+  plus:{titre:'Définition exacte',
+    body:'<p>Les trois ligands définissent un plan, qui coupe l\'espace en deux régions. Robinson : <i>« The order a, b, c of the ligands is clockwise when viewed from the Re space, anticlockwise from the Si space. »</i></p><p>Le nom vient du latin <i>rectus</i> et <i>sinister</i>, exactement comme R et S — d\'où la confusion fréquente. Pour une double liaison C=C, chacun des deux carbones porte ses propres faces, et on écrit par exemple <i>(Re,Si)</i> pour préciser les deux.</p>',
+    src:'<b>Robinson, <i>Organic Stereochemistry</i></b>, §4.9 « Si and Re nomenclature », p. 56.'},
+  quiz:{q:'Un hydrure attaque la face Re du propanal. Le produit est-il forcément (R)&nbsp;?',
+        a:'Non. Re/Si dit <b>par où</b> l\'attaque a eu lieu. Pour le descripteur du produit, il faut reclasser les quatre substituants du nouveau centre — dont l\'hydrogène qui vient d\'arriver, et qui était absent du classement a &gt; b &gt; c. Ici le produit est le propan-1-ol… qui n\'a même pas de centre stéréogène. C\'est un bon rappel : attaquer une face n\'implique pas forcément de créer un stéréocentre.'}
+});
+
+S({
+  grp:GA, title:'e.r., e.e., d.r. : que veulent dire les chiffres ?',
+  consigne:'Fais glisser le curseur et regarde combien de billes changent de couleur.',
+  build(host){
+    const fig=el('div','figbox'), ctl=el('div','card');
+    ctl.innerHTML=`<div class="slab"><span>Excès énantiomérique</span><b><span id="vee2">96,0</span> %</b></div>
+      <input type="range" id="see" min="0" max="99.8" step="0.2" value="96">
+      <div class="btnrow" style="margin-top:8px">
+        <button class="btn" data-v="0">racémique</button>
+        <button class="btn" data-v="88">94 : 6</button>
+        <button class="btn" data-v="97">98,5 : 1,5</button>
+      </div>
+      <div id="conv" class="statusline" style="margin-top:10px"></div>`;
+    host.appendChild(fig); host.appendChild(ctl);
+    const sl=ctl.querySelector('#see');
+    const upd=()=>{
+      const ee=parseFloat(sl.value), maj=(100+ee)/2, min=100-maj;
+      fig.innerHTML=figCentMolecules(ee);
+      ctl.querySelector('#vee2').textContent=ee.toFixed(1).replace('.',',');
+      ctl.querySelector('#conv').innerHTML=
+        `e.r. = <b>${maj.toFixed(1).replace('.',',')} : ${min.toFixed(1).replace('.',',')}</b><br>`
+       +`e.e. = ${maj.toFixed(1).replace('.',',')} − ${min.toFixed(1).replace('.',',')} = <b>${ee.toFixed(1).replace('.',',')} %</b><br>`
+       +`lecture physique : <b>${ee.toFixed(1).replace('.',',')} %</b> de produit énantiopur + <b>${(100-ee).toFixed(1).replace('.',',')} %</b> de racémique.`;
+    };
+    sl.oninput=upd;
+    ctl.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{sl.value=b.dataset.v;upd();});
+    upd();
+  },
+  une:'L\'e.r. est un rapport, l\'e.e. est un écart : ils disent la même chose de deux façons. Ce qui change vraiment, c\'est « e » (énantio) ou « d » (diastéréo).',
+  probleme:'<p>Tes notes mélangent d.r. (99:1), e.r. (98,5:1,5) et e.e. (96 %). Ce sont trois écritures pour deux idées. Tant qu\'on ne les traduit pas les unes dans les autres, on ne peut pas comparer deux réactions entre elles.</p>',
+  etapes:[
+   {q:'e.r. — rapport énantiomérique.',
+    t:'Simplement « combien d\'un côté pour combien de l\'autre », normalisé à 100. Un e.r. de 98,5 : 1,5 veut dire : sur 100 molécules de produit, 98,5 sont d\'un énantiomère et 1,5 de l\'autre.'},
+   {q:'e.e. — excès énantiomérique.',
+    t:'C\'est la <b>différence</b> : e.e. = majoritaire (%) − minoritaire (%). Pour 98,5 : 1,5 → e.e. = 97 %. C\'est le chiffre historique, parce qu\'il se mesurait autrefois au pouvoir rotatoire.'},
+   {q:'Comment se représenter un e.e. de 97 % ?',
+    t:'Un mélange à 97 % d\'e.e., c\'est <b>97 % de produit énantiopur + 3 % de racémique</b>. Sur le dessin ci‑dessus : 3 billes « en trop » d\'un côté sont compensées par 3 de l\'autre, et il ne reste que l\'excès.'},
+   {q:'Et d.r. / d.e. ?',
+    t:'Exactement les mêmes définitions, mais entre <b>diastéréoisomères</b>. La différence n\'est pas mathématique, elle est pratique : un d.r. peut être remonté par chromatographie, un e.r. presque jamais.'}
+  ],
+  retenir:[
+   'e.e. = 2 × (majoritaire %) − 100. Inversement : majoritaire % = (100 + e.e.)/2.',
+   '99 : 1 → 98 % ; 98 : 2 → 96 % ; 94 : 6 → 88 % ; 98,5 : 1,5 → 97 %.',
+   'Un e.e. médiocre en catalyse est une mauvaise nouvelle définitive ; un d.r. médiocre avec un auxiliaire se rattrape sur colonne.'
+  ],
+  plus:{titre:'Pourquoi on écrit de plus en plus l\'e.r. plutôt que l\'e.e.',
+    body:'<p>Parce que c\'est l\'e.r. qui est relié directement aux vitesses, donc à l\'énergie : e.r. = k<sub>maj</sub>/k<sub>min</sub> = exp(ΔΔG‡/RT). L\'e.e., lui, ne se relie à ΔΔG‡ que par une formule tordue.</p><p>Et sur le plan expérimental, l\'e.r. est ce que lit directement une HPLC chirale : deux pics, deux aires. L\'e.e. est un calcul fait après.</p><p>Attention enfin à un piège de vocabulaire fréquent : « 96 % » tout court est ambigu. Dans tes notes, « 96 % » à côté d\'un d.r. est un <b>rendement</b>, pas une sélectivité.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, fig. 2.1 et 2.3 (définitions de d.e. et e.e.).'},
+  quiz:{q:'Un d.r. de 94 : 6 correspond à quel d.e.&nbsp;?',
+        a:'d.e. = 94 − 6 = <b>88 %</b>. C\'est la ligne « Et » de ton tableau d\'électrophiles : le d.r. paraît honorable, mais le d.e. montre qu\'on est loin des 98 % du benzyle.'}
+});
+
+/* ==========================================================================
+   GROUPE B — Les trois stratégies
+   ========================================================================== */
+const GB='B — Les trois stratégies';
+
+S({
+  grp:GB, title:'Les trois stratégies, côte à côte',
+  consigne:'Appuie sur « auxiliaire », « réactif » puis « catalyseur » et compare les lignes du tableau.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'), info=el('div',''); let cur='aux';
+    const draw=()=>{
+      fig.innerHTML=figStrategie(cur); const d=STRAT[cur];
+      info.innerHTML=`<table class="dat"><tbody>
+        <tr><td>Quantité d'agent chiral</td><td>${d.agent}</td></tr>
+        <tr><td>Nombre d'étapes</td><td>${d.etapes}</td></tr>
+        <tr><td>Relation entre les 2 produits</td><td>${d.relation}</td></tr>
+        <tr><td>Séparables&nbsp;?</td><td>${d.sep}</td></tr>
+        <tr><td>Type de contrôle</td><td>${d.ctrl}</td></tr></tbody></table>
+        <div class="statusline" style="margin-top:12px"><span style="color:var(--ok)">➕</span> ${d.plus}<br>
+        <span style="color:var(--red)">➖</span> ${d.moins}</div>`;
+      [...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));
+    };
+    ['aux','reac','cata'].forEach(k=>{
+      const b=el('button','btn'); b.textContent=STRAT[k].nom.split(' ')[0]; b.dataset.k=k;
+      b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); host.appendChild(info); draw();
+  },
+  une:'Les trois stratégies font la même chose — casser la symétrie — mais elles placent la source de chiralité à trois endroits différents : sur le substrat, dans le réactif, ou dans le catalyseur.',
+  probleme:'<p>On a vu en section A qu\'il faut apporter de la chiralité. Il n\'existe que trois endroits où la mettre. Ce choix décide de tout le reste : le nombre d\'étapes, la quantité de produit chiral consommée, et surtout si on pourra rattraper une mauvaise sélectivité par une purification.</p>',
+  etapes:[
+   {q:'Stratégie 1 : la mettre sur le substrat.',
+    t:'On accroche un <b>auxiliaire chiral</b> A* sur S. Le substrat devient lui‑même chiral, donc ses deux faces deviennent diastéréotopes. La réaction est alors <b>diastéréosélective</b>, et elle peut se faire avec un réactif parfaitement banal. Puis on décroche A*.'},
+   {q:'Stratégie 2 : la mettre dans le réactif.',
+    t:'Le substrat reste prochiral, mais le réactif est chiral et énantiopur. Comme il participe à l\'état de transition, celui‑ci devient diastéréoisomère. Une seule étape — mais il faut un équivalent entier de réactif chiral.'},
+   {q:'Stratégie 3 : la mettre dans le catalyseur.',
+    t:'Même idée, sauf que l\'espèce chirale est <b>régénérée</b> à chaque cycle. Quelques pour cent suffisent pour transformer tout le substrat. C\'est la plus élégante et la plus verte.'},
+   {q:'Qu\'est-ce qui change concrètement au labo ?',
+    t:'La nature du mélange à purifier. Avec un auxiliaire on obtient des <b>diastéréoisomères</b> : ils se séparent. Avec un réactif ou un catalyseur on obtient des <b>énantiomères</b> : ils ne se séparent pas en milieu achiral. La sélectivité mesurée est alors la sélectivité finale.'}
+  ],
+  retenir:[
+   'Auxiliaire = 3 étapes, stœchiométrique, mais rattrapable par purification.',
+   'Réactif = 1 étape, stœchiométrique, non rattrapable.',
+   'Catalyseur = 1 étape, quelques mol %, non rattrapable — et la plus difficile à mettre au point.',
+   'Dans les trois cas, le mécanisme profond est le même : rendre les deux états de transition diastéréoisomères.'
+  ],
+  plus:{titre:'Pourquoi la catalyse est « le plus élégant »',
+    body:'<p>Procter le formule ainsi : une petite quantité de catalyseur chiral non racémique conduit à des quantités <b>stœchiométriques</b> de produit énantioenrichi. C\'est une multiplication : un catalyseur peut retourner des milliers de fois.</p><p>C\'est aussi la stratégie qu\'utilise la nature — les enzymes sont exactement cela : des catalyseurs chiraux énantiopurs. Et c\'est un des 12 principes de la chimie verte (principe n° 9 : « catalysis »).</p><p>Le prix à payer : un catalyseur est très spécifique d\'un substrat. Trouver le bon ligand pour une nouvelle réaction peut prendre des années, alors qu\'un auxiliaire d\'Evans marche à peu près partout.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, §2, fig. 2.5–2.7, p. 7–8.'},
+  quiz:{q:'Pourquoi la voie auxiliaire tolère-t-elle une sélectivité moyenne alors que la voie catalytique ne le tolère pas&nbsp;?',
+        a:'Parce que P–A* est un mélange de <b>diastéréoisomères</b> : polarités différentes, R<sub>f</sub> différents, donc un d.r. de 90 : 10 peut devenir 100 : 0 après colonne. En catalyse on obtient des <b>énantiomères</b> : mêmes propriétés physiques en milieu achiral, donc l\'e.e. mesuré est l\'e.e. final. Il n\'y a pas de rattrapage.'}
+});
+
+S({
+  grp:GB, title:'Pourquoi P–A* donne des diastéréoisomères',
+  consigne:'Bascule entre les deux boutons et compte les centres stéréogènes du produit.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'); let cur='aux';
+    const draw=()=>{fig.innerHTML=figRelation(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
+    [['aux','Avec auxiliaire'],['ec','Réactif ou catalyseur']].forEach(([k,t])=>{
+      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); draw();
+  },
+  une:'Avec un auxiliaire, le produit brut porte deux centres stéréogènes au lieu d\'un — et c\'est ce deuxième centre, celui qu\'on va jeter, qui rend le mélange séparable.',
+  probleme:'<p>C\'est le point le plus souvent mal compris du chapitre, parce que le mot « diastéréoisomère » arrive sans qu\'on dise <i>d\'où</i> viennent les deux centres. Comptons‑les.</p>',
+  etapes:[
+   {q:'Combien de centres dans P–A* ?',
+    t:'Deux. L\'auxiliaire en apporte un, de configuration <b>fixée et connue</b> (c\'est le (S) du valinol). La réaction en crée un second, celui qu\'on cherche à contrôler.'},
+   {q:'Pourquoi ce sont des diastéréoisomères et pas des énantiomères ?',
+    t:'Deux molécules qui ont <b>un centre identique</b> et un centre différent ne peuvent pas être images l\'une de l\'autre dans un miroir — un miroir inverserait les <i>deux</i> centres à la fois. Ce sont donc des diastéréoisomères.'},
+   {q:'Pourquoi cela change tout au labo ?',
+    t:'Des diastéréoisomères sont des composés <b>chimiquement différents</b> : points de fusion, solubilités, R<sub>f</sub> différents. Une colonne de silice les sépare. Une recristallisation aussi.'},
+   {q:'Et après le clivage ?',
+    t:'Le clivage supprime le centre de l\'auxiliaire. Il ne reste que celui créé pendant la réaction : les deux produits deviennent alors <b>énantiomères</b>. C\'est précisément pour cela qu\'on purifie <i>avant</i> de cliver, jamais après.'}
+  ],
+  retenir:[
+   'Un centre créé + un centre apporté = diastéréoisomères = séparables.',
+   'Un seul centre créé = énantiomères = inséparables.',
+   'Ordre des opérations : réaction → purification → clivage. Jamais l\'inverse.'
+  ],
+  quiz:{q:'Après clivage de l\'auxiliaire, que deviennent les deux diastéréoisomères P–A*&nbsp;?',
+        a:'Les deux <b>énantiomères</b> de P*. Le clivage enlève le centre stéréogène de l\'auxiliaire ; il ne reste que celui créé pendant la réaction. D\'où la règle : on purifie avant de cliver.'}
+});
+
+S({
+  grp:GB, title:'Ce qu\'on demande à un bon auxiliaire',
+  consigne:'Touche une ligne pour savoir pourquoi ce critère compte.',
+  build(host){
+    const box=el('div'), why=el('div','statusline'); let cur=0;
+    const draw=()=>{
+      box.innerHTML=`<table class="dat"><tbody>`
+       + CAHIER.map((c,i)=>`<tr data-i="${i}" class="${i===cur?'sel':''}"><td>${c[0]}</td></tr>`).join('')
+       + `</tbody></table>`;
+      box.querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>{cur=+tr.dataset.i;draw();});
+      why.innerHTML='<b>'+CAHIER[cur][0]+'.</b> '+CAHIER[cur][1];
+    };
+    host.appendChild(box); host.appendChild(why); draw();
+  },
+  une:'Un auxiliaire n\'est pas seulement une molécule chirale : c\'est un outil qu\'on doit pouvoir accrocher, purifier, décrocher et récupérer.',
+  probleme:'<p>Tes notes listent les avantages et inconvénients de la stratégie. Mais pourquoi <i>ces</i> molécules‑là — l\'oxazolidinone d\'Evans, le sulfinamide d\'Ellman — et pas d\'autres&nbsp;? Parce qu\'elles cochent toutes les cases d\'un cahier des charges assez exigeant. Procter en donne la liste.</p>',
+  etapes:[
+   {q:'Deux critères sur la chiralité elle-même.',
+    t:'Il faut qu\'il soit <b>énantiopur</b> (sinon on fabrique les deux produits en parallèle) et <b>bon marché en quantité</b> (on en consomme un équivalent entier).'},
+   {q:'Deux critères sur la réaction.',
+    t:'L\'accrochage doit être facile, et la sélectivité doit être à la fois <b>forte et prévisible</b>. « Prévisible » est aussi important que « forte » : il faut pouvoir décider à l\'avance quel énantiomère on veut.'},
+   {q:'Trois critères sur la fin de la séquence.',
+    t:'Le diastéréoisomère majoritaire doit être facile à purifier, le clivage doit se faire <b>sans toucher au centre créé</b>, et l\'auxiliaire doit être récupérable.'},
+   {q:'Pourquoi si peu de molécules conviennent ?',
+    t:'Parce qu\'il faut les sept à la fois. Procter note qu\'il existe « relativement peu » d\'auxiliaires qui répondent à toutes ces exigences — ce qui explique qu\'on retrouve toujours les mêmes dans les cours et dans la littérature.'}
+  ],
+  retenir:[
+   'L\'oxazolidinone d\'Evans vient du valinol ou de la noréphédrine : deux 1,2-aminoalcools issus du pool chiral, donc énantiopurs et bon marché.',
+   'Elle s\'accroche par une simple acylation, et se décroche de cinq façons différentes selon le produit voulu.',
+   'C\'est ce cahier des charges, et pas seulement la sélectivité, qui en a fait un standard.'
+  ],
+  plus:{titre:'« Pool chiral » : d\'où viennent ces molécules',
+    body:'<p>Le <b>pool chiral</b>, c\'est l\'ensemble des molécules énantiopures que la nature produit en masse : acides aminés, sucres, acides hydroxylés (acide tartrique, acide lactique), terpènes.</p><p>Les deux auxiliaires d\'Evans en sont directement issus : l\'oxazolidinone à isopropyle vient de la <b>L-valine</b> (réduite en valinol), celle à méthyle/phényle vient de la <b>noréphédrine</b>. Le tartrate de la réaction de Sharpless vient de l\'acide tartrique, sous-produit de la vinification.</p><p>C\'est aussi ce qui explique l\'inconvénient noté dans tes notes : « il faut avoir accès aux deux énantiomères ». La nature ne fournit souvent qu\'un seul énantiomère d\'un acide aminé. Pour l\'autre configuration, on change d\'auxiliaire — d\'où l\'astuce des <b>pseudo‑énantiomères</b> valinol / noréphédrine.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, tableau 2.1 « Requirements for chiral auxiliaries », p. 9.'},
+  quiz:{q:'Pourquoi l\'exigence « clivage sans perte de pureté » est-elle placée en dernier mais absolument critique&nbsp;?',
+        a:'Parce qu\'elle intervient à la <b>dernière</b> étape, quand tout le travail est déjà fait. Si le clivage épimérise le centre créé — par exemple en le déprotonant, puisqu\'il est en α d\'un carbonyle — on perd d\'un coup toute la sélectivité gagnée. C\'est pour cela qu\'on utilise des conditions douces et rapides, et qu\'on évite les bases fortes prolongées.'}
+});
+
+/* ==========================================================================
+   GROUPE C — L'auxiliaire d'Evans
+   ========================================================================== */
+const GC='C — Auxiliaire d\'Evans';
+
+/* lobe d'orbitale p */
+function lobe(cx,cy,rx,ry,col,op){
+  return `<ellipse cx="${E(cx)}" cy="${E(cy)}" rx="${E(rx)}" ry="${E(ry)}" fill="${col}" opacity="${op||0.22}" stroke="${col}" stroke-width="1.3"/>`;
+}
+/* C1 : l'exigence stéréoélectronique, vue par la tranche */
+function figStereoElec(step){
+  const W=360,H=252; let s=''; const py=142;
+  const Lb=(cx,cy)=>lobe(cx,cy,14,25,C.blue);
+  if(step==='depro'){
+    s+=txt([180,16],'DÉPROTONATION — vue par la tranche',{fs:12.5,fw:700});
+    s+=`<rect x="146" y="${py-8}" width="188" height="16" rx="8" fill="var(--panel2)" stroke="${C.line}"/>`;
+    const Ca=[118,py], Cc=[206,py], Oo=[278,py];
+    s+=bond(Ca,Cc,{s:15,e:11}); s+=dbond(Cc,Oo,{s:11,e:12});
+    s+=lab(Ca,'Cα',{fs:13,fw:700,r:15}); s+=lab(Cc,'C',{fs:13,fw:700}); s+=lab(Oo,'O',{fs:13,fw:700});
+    s+=Lb(206,py-32); s+=Lb(206,py+32); s+=Lb(278,py-32); s+=Lb(278,py+32);
+    s+=txt([274,60],'orbitales p du C=O',{fs:10.5,c:C.blue,fw:700});
+    /* liaison C-H perpendiculaire au plan */
+    s+=lobe(118,py-30,13,23,C.green,0.30);
+    s+=bond(Ca,[118,py-44],{s:13,e:10,c:C.green,w:2.8});
+    s+=lab([118,py-58],'H',{fs:13.5,c:C.green,fw:700});
+    /* recouvrement */
+    s+=seg([134,py-32],[190,py-32],{c:C.red,dash:'4 3',w:2.2});
+    s+=txt([162,62],'recouvrement',{fs:10.5,c:C.red,fw:700});
+    s+=seg([162,70],[162,py-42],{c:C.red,dash:'3 3',w:1.2});
+    s+=lab([40,76],'LDA',{fs:12,fw:700,r:20});
+    s+=curve([62,84],[104,86],-14,{c:C.ink});
+    s+=txtLines([180,212],
+      ['La liaison C–H à casser doit être parallèle',
+       'aux orbitales p du C=O — sinon pas de recouvrement.'],{fs:11,c:C.ink2,lh:16});
+  } else {
+    s+=txt([180,16],'ALKYLATION — vue par la tranche',{fs:12.5,fw:700});
+    s+=`<rect x="92" y="${py-8}" width="240" height="16" rx="8" fill="var(--panel2)" stroke="${C.line}"/>`;
+    const Ca=[130,py], Cc=[210,py], Oo=[282,py];
+    s+=bond(Ca,Cc,{s:15,e:11}); s+=bond(Cc,Oo,{s:11,e:12});
+    s+=lab(Ca,'Cα',{fs:13,fw:700,r:15}); s+=lab(Cc,'C',{fs:13,fw:700}); s+=lab(Oo,'O',{fs:13,fw:700});
+    s+=txt([300,py-14],'⊖',{fs:12,c:C.ink2});
+    s+=Lb(130,py-32); s+=Lb(130,py+32); s+=Lb(210,py-32); s+=Lb(210,py+32);
+    s+=Lb(282,py-32); s+=Lb(282,py+32);
+    s+=txt([250,60],'orbitales p de l\'énolate',{fs:10.5,c:C.blue,fw:700});
+    s+=arrow([46,70],[112,106],{c:C.green,w:2.6});
+    s+=arrow([46,206],[112,178],{c:C.green,w:2.6,dash:'6 4'});
+    s+=lab([32,62],'E⁺',{fs:13,c:C.green,fw:700,r:13});
+    s+=lab([30,198],'E⁺',{fs:13,c:C.green,fw:700,r:13});
+    s+=txtLines([180,216],
+      ['E⁺ entre perpendiculairement au plan, dans un lobe.',
+       'Deux lobes ⇒ deux produits possibles.'],{fs:11,c:C.ink2,lh:16});
+  }
+  return svg(W,H,s,{alt:'exigence stéréoélectronique'});
+}
+
+S({
+  grp:GC, title:'Pourquoi un énolate, et pourquoi il a deux faces',
+  consigne:'Bascule entre « déprotonation » et « alkylation » : c\'est la même contrainte, appliquée deux fois.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'); let cur='depro';
+    const draw=()=>{fig.innerHTML=figStereoElec(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
+    [['depro','1. Déprotonation'],['alkyl','2. Alkylation']].forEach(([k,t])=>{
+      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); draw();
+  },
+  une:'Un énolate est plat, et son carbone α porte une orbitale p avec deux lobes. L\'électrophile doit entrer dans un lobe : il n\'y a donc que deux issues possibles, et tout le travail de l\'auxiliaire consiste à en boucher une.',
+  probleme:'<p>Avant de parler de valinol, de lithium ou de face bloquée, il faut répondre à deux questions dans l\'ordre :</p><p><b>(1)</b> quelle <i>géométrie</i> d\'énolate se forme&nbsp;? <b>(2)</b> par quelle <i>face</i> l\'électrophile arrive‑t‑il&nbsp;?</p><p>Si on saute la première, la deuxième n\'a aucun sens : une face « du dessus » ne veut rien dire tant qu\'on ne sait pas comment la molécule est arrangée.</p>',
+  etapes:[
+   {q:'Pourquoi passer par un énolate ?',
+    t:'Le carbone en α d\'un carbonyle n\'est pas nucléophile tel quel. En lui arrachant son proton, on crée un carbanion — mais un carbanion <b>stabilisé</b> par délocalisation sur le carbonyle voisin. C\'est cet énolate qui ira attaquer E–X en SN2.'},
+   {q:'Pourquoi la conformation compte au moment où on arrache le proton ?',
+    t:'Pour que le doublet libéré par la rupture C–H puisse rejoindre le système π, il faut que cette liaison C–H soit à peu près <b>parallèle aux orbitales p</b> du C=O. C\'est une exigence <b>stéréoélectronique</b> : sans recouvrement, pas de stabilisation, donc pas de déprotonation.'},
+   {q:'Quelle conséquence ?',
+    t:'C\'est la conformation au moment de l\'arrachement qui <b>fige</b> la géométrie de l\'énolate. Tout ce qui rend une conformation inconfortable (un encombrement) se répercute directement sur la géométrie obtenue. C\'est exactement ce qu\'on va exploiter à la section suivante.'},
+   {q:'Et pour l\'alkylation ?',
+    t:'Le carbone α de l\'énolate est sp², donc plan, avec une orbitale p perpendiculaire au plan. L\'électrophile doit arriver <b>dans un des deux lobes</b>, donc perpendiculairement — par‑dessus ou par‑dessous. Deux lobes, deux produits.'},
+   {q:'Où intervient l\'auxiliaire, alors ?',
+    t:'Nulle part dans le mécanisme lui‑même. Il se contente de poser un gros groupe devant un des deux lobes. La chimie ne change pas : seule l\'accessibilité change.'}
+  ],
+  retenir:[
+   'Énolate = plan + une orbitale p à deux lobes sur Cα.',
+   'Déprotonation : la liaison C–H doit être parallèle aux p du C=O.',
+   'Alkylation : E⁺ entre perpendiculairement au plan. Deux faces = deux diastéréoisomères.',
+   'L\'auxiliaire ne modifie pas le mécanisme, il modifie seulement l\'<b>accès</b>.'
+  ],
+  plus:{titre:'Le détail orbitalaire',
+    body:'<p>Procter décrit la déprotonation par la conformation <b>4.8</b>, où l\'orbitale σ de la liaison C–H est au point de recouvrement maximal avec l\'orbitale π du carbonyle. Cette liaison σ « devient » une partie du système π de l\'énolate.</p><p>Pour l\'alkylation, c\'est la transformation inverse : l\'orbitale p au bout du système π de l\'énolate « redevient » une orbitale σ. Le même argument de recouvrement maximal s\'applique, d\'où l\'attaque perpendiculaire au plan.</p><p>Procter ajoute une nuance honnête : dans les vraies réactions, la trajectoire de l\'électrophile est légèrement déplacée par rapport à la perpendiculaire stricte, « <i>vers</i> » l\'orbitale p du carbonyle. Cela ne change rien au raisonnement des faces.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, §4, fig. 4.2–4.4, p. 42–43. Voir aussi <b>Kirby, <i>Stereoelectronic Effects</i></b> (OCP 36) pour le principe général de recouvrement.'},
+  quiz:{q:'Pourquoi dit-on que l\'énolate est le « vrai » nucléophile, et pas le composé carbonylé de départ&nbsp;?',
+        a:'Parce que le composé de départ n\'a pas de doublet disponible en α : ses électrons sont dans des liaisons σ C–H et C–C. C\'est la déprotonation qui libère un doublet et le délocalise sur O et sur Cα. La forme limite portant la charge sur le carbone est celle qui réagit avec l\'électrophile — même si la densité électronique est majoritairement sur l\'oxygène.'}
+});
+
+S({
+  grp:GC, title:'Énolate Z ou énolate E ?',
+  consigne:'Appuie sur « énolate E » et regarde où apparaît la zone rouge.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'); let cur='Z';
+    const draw=()=>{fig.innerHTML=figEnolate(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
+    [['Z','Énolate Z (cis)'],['E','Énolate E (trans)']].forEach(([k,t])=>{
+      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); draw();
+  },
+  une:'Une seule géométrie d\'énolate se forme — la Z — parce que l\'autre obligerait le méthyle à venir se coller contre l\'oxazolidinone.',
+  probleme:'<p>On vient de voir que l\'électrophile arrive perpendiculairement au plan. Mais « le dessus » de quel arrangement&nbsp;? Si on formait un mélange d\'énolates Z et E, on aurait deux arrangements différents, donc deux jeux de faces, donc un mélange de produits — quelle que soit la qualité de l\'auxiliaire.</p><p>La sélectivité de la géométrie d\'énolate est donc un <b>préalable</b>, pas un détail.</p>',
+  etapes:[
+   {q:'Qu\'est-ce qu\'on appelle Z ici ?',
+    t:'On regarde la double liaison de l\'énolate. Sur un carbone : O⊖ et l\'azote de l\'oxazolidinone. Sur l\'autre : H et CH₃. <b>Z(O)</b> veut dire que O⊖ et CH₃ sont du même côté. Comme O⊖ et l\'azote sont forcément opposés, cela revient à dire que CH₃ est <b>loin</b> de l\'azote.'},
+   {q:'Pourquoi la géométrie E est-elle interdite ?',
+    t:'Dans l\'énolate E, CH₃ se retrouve du même côté que l\'azote, donc en relation 1,3 avec le gros cycle oxazolidinone. C\'est la <b>tension allylique A(1,3)</b> : deux groupes qui se percutent à travers une double liaison. C\'est la zone rouge du schéma.'},
+   {q:'Où cette tension agit-elle exactement ?',
+    t:'Dans l\'<b>état de transition de la déprotonation</b>, pas seulement dans le produit. Souviens‑toi de la section précédente : la conformation au moment de l\'arrachement fixe la géométrie. Une conformation qui mène à l\'énolate E est déjà coûteuse au départ, donc ce chemin est lent.'},
+   {q:'Quel est le nom du modèle ?',
+    t:'Le <b>modèle d\'Ireland</b> (1976) : un état de transition cyclique à six chaînons entre la base et le substrat, dans lequel la tension A(1,3) décide de la géométrie de l\'énolate. Avec une base encombrée comme LDA, l\'énolate Z est formé à plus de 99 : 1.'},
+   {q:'Qu\'a-t-on gagné ?',
+    t:'Un arrangement unique et reproductible. À partir de maintenant, « la face du dessus » veut enfin dire quelque chose.'}
+  ],
+  retenir:[
+   'A(1,3) = tension entre deux groupes en relation 1,3 à travers une double liaison.',
+   'Elle est d\'autant plus forte que les deux groupes sont gros : ici CH₃ contre un cycle entier.',
+   'Base encombrée (LDA, NaHMDS) → énolate Z(O) exclusif. C\'est le modèle d\'Ireland.',
+   'Un seul énolate = un seul jeu de faces = sélectivité possible.'
+  ],
+  plus:{titre:'Combien coûte une tension A(1,3) ?',
+    body:'<p>Kirby donne l\'ordre de grandeur sur des alcènes simples : une interaction 1,3 entre un H et un alkyle primaire est faible — jusqu\'à 25 % du conformère défavorable subsiste à l\'équilibre. Mais une interaction 1,3 <b>entre deux groupes alkyles</b> est « beaucoup plus grande », au point qu\'un seul conformère existe en pratique.</p><p>Ici, ce n\'est pas un alkyle contre un alkyle : c\'est un méthyle contre une oxazolidinone acylée entière. D\'où un rapport supérieur à 99 : 1.</p><p>Attention à la notation : l\'énolate est noté <b>Z(O)</b> et non simplement Z, parce que les priorités CIP peuvent changer selon le substituant R et inverser la lettre sans que la géométrie change. Écrire Z(O) signifie « l\'oxygène et R sont cis », sans ambiguïté.</p>',
+    src:'<b>Kirby, <i>Stereoelectronic Effects</i></b> (OCP 36), §6, fig. 6.11, p. 57. <b>Procter</b>, §4, p. 42–47.'},
+  quiz:{q:'Dans l\'énolate Z, CH₃ et O⊖ sont du même côté. Pourquoi cela veut-il dire que CH₃ est <i>loin</i> de l\'oxazolidinone&nbsp;?',
+        a:'Parce que sur le carbone de l\'énolate, O⊖ et l\'azote de l\'oxazolidinone sont les deux substituants : ils sont donc forcément de part et d\'autre de la double liaison. Si CH₃ est du côté de O⊖, il est mécaniquement du côté <b>opposé</b> à l\'azote — donc loin du cycle.'},
+  flag:'⚠️ Tes notes écrivent « c\'est le model de Halland ». Le modèle qui prédit la géométrie de l\'énolate s\'appelle le <b>modèle d\'Ireland</b>. Il n\'existe pas de « modèle de Halland » en chimie des énolates.'
+});
+
+S({
+  grp:GC, title:'Le chélate : un cycle temporaire autour du lithium',
+  consigne:'Regarde le schéma par la tranche : le plan est la barre grise, l\'iPr en dépasse vers le haut.',
+  build(host){
+    const fig=el('div','figbox'); fig.innerHTML=figProfil('ipr'); host.appendChild(fig);
+    host.appendChild(el('div','statusline','<b>Valinol :</b> iPr au‑dessus du plan → face du dessus bloquée → E⊕ arrive par‑dessous → Cα de configuration <b>(R)</b>.'));
+  },
+  une:'Le lithium referme un cycle à six chaînons qui empêche l\'oxazolidinone de tourner. Une fois la rotation bloquée, l\'isopropyle occupe toujours la même face — et c\'est tout le secret.',
+  probleme:'<p>Il reste un trou dans le raisonnement. On a un énolate plan, de géométrie connue, avec un gros groupe quelque part. Mais l\'oxazolidinone est reliée à l\'énolate par une <b>liaison simple</b> N–C : elle peut tourner. Si elle tourne, l\'isopropyle passe d\'une face à l\'autre, et la sélectivité s\'effondre.</p><p>Il faut donc bloquer cette rotation. C\'est le rôle du lithium.</p>',
+  etapes:[
+   {q:'Qu\'est-ce que le lithium tient exactement ?',
+    t:'Deux oxygènes : celui de l\'énolate (chargé négativement) et celui du carbonyle du cycle. Les deux traits pointillés violets sont ces deux liaisons de coordination.'},
+   {q:'Pourquoi cela fige la molécule ?',
+    t:'Parce que les deux oxygènes, le lithium et les atomes qui les relient forment un <b>cycle à six chaînons</b>. Un cycle ne tourne pas. Procter appelle cela un « <i>temporary ring</i> » : on n\'a pas pu mettre le carbonyle dans un vrai cycle, alors on en fabrique un provisoire avec le métal.'},
+   {q:'Quel arrangement cela impose-t-il ?',
+    t:'Les deux C=O doivent pointer <b>du même côté</b> pour que le lithium puisse les atteindre tous les deux. C\'est un arrangement contraint : sans le lithium, les deux dipôles se mettraient dos à dos.'},
+   {q:'Et ensuite ?',
+    t:'L\'oxazolidinone est maintenant coplanaire avec l\'énolate et ne peut plus bouger. Le seul groupe qui sorte du plan est l\'isopropyle porté par C4. Il couvre entièrement une face — la zone rouge.'},
+   {q:'Conclusion.',
+    t:'L\'électrophile n\'a plus le choix : il attaque Cα par la face restée libre, ici celle du dessous. C\'est là toute l\'induction asymétrique — et c\'est pour cela qu\'on obtient 99 : 1.'}
+  ],
+  retenir:[
+   'Le chélate n\'est pas décoratif : c\'est lui qui interdit la rotation N–C.',
+   'Cycle à 6 chaînons : O(énolate)–Li–O(carbamate) + les atomes du squelette.',
+   'Une fois figé, un seul substituant sort du plan → une seule face accessible.',
+   'Sans chélation (contre-ion qui ne coordonne pas), la sélectivité s\'effondre.'
+  ],
+  plus:{titre:'Chélaté ou non chélaté ? Attention à ne pas confondre avec l\'aldolisation',
+    body:'<p>Pour l\'<b>alkylation</b> (ce chapitre), le modèle est bien le chélate lithié : Procter écrit que « <i>l\'énolate lui-même est maintenu rigidement dans la conformation montrée par chélation du lithium au carbonyle de l\'oxazolidinone</i> ».</p><p>Pour l\'<b>aldolisation d\'Evans</b> (chapitre suivant de ton cours, avec Bu₂BOTf), c\'est différent : le bore est déjà occupé à chélater l\'aldéhyde, et l\'oxazolidinone se met alors en position <b>dipôle‑minimisé</b>, les deux C=O dos à dos. La face attaquée est l\'autre.</p><p>Retiens la logique plutôt que le résultat : le métal ne peut pas tout tenir à la fois. Selon ce qu\'il tient, l\'auxiliaire s\'oriente différemment.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, §4, fig. 4.12–4.13 et commentaire p. 47–48.'},
+  quiz:{q:'Si on remplaçait le lithium par un contre-ion qui ne chélate pas, que se passerait-il&nbsp;?',
+        a:'La liaison N–C(énolate) redeviendrait libre de tourner. L\'oxazolidinone adopterait plusieurs orientations, donc l\'isopropyle ne garderait plus toujours la même face. Les deux faces redeviendraient presque équivalentes et le d.r. chuterait fortement. C\'est un bon test mental : chaque fois qu\'un modèle invoque une face bloquée, demande‑toi <i>qu\'est-ce qui empêche la molécule de tourner&nbsp;?</i>'}
+});
+
+S({
+  grp:GC, title:'Le mécanisme, étape par étape',
+  consigne:'Appuie sur « étape suivante » cinq fois et suis les flèches courbes.',
+  build(host){
+    const fig=el('div','figbox'), row=el('div','btnrow'); let k=0;
+    const prev=el('button','btn'), next=el('button','btn'), reset=el('button','btn');
+    prev.textContent='‹ Étape'; next.textContent='Étape suivante ›'; reset.textContent='⟲'; reset.style.flex='0 0 56px';
+    const draw=()=>{fig.innerHTML=evansStep(k); prev.disabled=(k===0); next.disabled=(k===4);
+      prev.style.opacity=k===0?.4:1; next.style.opacity=k===4?.4:1;};
+    prev.onclick=()=>{if(k>0){k--;draw();}}; next.onclick=()=>{if(k<4){k++;draw();}}; reset.onclick=()=>{k=0;draw();};
+    row.appendChild(prev); row.appendChild(next); row.appendChild(reset);
+    host.appendChild(fig); host.appendChild(row); draw();
+  },
+  une:'Cinq étapes, et une seule décide de tout : celle où l\'électrophile choisit sa face.',
+  probleme:'<p>Maintenant qu\'on a chaque ingrédient séparément, on les remet dans l\'ordre. Regarde surtout <b>où</b> se décide la stéréochimie : ce n\'est ni à la déprotonation, ni au clivage.</p>',
+  etapes:[
+   {q:'Étape 1 — LDA arrache le proton en α.',
+    t:'LDA est une base forte mais un mauvais nucléophile : trop encombrée pour additionner sur un carbonyle, elle ne peut qu\'arracher un proton. Elle vise celui en α, le plus acide et le plus accessible.'},
+   {q:'Étape 2 — l\'énolate Z est formé.',
+    t:'Exclusivement Z, pour la raison A(1,3) vue plus haut. À ce stade le carbone α est encore sp² : <b>aucune stéréochimie n\'est fixée</b>.'},
+   {q:'Étape 3 — le lithium referme le chélate.',
+    t:'Le cycle à six chaînons se forme, la rotation N–C est bloquée, l\'isopropyle se retrouve définitivement d\'un côté. Toujours aucun centre stéréogène créé — mais le décor est planté.'},
+   {q:'Étape 4 — l\'électrophile attaque. ÉTAPE DÉTERMINANTE.',
+    t:'E–X arrive par la face libre et le carbone α devient tétraédrique. C\'est <b>ici</b>, et seulement ici, que la stéréochimie du produit est décidée. Mécanisme : une SN2 classique, où l\'énolate est le nucléophile et E–X l\'électrophile — d\'où l\'inversion sur le carbone de E–X, invisible ici puisqu\'il n\'est pas stéréogène.'},
+   {q:'Étape 5 — le produit.',
+    t:'On dessine E en pointillés parce qu\'il est arrivé par l\'arrière, l\'isopropyle étant en avant. Le diastéréoisomère majoritaire est là ; le minoritaire vient des 1 % qui ont attaqué l\'autre face.'}
+  ],
+  retenir:[
+   'Étapes 1 à 3 : on prépare le décor, rien n\'est encore joué.',
+   'Étape 4 : tout se joue. C\'est la seule étape stéréodéterminante.',
+   'Étape 5 : le clivage (section suivante) ne touchera plus à ce centre.',
+   'Savoir repérer l\'étape stéréodéterminante est le réflexe le plus utile de tout le chapitre.'
+  ],
+  quiz:{q:'Pourquoi LDA n\'additionne-t-elle pas sur le carbonyle au lieu de déprotoner&nbsp;?',
+        a:'Parce qu\'elle porte deux isopropyles sur son azote. Pour additionner, elle devrait approcher le carbone du carbonyle, qui est entouré de substituants : l\'état de transition est très encombré. Arracher un proton, beaucoup plus exposé, demande beaucoup moins de place. C\'est le cas général : <b>base forte + très encombrée = déprotonation, pas addition</b>.'}
+});
+
+S({
+  grp:GC, title:'Valinol ou noréphédrine : on choisit son énantiomère',
+  consigne:'Appuie sur « valinol » puis sur « noréphédrine » et regarde de quel côté arrive E.',
+  build(host){
+    const row=el('div','btnrow'), f1=el('div','figbox'), f2=el('div','figbox'), st=el('div','statusline');
+    let cur='ipr';
+    const draw=()=>{
+      const A=AUXDEF[cur];
+      f1.innerHTML=figProfil(cur); f2.innerHTML=figProduit(cur);
+      st.innerHTML=`<b>${A.nom} :</b> ${A.groupes} ${cur==='ipr'?'au‑dessus':'au‑dessous'} du plan → face ${A.bloq} bloquée → face ${A.face} libre → Cα = <b>${A.alpha}</b> → après clivage, <b>l'énantiomère opposé</b> de l'acide.`;
+      [...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));
+    };
+    [['ipr','Valinol'],['nor','Noréphédrine']].forEach(([k,t])=>{
+      const b=el('button','btn blue'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(f1); host.appendChild(f2); host.appendChild(st); draw();
+  },
+  une:'Les deux auxiliaires ne sont pas énantiomères l\'un de l\'autre, mais leurs groupes encombrants pointent vers des faces opposées : c\'est suffisant pour obtenir les deux énantiomères du produit.',
+  probleme:'<p>Tes notes listent comme inconvénient : « il faut avoir accès aux deux énantiomères de l\'auxiliaire ». Or la nature ne fournit en général qu\'un seul énantiomère d\'un acide aminé. Comment fait‑on pour obtenir l\'autre configuration&nbsp;?</p><p>Réponse : on ne prend pas l\'énantiomère de l\'auxiliaire, on prend <b>un autre auxiliaire</b>, choisi pour bloquer l\'autre face.</p>',
+  etapes:[
+   {q:'Que change-t-on exactement ?',
+    t:'On passe de l\'oxazolidinone du <b>valinol</b> (un isopropyle en C4, configuration S) à celle de la <b>noréphédrine</b> (un méthyle en C4 et un phényle en C5, configuration 4R,5S).'},
+   {q:'Ces deux molécules sont-elles énantiomères ?',
+    t:'Non — elles n\'ont même pas la même formule brute. On dit qu\'elles sont <b>pseudo‑énantiomères</b> : elles se comportent comme des énantiomères vis‑à‑vis de <i>cette</i> réaction, sans l\'être réellement.'},
+   {q:'Pourquoi cela marche-t-il quand même ?',
+    t:'Parce que ce qui compte n\'est pas la molécule entière, mais la <b>position du groupe encombrant par rapport au plan de l\'énolate</b>. Chez le valinol il pointe vers le haut ; chez la noréphédrine, Me et Ph pointent vers le bas. La face grisée change de côté.'},
+   {q:'Que devient le produit ?',
+    t:'La flèche verte s\'inverse. Le produit passe du trait hachuré au coin plein : Cα devient (S) au lieu de (R). Après clivage, on récupère l\'<b>énantiomère opposé</b> de l\'acide.'},
+   {q:'Attention au mot « énantiomère ».',
+    t:'Les deux produits <b>P–A*</b> ne sont pas énantiomères : ce sont des diastéréoisomères, puisque les auxiliaires diffèrent. Ils ne deviennent énantiomères qu\'<b>après</b> le clivage.'}
+  ],
+  retenir:[
+   'Valinol → Cα = (R). Noréphédrine → Cα = (S). Vérifié par RDKit sur les dessins eux‑mêmes.',
+   'Pseudo-énantiomères : même effet, molécules différentes.',
+   'Les deux auxiliaires viennent du pool chiral et coûtent tous les deux quelques euros le gramme.',
+   'Les d.r. sont comparables (98 % contre 96 % de d.e. avec PhCH₂Br) : aucune des deux voies n\'est « la bonne ».'
+  ],
+  plus:{titre:'Ce que dit Procter, et vérification indépendante',
+    body:'<p>Procter traite exactement ces deux auxiliaires (ses composés <b>4.24</b>, dérivé de la valine, et <b>4.28</b>, dérivé de la noréphédrine) et conclut : « <i>la face « inférieure » de l\'énolate 4.26 est gênée par le substituant de l\'oxazolidinone, l\'alkylation doit donc se faire sur la face supérieure. Un raisonnement analogue prédit que l\'autre auxiliaire dirige l\'alkylation sur la face « inférieure ».</i> »</p><p>J\'ai vérifié les deux dessins de façon indépendante : les coordonnées exactes de chaque atome de la figure ont été transcrites en molfile et relues par RDKit. Résultat : valinol → C4 = (S) et Cα = (R) ; noréphédrine → (4R,5S) et Cα = (S). Le détail est dans <code>verification_stereo.md</code>.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, §4, fig. 4.13 et tableau 4.2, p. 48.'},
+  quiz:{q:'Les produits obtenus avec le valinol et avec la noréphédrine sont-ils énantiomères&nbsp;?',
+        a:'Pas tels quels : ce sont des <b>diastéréoisomères</b>, puisque les auxiliaires eux‑mêmes sont différents. Ils ne deviennent énantiomères qu\'<b>après le clivage</b>, quand il ne reste plus que le centre créé pendant l\'alkylation.'},
+  flag:'⚠️ Dans tes notes (haut de la page 2), le produit de la voie noréphédrine est redessiné avec un <b>isopropyle</b> — le squelette de la page 1 a été recopié. La stéréochimie de E, elle, est correcte. Corrigé ici.'
+});
+
+S({
+  grp:GC, title:'Quel électrophile choisir ?',
+  consigne:'Touche une ligne du tableau pour comprendre son d.r. et son rendement.',
+  build(host){
+    const box=el('div'), why=el('div','statusline'); let cur=0;
+    const draw=()=>{
+      box.innerHTML=`<table class="dat"><thead><tr><th>Électrophile</th><th class="num">d.r.</th><th class="num">Rdt</th></tr></thead><tbody>`
+      + ELECTRO.map((x,i)=>`<tr data-i="${i}" class="${i===cur?'sel':''}"><td style="color:var(--green);font-weight:600">${x.e}</td><td class="num">${x.dr}</td><td class="num">${x.rdt}</td></tr>`).join('')
+      +`</tbody></table>`;
+      box.querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>{cur=+tr.dataset.i;draw();});
+      why.innerHTML=`<b>${ELECTRO[cur].nom}</b> — ${ELECTRO[cur].why}`;
+    };
+    host.appendChild(box); host.appendChild(why); draw();
+  },
+  une:'Le rendement mesure la réactivité de l\'électrophile ; le d.r. mesure la capacité de l\'auxiliaire à distinguer ses deux faces. Ce sont deux choses indépendantes.',
+  probleme:'<p>Dans ton tableau, le rendement s\'effondre de 92 % à 36 % entre le benzyle et l\'éthyle, alors que le d.r. ne bouge presque pas (99:1 → 94:6). Si on croit que « bonne réaction = bonne sélectivité », ce tableau est incompréhensible. Il faut séparer les deux questions.</p>',
+  etapes:[
+   {q:'Quel est le mécanisme ?',
+    t:'Une <b>SN2</b> : l\'énolate est le nucléophile, E–X l\'électrophile. Ce qui change d\'une ligne à l\'autre, c\'est la facilité avec laquelle la liaison C–X se rompt.'},
+   {q:'Pourquoi le benzyle est-il si bon ?',
+    t:'Dans l\'état de transition SN2, le carbone attaqué porte une charge partielle. Avec un groupe benzylique, le cycle aromatique voisin la <b>stabilise par conjugaison</b> : l\'état de transition est plus bas, la réaction est plus rapide.'},
+   {q:'Et l\'allyle ?',
+    t:'Même effet, avec une double liaison au lieu d\'un cycle aromatique. À peine moins efficace.'},
+   {q:'Pourquoi l\'iodoéthane est-il mauvais ?',
+    t:'Aucune stabilisation possible : c\'est un halogénure primaire ordinaire. La réaction est lente, il faut attendre — et pendant ce temps l\'énolate se dégrade. D\'où 36 % seulement.'},
+   {q:'Alors pourquoi le d.r. baisse-t-il un peu aussi ?',
+    t:'Parce qu\'un électrophile plus <b>gros</b> ressent davantage la différence entre les deux faces. Le benzyle, volumineux, est repoussé très nettement par l\'isopropyle ; l\'éthyle, plus petit, se faufile un peu plus souvent du mauvais côté. Mais l\'effet reste secondaire : c\'est l\'auxiliaire qui gouverne.'}
+  ],
+  retenir:[
+   'Rendement = réactivité. d.r. = discrimination des faces. Ne pas confondre.',
+   'Benzylique et allylique : états de transition SN2 stabilisés → rapides.',
+   'Un électrophile encombrant aide légèrement la sélectivité.',
+   'Un mauvais électrophile réagit peu, mais il réagit quand même du bon côté.'
+  ],
+  plus:{titre:'Comparaison avec les valeurs de Procter',
+    body:'<p>Procter donne, pour le même auxiliaire dérivé de la valine (R = Me) : EtI → 92 % de d.e. ; PhCH₂Br → 98 % ; MeI → 80 % ; H₂C=CHCH₂Br → 96 %.</p><p>Converti en d.r. : 96 : 4 ; 99 : 1 ; 90 : 10 ; 98 : 2. Tes valeurs de benzyle et d\'allyle coïncident exactement ; celle de l\'éthyle est un peu plus basse dans tes notes (94 : 6 au lieu de 96 : 4) — il s\'agit probablement d\'un autre substrat ou d\'autres conditions.</p><p>Remarque intéressante : c\'est <b>l\'iodométhane</b> qui donne le plus mauvais d.e. (80 %), ce qui confirme l\'argument de taille — le méthyle est le plus petit électrophile possible.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, tableau 4.2, p. 48.'},
+  quiz:{q:'Le rendement chute de 92 % à 36 % entre PhCH₂Br et EtI, mais le d.r. ne passe que de 99:1 à 94:6. Que faut-il en conclure&nbsp;?',
+        a:'Que rendement et sélectivité sont indépendants. Le rendement dépend de la vitesse de la SN2 (donc de la stabilisation de l\'état de transition) ; le d.r. dépend de la différence d\'énergie entre <i>deux</i> états de transition qui ont tous les deux le même électrophile. Un électrophile lent reste sélectif — il est juste lent.'}
+});
+
+S({
+  grp:GC, title:'La roue des clivages',
+  consigne:'Touche un secteur de la roue pour voir le produit correspondant.',
+  build(host){
+    const f1=el('div','figbox'), f2=el('div','figbox'), st=el('div','statusline'); let sel='red';
+    const draw=()=>{
+      f1.innerHTML=figRoue(sel); f2.innerHTML=figCleavProd(sel);
+      const c=CLIV.find(x=>x.k===sel);
+      st.innerHTML=`<b>${c.reac}</b> → ${c.prod}.<br>${c.why}`;
+      f1.querySelectorAll('[data-k]').forEach(p=>p.addEventListener('click',()=>{sel=p.dataset.k;draw();}));
+    };
+    host.appendChild(f1); host.appendChild(f2); host.appendChild(st); draw();
+  },
+  une:'L\'imide porte deux carbonyles ; tout le problème du clivage est de n\'attaquer que celui de la chaîne, pour récupérer l\'auxiliaire intact.',
+  probleme:'<p>Regarde la molécule : il y a un carbonyle sur la chaîne (exocyclique) et un carbonyle dans le cycle (le carbamate). Un nucléophile qui se trompe de cible ouvre l\'oxazolidinone — on perd l\'auxiliaire et on ne récupère pas le produit voulu.</p><p>La question est donc : comment viser l\'un plutôt que l\'autre&nbsp;?</p>',
+  etapes:[
+   {q:'Lequel des deux est le plus électrophile ?',
+    t:'Celui de la chaîne. Le carbonyle du cycle est un <b>carbamate</b> : il est flanqué d\'un azote <i>et</i> d\'un oxygène, donc doublement enrichi par donation, donc bien moins électrophile.'},
+   {q:'Première famille : les hydrures.',
+    t:'LiAlH₄ ou LiBH₄ visent naturellement le carbonyle le plus électrophile et réduisent jusqu\'à l\'<b>alcool primaire</b>. LiBH₄ est plus doux et plus sélectif.'},
+   {q:'Deuxième famille : les nucléophiles oxygénés.',
+    t:'Un alcoolate donne l\'<b>ester</b> par transestérification. Pour l\'<b>acide</b>, on n\'utilise pas HO⊖ mais HOO⊖ (LiOOH), et c\'est le point le plus élégant de la section — voir la question ci‑dessous.'},
+   {q:'Troisième famille : passer par un autre intermédiaire.',
+    t:'On échange l\'auxiliaire contre un <b>amide de Weinreb</b>, très stable, qui donnera ensuite proprement un aldéhyde (LiAlH₄) ou une cétone (R\'MgX) sans sur‑addition.'},
+   {q:'Le centre stéréogène risque-t-il quelque chose ?',
+    t:'Non, tant qu\'on reste doux. Il est en α d\'un carbonyle, donc épimérisable par une base forte — d\'où le choix de conditions rapides et peu basiques. Procter précise que dans tous les cas l\'auxiliaire est enlevé « <i>sans perte de pureté stéréochimique</i> ».'}
+  ],
+  retenir:[
+   'Cible = le carbonyle exocyclique ; à éviter = le carbamate du cycle.',
+   'Alcool (LiAlH₄/LiBH₄), acide (LiOOH), ester (RO⊖), aldéhyde et cétone (via Weinreb).',
+   'Un seul intermédiaire, cinq niveaux d\'oxydation de sortie.',
+   'Le centre créé n\'est jamais touché — à condition de ne pas s\'attarder en milieu basique.'
+  ],
+  plus:{titre:'Pourquoi HOO⊖ et pas HO⊖ : l\'effet α',
+    body:'<p>L\'ion hydroperoxyde HOO⊖ est <b>plus nucléophile</b> que HO⊖ tout en étant <b>moins basique</b>. Cette combinaison paraît contradictoire ; elle s\'explique par l\'<b>effet α</b> : l\'oxygène voisin porte un doublet libre qui déstabilise l\'état fondamental de l\'anion et élève son orbitale HO.</p><p>Conséquence pratique : HOO⊖ attaque vite le carbonyle le plus électrophile et repart avant d\'avoir eu le temps de s\'en prendre au carbamate. HO⊖, lui, plus basique et moins nucléophile, finit par ouvrir le cycle.</p><p>Procter le dit autrement : dans les cas très encombrés, on observe parfois une réaction sur le carbonyle de l\'oxazolidinone, et c\'est justement là que l\'eau oxygénée basique règle le problème.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, §4, fig. 4.14 et p. 49.'},
+  quiz:{q:'Pourquoi utilise-t-on LiOOH plutôt que LiOH tout seul pour obtenir l\'acide&nbsp;?',
+        a:'Parce que HOO⊖ est bien plus nucléophile que HO⊖ (effet α) tout en étant <b>moins basique</b>. Il attaque donc vite et sélectivement le carbonyle exocyclique. HO⊖ réagit plus lentement, reste plus longtemps en contact, et finit par ouvrir aussi l\'oxazolidinone — on perd l\'auxiliaire.'},
+  flag:'⚠️ Tes notes indiquent « DIBAL » pour obtenir l\'aldéhyde. C\'est possible en principe (un seul équivalent, −78 °C), mais délicat : la sur-réduction en alcool est fréquente. Procter ne propose pas DIBAL : il passe par la réduction en alcool puis une oxydation (Py·SO₃ / DMSO), ou par l\'amide de Weinreb. À confirmer avec ton enseignant.'
+});
+
+/* ==========================================================================
+   GROUPE D — L'auxiliaire d'Ellman
+   ========================================================================== */
+const GD='D — Auxiliaire d\'Ellman';
+
+S({
+  grp:GD, title:'Fabriquer la sulfinylimine : à quoi sert MgSO₄',
+  consigne:'Bascule entre « sans desséchant » et « avec MgSO₄ » et regarde l\'épaisseur des deux flèches.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'), f2=el('div','figbox'); let cur='sans';
+    const draw=()=>{fig.innerHTML=figEllmanEq(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
+    [['sans','Sans desséchant'],['avec','Avec MgSO₄']].forEach(([k,t])=>{
+      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig);
+    host.appendChild(el('div','statusline','Et voilà l\'auxiliaire lui‑même : un soufre entouré de <b>quatre choses différentes</b>, dont un doublet libre.'));
+    f2.innerHTML=figSoufre(); host.appendChild(f2);
+    draw();
+  },
+  une:'La condensation aldéhyde + amine est un équilibre qui produit de l\'eau ; MgSO₄ ne fait rien d\'autre que retirer cette eau, ce qui pousse l\'équilibre vers l\'imine.',
+  probleme:'<p>L\'auxiliaire d\'Evans s\'accroche par une acylation, irréversible et propre. Celui d\'Ellman s\'accroche par une <b>condensation</b> — et une condensation, c\'est un équilibre. Si on ne fait rien, on s\'arrête à mi‑chemin.</p><p>Deuxième nouveauté : ici, le centre stéréogène de l\'auxiliaire n\'est pas un carbone. C\'est le <b>soufre</b>.</p>',
+  etapes:[
+   {q:'Quelle est la réaction ?',
+    t:'Le doublet de l\'azote du sulfinamide attaque le carbone du carbonyle de l\'aldéhyde. On obtient un intermédiaire tétraédrique (une carbinolamine), qui perd ensuite une molécule d\'eau pour donner la double liaison C=N.'},
+   {q:'Pourquoi c\'est un problème ?',
+    t:'Toutes ces étapes sont <b>réversibles</b>. L\'eau produite peut revenir hydrolyser l\'imine. À l\'équilibre, on a un mélange — et on perd du rendement.'},
+   {q:'Que fait MgSO₄ ?',
+    t:'Absolument rien de chimique sur les partenaires : c\'est un <b>desséchant</b>. Il capte l\'eau sous forme de sel hydraté. En retirant un produit du milieu, on déplace l\'équilibre vers la droite (principe de Le Chatelier).'},
+   {q:'Pourquoi CH₂Cl₂ ?',
+    t:'Parce que c\'est un solvant <b>non coordinant</b> et non protique. Cela compte énormément pour l\'étape suivante — c\'est tout l\'objet de la section sur le solvant.'},
+   {q:'Où est la chiralité ?',
+    t:'Sur le <b>soufre</b>. Il porte quatre choses différentes : le tert‑butyle, l\'oxygène, l\'azote… et son <b>doublet libre</b>, qui compte comme un quatrième substituant et occupe un vrai volume. Le soufre est donc stéréogène, de configuration (R) ici.'},
+   {q:'Et la géométrie de l\'imine ?',
+    t:'Une seule est observée : <b>E</b>. Le gros tert‑butyle et le reste de la chaîne se placent le plus loin possible l\'un de l\'autre. Comme pour l\'énolate d\'Evans, une géométrie unique est un préalable à toute sélectivité.'}
+  ],
+  retenir:[
+   'Condensation = équilibre ; MgSO₄ = desséchant qui le déplace. Aucun rôle catalytique.',
+   'Un soufre sulfinyle est stéréogène : tBu, O, N et le doublet libre sont quatre substituants différents.',
+   'CH₂Cl₂ n\'est pas un choix anodin : il est non coordinant.',
+   'Imine exclusivement E.'
+  ],
+  plus:{titre:'Pourquoi un doublet libre « compte »',
+    body:'<p>Un doublet non liant occupe une orbitale dirigée dans l\'espace, exactement comme une liaison. Pour les règles CIP on lui attribue conventionnellement le numéro atomique <b>0</b> : c\'est donc toujours le substituant de plus basse priorité.</p><p>C\'est ce qui rend stéréogènes les sulfoxydes, les sulfinamides, les amines (en principe), les phosphines. La différence pratique : une amine tertiaire s\'inverse des milliards de fois par seconde à température ambiante, donc on ne peut pas l\'isoler ; un <b>sulfoxyde</b>, lui, a une barrière d\'inversion d\'environ 150–180 kJ·mol⁻¹, donc il est parfaitement stable et séparable.</p><p>C\'est pour cela que le sulfinamide d\'Ellman fonctionne comme auxiliaire alors qu\'une amine chirale à azote stéréogène serait inutilisable.</p>'},
+  quiz:{q:'Si on remplaçait MgSO₄ par un tamis moléculaire 4 Å, cela marcherait-il&nbsp;?',
+        a:'Oui — le tamis moléculaire joue exactement le même rôle : piéger l\'eau. C\'est d\'ailleurs ce qu\'on retrouvera dans l\'époxydation de Sharpless, où le tamis 4 Å sert lui aussi à garder le milieu anhydre. Deux réactions très différentes, un même besoin : retirer l\'eau du jeu.'}
+});
+
+S({
+  grp:GD, title:'L\'état de transition chélaté, et le rôle du solvant',
+  consigne:'Bascule entre CH₂Cl₂ et THF : regarde ce qui arrive au cycle violet.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'), st=el('div','statusline'); let cur='dcm';
+    const draw=()=>{
+      fig.innerHTML=figEllmanTS(cur);
+      st.innerHTML = cur==='dcm'
+        ? '<b>CH₂Cl₂ (non coordinant).</b> Rien ne concurrence l\'oxygène du sulfinyle : le magnésium le prend, le cycle à six chaînons se referme, et le groupe R est livré par une seule face. d.r. de 93:7 à 96:4.'
+        : '<b>THF (coordinant).</b> Le solvant est un éther : ses doublets se fixent sur le magnésium. L\'oxygène du sulfinyle n\'a plus de place, le cycle ne se forme pas, et l\'addition se fait par un état de transition ouvert — sélectivité effondrée, parfois inversée.';
+      [...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));
+    };
+    [['dcm','CH₂Cl₂'],['thf','THF']].forEach(([k,t])=>{
+      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); host.appendChild(st); draw();
+  },
+  une:'Comme chez Evans, c\'est un métal qui referme un cycle temporaire et fige la molécule. Ici c\'est le magnésium — et un solvant coordinant suffit à tout casser.',
+  probleme:'<p>Le réactif de Grignard doit additionner sur le C=N. Là encore il y a deux faces. Mais cette fois il n\'y a pas de gros groupe posé devant l\'une d\'elles : le tert‑butyle est sur le soufre, à deux liaisons de distance, et la liaison S–N peut tourner.</p><p>Il faut donc un mécanisme qui relie la configuration du <b>soufre</b> à la face attaquée du <b>carbone</b>. C\'est le rôle du cycle.</p>',
+  etapes:[
+   {q:'Qui tient quoi ?',
+    t:'Le magnésium tient deux choses à la fois : le groupe R qu\'il va transférer, et l\'<b>oxygène du sulfinyle</b>. Ces deux liaisons referment un cycle à <b>six chaînons</b> : S, N, C, R, Mg, O.'},
+   {q:'Pourquoi ce nom de Zimmerman–Traxler ?',
+    t:'C\'est le nom du modèle général d\'état de transition cyclique à six chaînons où un métal relie le nucléophile et l\'électrophile. On le rencontre surtout en aldolisation ; ici c\'est le même principe appliqué à une imine.'},
+   {q:'Comment le soufre impose-t-il la face ?',
+    t:'Une fois le cycle formé, plus rien ne tourne. Le tert‑butyle, très volumineux, se place dans la position la <b>moins encombrée</b> du cycle. Cela fixe l\'orientation de l\'oxygène, donc celle du magnésium, donc le côté par lequel R arrive sur le carbone.'},
+   {q:'Pourquoi CH₂Cl₂ et pas THF ?',
+    t:'Le magnésium est un acide de Lewis : il accepte des doublets. Le THF est un éther, donc un bon donneur : il vient occuper les sites de coordination du magnésium et <b>prend la place</b> de l\'oxygène du sulfinyle. Le cycle ne peut plus se former. CH₂Cl₂, lui, n\'a rien à donner.'},
+   {q:'Que se passe-t-il alors ?',
+    t:'L\'addition se fait par un état de transition <b>ouvert</b>, où la face attaquée n\'est plus contrôlée par le chélate mais par de simples préférences stériques. La sélectivité s\'effondre — et elle peut même s\'inverser, puisque c\'est un autre modèle qui gouverne.'}
+  ],
+  retenir:[
+   'Cycle à 6 : S–N=C···R–Mg···O–S. Le métal referme, comme le lithium chez Evans.',
+   'tBu en position la moins gênée → oriente tout le reste → une seule face de C=N.',
+   'CH₂Cl₂ non coordinant = chélate intact. THF coordinant = chélate détruit.',
+   'Un « détail » de solvant peut décider de toute la stéréochimie : c\'est fréquent en synthèse asymétrique.'
+  ],
+  plus:{titre:'Le même réflexe, appliqué trois fois dans ce chapitre',
+    body:'<p>Tu peux vérifier que le raisonnement est identique dans les trois modèles chélatés du chapitre :</p><ul class="keys"><li><b>Evans</b> : Li tient l\'énolate et le carbamate → l\'oxazolidinone ne tourne plus → l\'iPr bloque une face.</li><li><b>Ellman</b> : Mg tient R et le sulfinyle → la liaison S–N ne tourne plus → le tBu oriente la face.</li><li><b>Hoppe</b> (section suivante) : Li est tenu par la spartéine <i>et</i> par le carbonyle du carbamate → le carbanion ne s\'épimérise plus.</li></ul><p>À chaque fois, pose‑toi les mêmes deux questions : <b>qui tient quoi</b>, et <b>qu\'est-ce qui ne peut plus tourner</b>. C\'est la façon la plus économique de retenir ces modèles — beaucoup plus que d\'apprendre les dessins par cœur.</p>'},
+  quiz:{q:'On fait la même addition dans le diéthyléther. À ton avis, plutôt CH₂Cl₂ ou plutôt THF&nbsp;?',
+        a:'Plutôt THF : Et₂O est lui aussi un éther, donc un donneur de doublets, même s\'il est moins bon que le THF (plus encombré, moins basique). On s\'attend donc à une sélectivité intermédiaire, dégradée par rapport à CH₂Cl₂. Le critère à retenir n\'est pas « polaire / apolaire » mais <b>coordinant / non coordinant</b>.'},
+  flag:'⚠️ Tes notes indiquent « addition on the Si face ». Je n\'ai pas pu le <b>redémontrer</b> de façon indépendante à partir d\'un état de transition dessiné à plat : déterminer une face demande la géométrie 3D du cycle (conformation chaise, positions pseudo-axiale / pseudo-équatoriale du tBu), qui n\'est pas lisible sur le schéma. Le raisonnement « le tBu se met du côté le moins gêné, ce qui oriente tout le reste » est en revanche solide. Voir A_VERIFIER.md.'
+});
+
+S({
+  grp:GD, title:'Décrocher l\'auxiliaire : HCl / MeOH',
+  consigne:'Compare les deux structures : qu\'est-ce qui a changé, qu\'est-ce qui n\'a pas bougé ?',
+  build(host){
+    const fig=el('div','figbox'); fig.innerHTML=figEllmanCleav(); host.appendChild(fig);
+    host.appendChild(el('div','statusline','Le clivage se fait sur la liaison <b>S–N</b>, pas sur une liaison du carbone. Le centre stéréogène qu\'on vient de créer n\'est donc jamais mis en jeu.'));
+  },
+  une:'Un simple acide dans le méthanol suffit : la liaison soufre–azote est fragile en milieu acide, et le carbone n\'est pas concerné.',
+  probleme:'<p>Chez Evans, le clivage demandait de choisir soigneusement son nucléophile pour ne pas ouvrir le cycle. Ici c\'est beaucoup plus simple — et il faut comprendre pourquoi, parce que c\'est un des arguments qui ont rendu cet auxiliaire populaire.</p>',
+  etapes:[
+   {q:'Que fait l\'acide ?',
+    t:'Il protone l\'azote du sulfinamide. Une fois protoné, l\'azote devient un bon nucléofuge : la liaison S–N se rompt facilement.'},
+   {q:'Que fait le méthanol ?',
+    t:'Il attrape le fragment soufré, qui part sous forme de <b>tert-butanesulfinate de méthyle</b>. L\'amine, elle, reste dans le milieu sous forme de <b>chlorhydrate</b> — un solide, facile à isoler.'},
+   {q:'Le centre stéréogène du carbone risque-t-il quelque chose ?',
+    t:'Non. On ne touche qu\'à la liaison S–N ; aucune liaison du carbone stéréogène n\'est rompue. La configuration est intégralement conservée.'},
+   {q:'Et le soufre ?',
+    t:'Il part avec sa configuration, mais on ne le récupère pas sous forme de sulfinamide réutilisable directement. C\'est le vrai coût de cette méthode : l\'auxiliaire n\'est pas récupéré tel quel, contrairement à l\'oxazolidinone d\'Evans.'},
+   {q:'Bilan de la séquence.',
+    t:'Aldéhyde achiral → imine → addition diastéréosélective → amine <b>chirale, énantioenrichie</b>. Trois étapes, deux d\'entre elles triviales. C\'est une des meilleures façons de fabriquer des amines α‑chirales, très demandées en chimie médicinale.'}
+  ],
+  retenir:[
+   'Clivage = HCl dans MeOH, conditions douces et rapides.',
+   'On coupe S–N, jamais une liaison du carbone stéréogène.',
+   'L\'amine sort sous forme de chlorhydrate cristallin, ce qui facilite la purification.',
+   'Inconvénient honnête : l\'auxiliaire n\'est pas récupéré intact.'
+  ],
+  quiz:{q:'Pourquoi cette méthode est-elle si utilisée en chimie médicinale&nbsp;?',
+        a:'Parce que les <b>amines α-chirales</b> sont partout dans les médicaments, et qu\'elles sont difficiles à obtenir énantiopures autrement. La séquence d\'Ellman part d\'un aldéhyde (bon marché, immense diversité commerciale) et d\'un Grignard (idem), avec un auxiliaire disponible dans les deux configurations. On peut donc balayer rapidement une bibliothèque d\'amines chirales — exactement ce qu\'on cherche en début de projet.'}
+});
+
+/* ==========================================================================
+   GROUPE E — Réactif chiral : Hoppe et la (−)-spartéine
+   ========================================================================== */
+const GE='E — Réactif chiral : Hoppe';
+
+S({
+  grp:GE, title:'Deux protons qui se ressemblent… mais pas tant que ça',
+  consigne:'Appuie sur « Hₐ » puis sur « Hᵦ » et compare les deux produits du bas.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'); let cur=null;
+    const draw=()=>{fig.innerHTML=figHoppeTopic(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
+    [['a','On enlève Hₐ'],['b','On enlève Hᵦ']].forEach(([k,t])=>{
+      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=(cur===k?null:k);draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); draw();
+  },
+  une:'Le carbone porte deux hydrogènes énantiotopes : en remplacer l\'un ou l\'autre donne les deux énantiomères. Tout le problème est d\'en choisir un.',
+  probleme:'<p>On change complètement de stratégie. Ici, pas d\'auxiliaire : le substrat reste <b>achiral</b> du début à la fin de l\'étape clé. C\'est le réactif qui apporte toute l\'information.</p><p>Et comme le substrat est achiral, ses deux hydrogènes en α de l\'oxygène sont… énantiotopes. Exactement le cas n° 2 de la section A.</p>',
+  etapes:[
+   {q:'Qui est le substrat ?',
+    t:'Un <b>carbamate</b> tout simple : un alcool primaire (ici l\'éthanol) estérifié par un groupe carbamoyle cyclique. La molécule entière est achirale.'},
+   {q:'Où sont les deux protons en question ?',
+    t:'Sur le carbone porté par l\'oxygène du carbamate — le CH₂. Ils sont <b>énantiotopes</b> : en remplacer l\'un donne une molécule, en remplacer l\'autre donne son image miroir.'},
+   {q:'Pourquoi ce carbone-là et pas un autre ?',
+    t:'Deux raisons. D\'abord parce qu\'il est <b>acidifié</b> : l\'oxygène voisin stabilise la charge négative par effet inductif attracteur. Ensuite parce que le carbamate va pouvoir <b>chélater</b> le lithium formé — on y revient deux sections plus loin.'},
+   {q:'Que faut-il pour les distinguer ?',
+    t:'Un réactif <b>chiral et énantiopur</b>. Un sec-BuLi ordinaire arracherait l\'un ou l\'autre au hasard : 50/50. Il faut habiller le lithium d\'un ligand chiral.'},
+   {q:'Quel groupe sera installé ?',
+    t:'CO₂H, en piégeant le carbanion par du dioxyde de carbone. Le produit est un acide 2-(carbamoyloxy)propanoïque, obtenu à 75 % avec un e.e. supérieur à 95 %.'}
+  ],
+  retenir:[
+   'Substrat achiral + protons énantiotopes = il FAUT un réactif chiral.',
+   'Le carbamate joue deux rôles : il acidifie le proton et il chélatera le lithium.',
+   'Les deux produits possibles sont énantiomères : ils ne seront pas séparables.',
+   'C\'est la définition même de la stratégie « réactif chiral » du schéma de la diapo.'
+  ],
+  plus:{titre:'Vérification des descripteurs',
+    body:'<p>Les deux structures du bas ont été construites à partir des coordonnées exactes de la figure, puis relues par RDKit. Résultat : en remplaçant Hₐ (trait gras, en bas à gauche) on obtient le (S) ; en remplaçant Hᵦ (trait pointillé, en bas à droite) on obtient le <b>(R)</b>.</p><p>Comme tes notes annotent le produit (R), c\'est bien Hᵦ que le complexe sec-BuLi·(−)-spartéine arrache. Le détail du calcul est dans <code>verification_stereo.md</code>.</p>'},
+  quiz:{q:'Pourquoi ne peut-on pas utiliser un auxiliaire chiral ici, comme chez Evans&nbsp;?',
+        a:'On pourrait, mais on perdrait tout l\'intérêt : il faudrait accrocher puis décrocher, soit deux étapes de plus. Or le carbamate est déjà nécessaire pour d\'autres raisons (acidification, chélation) et il est <b>achiral</b>. Le pari de Hoppe est justement d\'aller chercher l\'information chirale ailleurs — dans le réactif — pour rester en une seule étape.'}
+});
+
+S({
+  grp:GE, title:'Le complexe sec-BuLi · (−)-spartéine',
+  consigne:'Regarde d\'abord la spartéine seule, puis le complexe en dessous.',
+  build(host){
+    const f1=el('div','figbox'), f2=el('div','figbox');
+    f1.innerHTML=figSparteine(); f2.innerHTML=figComplexe();
+    host.appendChild(f1);
+    host.appendChild(el('div','statusline','Les <b>deux azotes</b> sont les seuls atomes qui comptent pour la suite : ce sont eux qui vont attraper le lithium.'));
+    host.appendChild(f2);
+  },
+  une:'La spartéine est une diamine naturelle rigide : ses deux azotes attrapent le lithium et l\'enferment dans une poche dissymétrique, qui n\'a plus qu\'un seul côté accessible.',
+  probleme:'<p>Le sec-butyllithium tout seul est achiral. Comment le rendre chiral sans le modifier chimiquement&nbsp;?</p><p>Réponse : on ne touche pas au sec-BuLi. On lui ajoute un <b>ligand</b> chiral qui se coordonne au lithium. Le réactif devient chiral par association, pas par transformation.</p>',
+  etapes:[
+   {q:'Qu\'est-ce que la spartéine ?',
+    t:'Un <b>alcaloïde</b> naturel, extrait du lupin et du genêt. C\'est une diamine tétracyclique : quatre cycles à six chaînons soudés entre eux, avec deux azotes. Elle est énantiopure telle que la nature la fabrique, et bon marché.'},
+   {q:'Pourquoi une DIamine ?',
+    t:'Parce qu\'il faut se fixer <b>solidement</b>. Un seul azote donnerait une liaison qui va et vient ; deux azotes forment un <b>chélate</b>, beaucoup plus stable. C\'est le même argument que pour le lithium d\'Evans ou le magnésium d\'Ellman.'},
+   {q:'Pourquoi une molécule RIGIDE ?',
+    t:'C\'est le point décisif. Quatre cycles soudés ne peuvent pas se déformer. Le lithium est donc tenu dans une poche de forme <b>fixe et dissymétrique</b> : un côté est bouché par le squelette, l\'autre est dégagé.'},
+   {q:'Comment cela permet-il de choisir un proton ?',
+    t:'Le complexe doit s\'approcher du carbamate pour arracher un proton. Deux approches sont possibles, une par Hₐ et une par Hᵦ. Comme le complexe est chiral, ces deux approches donnent des états de transition <b>diastéréoisomères</b> — d\'énergies différentes. L\'une l\'emporte.'},
+   {q:'Pourquoi 1,4 et 1,5 équivalents ?',
+    t:'Parce que la spartéine n\'est pas un catalyseur ici : elle reste accrochée au lithium pendant toute la réaction. Il en faut donc au moins un équivalent — c\'est la définition même de la stratégie « réactif chiral », et son principal inconvénient.'}
+  ],
+  retenir:[
+   'On ne modifie pas le réactif : on lui ajoute un ligand chiral.',
+   'Diamine = chélate solide ; tétracyclique = poche rigide ; naturelle = énantiopure et bon marché.',
+   'Les deux états de transition de déprotonation deviennent diastéréoisomères : c\'est toujours la même règle d\'or.',
+   'Stœchiométrique, donc pas catalytique — d\'où « greener than auxiliary, but not green ».'
+  ],
+  plus:{titre:'Deux remarques honnêtes',
+    body:'<p><b>1. Le schéma du complexe est volontairement schématique.</b> Le squelette exact de la spartéine est dessiné juste au-dessus, tel qu\'il figure dans tes notes. Mais représenter à plat la position réelle du lithium entre les deux azotes demanderait une vue 3D : j\'ai préféré une « poche » symbolique plutôt qu\'un dessin faussement précis.</p><p><b>2. Il n\'existe pas de (+)-spartéine naturelle facilement disponible.</b> C\'est une limite réelle de la méthode : pour obtenir l\'autre énantiomère du produit, on utilise un <b>substitut de spartéine</b> synthétique (les « sparteine surrogates » développés par O\'Brien). C\'est exactement le même problème que « il faut avoir accès aux deux énantiomères de l\'auxiliaire » — le pool chiral ne fournit souvent qu\'un côté.</p>'},
+  quiz:{q:'Pourquoi un ligand chiral mais FLEXIBLE marcherait-il moins bien&nbsp;?',
+        a:'Parce qu\'un ligand flexible adopte plusieurs conformations. Chacune crée une poche de forme différente, donc une discrimination différente entre Hₐ et Hᵦ — certaines favorisant même le mauvais côté. Les contributions se moyennent et l\'e.e. s\'écroule. La <b>rigidité</b> est un critère aussi important que la chiralité : on la retrouve dans presque tous les bons ligands (BINAP, TADDOL, salen…).'}
+});
+
+S({
+  grp:GE, title:'Le carbanion chélaté, et le piégeage par CO₂',
+  consigne:'Appuie sur « étape suivante » et regarde ce que fait le lithium.',
+  build(host){
+    const fig=el('div','figbox'), row=el('div','btnrow'); let k=0;
+    const prev=el('button','btn'), next=el('button','btn');
+    prev.textContent='‹ Étape'; next.textContent='Étape suivante ›';
+    const draw=()=>{fig.innerHTML=figHoppeMech(k); prev.disabled=(k===0); next.disabled=(k===3);
+      prev.style.opacity=k===0?.4:1; next.style.opacity=k===3?.4:1;};
+    prev.onclick=()=>{if(k>0){k--;draw();}}; next.onclick=()=>{if(k<3){k++;draw();}};
+    row.appendChild(prev); row.appendChild(next);
+    host.appendChild(fig); host.appendChild(row); draw();
+  },
+  une:'Un carbanion s\'inverse normalement très vite. Celui-ci ne le fait pas, parce que le carbamate le tient par le lithium — c\'est ce qui permet au CO₂ d\'arriver du bon côté.',
+  probleme:'<p>Il y a un problème caché. Arracher sélectivement un proton, très bien : on obtient un carbanion d\'une configuration donnée. Mais un carbanion est normalement <b>configurationnellement instable</b> : il s\'aplatit et s\'inverse en permanence, comme un parapluie qui se retourne. Au moment où le CO₂ arrive, la sélectivité gagnée serait déjà perdue.</p><p>Il faut donc empêcher cette inversion.</p>',
+  etapes:[
+   {q:'Étape 1 — la déprotonation sélective.',
+    t:'Le complexe sec-BuLi·spartéine arrache un seul des deux protons énantiotopes. À −78 °C, dans Et₂O, pendant 5 h.'},
+   {q:'Étape 2 — pourquoi le carbanion ne s\'épimérise pas.',
+    t:'Le lithium formé n\'est pas libre : il est tenu <b>à la fois</b> par la spartéine et par l\'oxygène du carbonyle du carbamate. Ce deuxième point referme un petit cycle qui empêche le carbone de s\'aplatir. On dit que le carbanion est <b>configurationnellement stable</b>.'},
+   {q:'Pourquoi −78 °C et 5 heures, alors ?',
+    t:'La stabilité configurationnelle n\'est jamais absolue : c\'est une question de vitesse. À froid, l\'inversion est beaucoup plus lente que le piégeage. Si on réchauffait, le carbanion aurait le temps de s\'épimériser et l\'e.e. tomberait.'},
+   {q:'Étape 3 — le piégeage par CO₂.',
+    t:'Le CO₂ est un excellent électrophile pour un carbanion. Il vient se placer là où était le lithium, du même côté : la réaction se fait avec <b>rétention de configuration</b>. Puis HCl 2 N protone le carboxylate.'},
+   {q:'Bilan.',
+    t:'Une seule étape sur le carbone, 75 % de rendement, e.e. supérieur à 95 %. Aucun auxiliaire à accrocher ni à décrocher — mais 1,5 équivalent de spartéine consommé.'}
+  ],
+  retenir:[
+   'Un carbanion α-alcoxy est configurationnellement stable s\'il est chélaté et s\'il fait froid.',
+   'Le carbamate sert donc deux fois : acidification puis chélation.',
+   'Le piégeage par CO₂ se fait avec rétention.',
+   '« Rétention » veut dire « même côté », pas « même lettre » — c\'est l\'objet de la section suivante.'
+  ],
+  plus:{titre:'Pourquoi un carbamate, et pas un simple éther ou un ester ?',
+    body:'<p>Un éther acidifierait bien le proton, mais son oxygène coordonne mal le lithium : le carbanion s\'épimériserait.</p><p>Un ester serait un bon chélatant, mais il serait <b>attaqué</b> par le sec-BuLi (addition sur le carbonyle) avant même la déprotonation.</p><p>Le carbamate est le compromis : son carbonyle est désactivé par l\'azote voisin (l\'azote donne son doublet dans le C=O), donc il résiste au sec-BuLi, tout en restant un assez bon donneur pour chélater le lithium. C\'est exactement le raisonnement qu\'on a fait pour le clivage d\'Evans, dans l\'autre sens.</p>'},
+  quiz:{q:'Que se passerait-il si on remontait à 0 °C avant d\'ajouter le CO₂&nbsp;?',
+        a:'L\'e.e. chuterait fortement. La stabilité configurationnelle du carbanion est <b>cinétique</b> : elle repose sur le fait que l\'inversion est plus lente que le piégeage. En réchauffant on accélère l\'inversion bien plus que le reste, le carbanion a le temps de s\'équilibrer, et on tend vers le racémique. Même logique que « on ne chauffe pas » pour les réactions énantiosélectives — mais pour une raison différente : ici c\'est la stabilité de l\'intermédiaire, pas la sélectivité de l\'état de transition.'}
+});
+
+S({
+  grp:GE, title:'Rétention de configuration ≠ même descripteur',
+  consigne:'Compare les deux colonnes : seul le rang de deux groupes a changé.',
+  build(host){
+    const fig=el('div','figbox'); fig.innerHTML=figCIPswap(); host.appendChild(fig);
+    host.appendChild(el('div','statusline','Li a un numéro atomique de <b>3</b>, plus petit que celui du carbone (<b>6</b>). Il se classe donc <i>après</i> le méthyle. Une fois remplacé par CO₂H, il passe <i>devant</i>.'));
+  },
+  une:'Le descripteur CIP peut basculer alors que rien n\'a bougé dans l\'espace : R et S décrivent un classement, pas une géométrie.',
+  probleme:'<p>C\'est un des pièges les plus classiques — et une excellente question d\'examen. On vient de dire que le piégeage par CO₂ se fait avec <b>rétention de configuration</b>. Pourtant, si on écrit les descripteurs de l\'intermédiaire et du produit, ils peuvent être différents. Est-ce une contradiction&nbsp;?</p><p>Non. Et comprendre pourquoi vaut mieux que retenir dix mécanismes.</p>',
+  etapes:[
+   {q:'Que veut dire « rétention » ?',
+    t:'Que le groupe entrant occupe <b>la même position dans l\'espace</b> que le groupe partant. Les trois autres liaisons ne bougent pas. C\'est une affirmation géométrique.'},
+   {q:'Que veut dire R ou S ?',
+    t:'Que si l\'on classe les quatre substituants par priorité CIP et qu\'on regarde le plus petit de dos, les trois autres tournent dans un sens ou dans l\'autre. C\'est une affirmation sur un <b>classement</b>, pas sur la géométrie.'},
+   {q:'Où est le piège ici ?',
+    t:'Dans l\'intermédiaire lithié, le carbone porte : O, CH₃, <b>Li</b> et H. Or le lithium a Z = 3, plus petit que le carbone (Z = 6). Il se classe donc <b>troisième</b>, derrière le méthyle.'},
+   {q:'Et dans le produit ?',
+    t:'La même position est occupée par CO₂H, dont le premier atome est un carbone portant (O, O, O). Il passe donc <b>devant</b> le méthyle : il devient deuxième, et le méthyle recule en troisième.'},
+   {q:'Conclusion.',
+    t:'Les priorités 2 et 3 ont été <b>échangées</b> sans qu\'aucun atome n\'ait bougé. Échanger deux priorités inverse le sens de lecture, donc la lettre. Le descripteur change alors que la configuration est retenue.'},
+   {q:'Quelle habitude en tirer ?',
+    t:'Ne jamais raisonner sur les lettres. Raisonner sur les <b>positions</b>, puis attribuer la lettre à la toute fin, en refaisant le classement à chaque étape.'}
+  ],
+  retenir:[
+   'Rétention / inversion = géométrie. R / S = classement CIP.',
+   'Li (Z = 3) se classe derrière C (Z = 6) : c\'est contre-intuitif mais c\'est la règle.',
+   'Échanger deux priorités inverse la lettre sans rien changer dans l\'espace.',
+   'Réflexe : reclasser les quatre substituants à chaque étape, sans exception.'
+  ],
+  plus:{titre:'Deux autres cas où le même piège se produit',
+    body:'<p><b>Les hydrures.</b> Dans un intermédiaire C–B ou C–Si, le bore (Z = 5) et le silicium (Z = 14) ne se classent pas au même endroit que le carbone qui les remplacera. Une protodéboronation « avec rétention » peut très bien changer la lettre.</p><p><b>Les oxydations.</b> Passer d\'un CH₂OH à un CHO puis à un CO₂H ne touche jamais au centre stéréogène voisin, mais peut modifier son rang relatif et donc son descripteur.</p><p>C\'est aussi pour cela que les publications écrivent souvent « (R) » <i>et</i> dessinent la molécule : la lettre seule ne suffit pas à communiquer sans ambiguïté.</p>'},
+  quiz:{q:'Une réaction transforme R–Li en R–D (deutérium) avec rétention. Le descripteur change-t-il&nbsp;?',
+        a:'Presque certainement, oui. Li (Z = 3) se classe devant H et D (Z = 1) mais derrière C ; le deutérium, lui, se classe en <b>dernier</b> (il est plus lourd que H, donc devant H, mais derrière tout le reste). Le groupe qui occupe cette position passe donc du rang 3 au rang 4 : tout le classement se décale. Là encore, rien n\'a bougé dans l\'espace.'}
+});
+
+/* ==========================================================================
+   GROUPE F — Réactif chiral : époxydation de la chalcone au TADDOL
+   ========================================================================== */
+const GF='F — Réactif chiral : TADDOL';
+
+S({
+  grp:GF, title:'Weitz–Scheffer : époxyder une énone en deux temps',
+  consigne:'Appuie sur « étape suivante » ; l\'étape 2 est encadrée en rouge, c\'est celle qui décide.',
+  build(host){
+    const f0=el('div','figbox'), fig=el('div','figbox'), row=el('div','btnrow'); let k=0;
+    f0.innerHTML=figTaddol(); host.appendChild(f0);
+    const prev=el('button','btn'), next=el('button','btn'), reset=el('button','btn');
+    prev.textContent='‹ Étape'; next.textContent='Étape suivante ›'; reset.textContent='⟲'; reset.style.flex='0 0 56px';
+    const draw=()=>{fig.innerHTML=figWeitz(k); prev.disabled=(k===0); next.disabled=(k===4);
+      prev.style.opacity=k===0?.4:1; next.style.opacity=k===4?.4:1;};
+    prev.onclick=()=>{if(k>0){k--;draw();}}; next.onclick=()=>{if(k<4){k++;draw();}}; reset.onclick=()=>{k=0;draw();};
+    row.appendChild(prev); row.appendChild(next); row.appendChild(reset);
+    host.appendChild(fig); host.appendChild(row); draw();
+  },
+  une:'On n\'époxyde pas une énone comme un alcène ordinaire : le nucléophile s\'additionne d\'abord en 1,4, puis referme le cycle à trois. Deux étapes, et seule la première décide de la stéréochimie.',
+  probleme:'<p>Une double liaison ordinaire s\'époxyde avec un peracide, qui lui livre un oxygène <b>électrophile</b>. Mais la double liaison d\'une énone est <b>appauvrie</b> en électrons : elle est conjuguée à un carbonyle qui tire les électrons. Un peracide y réagit très mal.</p><p>Il faut donc inverser la logique : attaquer avec un oxygène <b>nucléophile</b>. C\'est la réaction de Weitz–Scheffer.</p>',
+  etapes:[
+   {q:'Étape 1 — fabriquer le nucléophile.',
+    t:'n-BuLi arrache le proton de l\'hydroperoxyde dérivé du TADDOL. On obtient ROO⊖ Li⁺. C\'est un oxygène <b>nucléophile</b>, et c\'est lui qui porte toute l\'information chirale.'},
+   {q:'Étape 2 — addition 1,4. C\'EST L\'ÉTAPE DÉTERMINANTE.',
+    t:'ROO⊖ s\'additionne sur le carbone <b>β</b> (celui qui porte le phényle), pas sur le carbonyle : c\'est une addition conjuguée. En choisissant une des deux faces de Cβ, il fixe définitivement une configuration. Les deux états de transition possibles sont diastéréoisomères : ΔΔG‡ ≠ 0.'},
+   {q:'Étape 3 — la rotation.',
+    t:'Cα–Cβ est maintenant une liaison <b>simple</b> : elle tourne librement. La molécule adopte la conformation la moins gênée — celle où le phényle et le benzoyle sont le plus loin possible l\'un de l\'autre.'},
+   {q:'Étape 4 — la fermeture.',
+    t:'L\'énolate (le carbone α, chargé) attaque l\'oxygène le plus proche de la liaison O–O. L\'autre oxygène part avec le TADDOL, sous forme de RO⊖ : c\'est un excellent nucléofuge, parce que la liaison O–O est faible. Le cycle à trois se referme.'},
+   {q:'Pourquoi trans ?',
+    t:'Parce que la fermeture se fait <b>après</b> la rotation : la conformation choisie est celle où les deux gros groupes sont anti. L\'époxyde en garde la trace. C\'est très différent d\'une époxydation par peracide, qui est <b>stéréospécifique</b> (la géométrie de l\'alcène est conservée) ; ici on passe par un intermédiaire qui tourne, donc on est <b>stéréosélectif</b>.'}
+  ],
+  retenir:[
+   'Alcène riche → oxygène électrophile (peracide). Énone pauvre → oxygène nucléophile (Weitz–Scheffer).',
+   'Mécanisme en deux temps : addition 1,4 puis fermeture intramoléculaire.',
+   'Seule l\'addition 1,4 est stéréodéterminante.',
+   'La rotation intermédiaire explique le résultat trans — et pourquoi la réaction n\'est pas stéréospécifique.'
+  ],
+  plus:{titre:'Stéréospécifique ou stéréosélectif ? Les deux mots ne veulent pas dire la même chose',
+    body:'<p>Une réaction est <b>stéréospécifique</b> quand deux stéréoisomères du substrat donnent deux stéréoisomères différents du produit : le résultat est imposé par le mécanisme. L\'époxydation par un peracide en est l\'exemple type — <i>cis</i>-alcène → <i>cis</i>-époxyde, toujours.</p><p>Une réaction est <b>stéréosélective</b> quand, à partir d\'un substrat donné, un stéréoisomère se forme majoritairement, sans que ce soit une obligation mécanistique.</p><p>Ici, comme la liaison Cα–Cβ tourne avant la fermeture, l\'information géométrique de l\'alcène de départ est perdue en route. La réaction ne peut donc pas être stéréospécifique. Elle est seulement (très) stéréosélective.</p><p>Robinson consacre plusieurs pages à cette distinction, souvent confondue.</p>',
+    src:'<b>Robinson, <i>Organic Stereochemistry</i></b>, §6 « Stereospecific and stereoselective reactions », p. 66 et suivantes.'},
+  quiz:{q:'Pourquoi n\'utilise-t-on pas simplement un peracide chiral sur cette chalcone&nbsp;?',
+        a:'Parce qu\'un peracide livre un oxygène <b>électrophile</b>, et que la double liaison de la chalcone est appauvrie par la conjugaison avec le carbonyle. La réaction serait très lente, voire inexistante. Le choix du type de réactif (nucléophile ou électrophile) est dicté par la <b>densité électronique de l\'alcène</b>, pas par la stéréochimie souhaitée. La stéréochimie ne se décide qu\'ensuite.'}
+});
+
+S({
+  grp:GF, title:'L\'effet de la température, chiffres à l\'appui',
+  consigne:'Fais glisser le curseur entre −78 °C et 0 °C et regarde l\'e.e. et le temps bouger ensemble.',
+  build(host){
+    const ctl=el('div','card'), tab=el('div');
+    ctl.innerHTML=`<div class="slab"><span>Température</span><b><span id="vT">−78</span> °C</b></div>
+      <input type="range" id="sT" min="-78" max="0" step="1" value="-78">
+      <div class="bars">
+        <div class="barrow"><span class="k">e.r.</span><span class="bartrack"><span class="barfill" id="g1"></span><span class="barfill b2" id="g2"></span></span><span class="v" id="ger">—</span></div>
+        <div class="barrow"><span class="k">e.e.</span><span class="bartrack"><span class="barfill" id="g3"></span></span><span class="v" id="gee">—</span></div>
+      </div>
+      <div class="statusline" id="gout" style="margin-top:10px"></div>`;
+    tab.innerHTML=`<table class="dat"><thead><tr><th>T</th><th class="num">temps</th><th class="num">rdt</th><th class="num">e.r.</th></tr></thead><tbody>
+      <tr><td>0 °C</td><td class="num">4 h</td><td class="num">94 %</td><td class="num">90 : 10</td></tr>
+      <tr><td>−30 °C</td><td class="num">24 h</td><td class="num">92 %</td><td class="num">95 : 5</td></tr>
+      <tr><td>−78 °C</td><td class="num">120 h</td><td class="num">80 %</td><td class="num">98,5 : 1,5</td></tr>
+      </tbody></table>`;
+    host.appendChild(tab); host.appendChild(ctl);
+    const $=(i)=>ctl.querySelector('#'+i);
+    const upd=()=>{
+      const tc=parseFloat($('sT').value), T=tc+273.15;
+      const lner = 1336.1/T - 2.636;              /* ajustement d'Eyring sur les 3 points */
+      const er=Math.exp(lner), maj=er/(er+1)*100, ee=(er-1)/(er+1)*100;
+      const ddG = 8.314*T*lner/1000;
+      const t = Math.exp(2201/T - 6.346);
+      $('vT').textContent=(tc<0?'−':'')+Math.abs(tc);
+      $('g1').style.width=maj.toFixed(1)+'%'; $('g2').style.width=(100-maj).toFixed(1)+'%';
+      $('g3').style.width=Math.max(0,ee).toFixed(1)+'%';
+      $('ger').textContent=maj.toFixed(1).replace('.',',')+' : '+(100-maj).toFixed(1).replace('.',',');
+      $('gee').textContent=ee.toFixed(1).replace('.',',')+' %';
+      $('gout').innerHTML=`ΔΔG‡ = R·T·ln(e.r.) = 8,314 × ${T.toFixed(2).replace('.',',')} × ${lner.toFixed(3).replace('.',',')}`
+        +` = <b>${ddG.toFixed(2).replace('.',',')} kJ·mol⁻¹</b><br>`
+        +`durée estimée : <b>${t<48? t.toFixed(0)+' h' : (t/24).toFixed(1).replace('.',',')+' jours'}</b>`
+        +` <span style="color:var(--ink2)">(interpolation sur les 3 points mesurés)</span>`;
+    };
+    $('sT').oninput=upd; upd();
+  },
+  une:'Refroidir améliore l\'e.e. mais coûte du temps : de 0 °C à −78 °C on passe de 90:10 à 98,5:1,5, mais de 4 h à 120 h.',
+  probleme:'<p>« On ne chauffe pas » est une règle, mais elle ne dit pas <i>combien</i> on gagne, ni ce qu\'on paie. Ces trois lignes de ton cours sont une des rares séries de données du chapitre où l\'on peut tout vérifier soi‑même. Faisons‑le.</p>',
+  etapes:[
+   {q:'Que gagne-t-on en refroidissant ?',
+    t:'De 0 °C à −78 °C : e.r. de 90 : 10 à 98,5 : 1,5, soit un e.e. qui passe de 80 % à 97 %. Le taux de « mauvais » énantiomère est divisé par près de 7.'},
+   {q:'Que paie-t-on ?',
+    t:'Du <b>temps</b> : 4 h deviennent 120 h, soit cinq jours. Et du rendement : 94 % tombent à 80 %, parce qu\'une réaction longue laisse le temps à des réactions parasites de se produire.'},
+   {q:'D\'où vient le gain ?',
+    t:'De e.r. = exp(ΔΔG‡/RT). En refroidissant on diminue RT, donc on augmente l\'exposant. À −78 °C, RT ne vaut plus que 1,62 kJ·mol⁻¹ : le moindre écart d\'énergie devient énorme en proportion.'},
+   {q:'Surprise : ΔΔG‡ n\'est pas constant.',
+    t:'Si tu déplaces le curseur, tu verras ΔΔG‡ passer d\'environ 5,0 à 6,8 kJ·mol⁻¹. Ce n\'est pas une erreur : ΔΔG‡ = ΔΔH‡ − T·ΔΔS‡. Il contient lui‑même un terme en T. Voir « pour aller plus loin ».'},
+   {q:'Comment choisit-on en pratique ?',
+    t:'On ne cherche pas le meilleur e.e. dans l\'absolu, mais le meilleur compromis pour l\'usage visé. Pour une molécule finale de médicament, 97 % d\'e.e. et cinq jours peuvent valoir la peine. Pour un intermédiaire qu\'on recristallisera, 80 % en 4 h suffisent largement.'}
+  ],
+  retenir:[
+   'Gain en sélectivité ↔ perte en vitesse et en rendement : c\'est toujours un arbitrage.',
+   'e.r. = exp(ΔΔG‡/RT) : le levier, c\'est RT au dénominateur.',
+   'Ces trois points sont cohérents entre eux — on peut les vérifier par un tracé d\'Eyring.',
+   'Baisser la température n\'améliore la sélectivité que si le mécanisme reste le même.'
+  ],
+  plus:{titre:'Le tracé d\'Eyring sur tes trois points — et ce qu\'il révèle',
+    body:'<p>On part de ΔΔG‡ = ΔΔH‡ − T·ΔΔS‡ et de ln(e.r.) = ΔΔG‡/RT. En combinant :</p>'
+      +'<p style="text-align:center"><b>ln(e.r.) = ΔΔH‡/(R·T) − ΔΔS‡/R</b></p>'
+      +'<p>Donc ln(e.r.) doit être une droite en fonction de 1/T. Avec tes trois points :</p>'
+      +'<ul class="keys"><li>0 °C : 1/T = 3,661·10⁻³, ln(e.r.) = 2,197</li><li>−30 °C : 4,113·10⁻³, ln(e.r.) = 2,944</li><li>−78 °C : 5,124·10⁻³, ln(e.r.) = 4,185</li></ul>'
+      +'<p>La régression donne ln(e.r.) = 1336/T − 2,636, avec un très bon alignement. On en tire :</p>'
+      +'<ul class="keys"><li><b>ΔΔH‡ = +11,1 kJ·mol⁻¹</b> — l\'enthalpie favorise nettement le bon énantiomère (c\'est l\'encombrement du TADDOL).</li>'
+      +'<li><b>ΔΔS‡ = +21,9 J·mol⁻¹·K⁻¹</b> — l\'entropie, elle, favorise le mauvais. L\'état de transition minoritaire est plus « désordonné », donc moins pénalisé à haute température.</li></ul>'
+      +'<p>C\'est un cas classique de <b>compensation enthalpie/entropie</b>. Et cela donne la vraie raison de « on ne chauffe pas » : en chauffant, on donne du poids au terme −T·ΔΔS‡, qui joue contre nous. La température à laquelle les deux se compenseraient exactement (ΔΔG‡ = 0) serait ΔΔH‡/ΔΔS‡ ≈ 507 K, soit 234 °C — heureusement très loin.</p>'
+      +'<p><i>Les trois points sont ceux de tes notes ; la régression et son interprétation sont un ajout, à vérifier avec ton enseignant si tu veux t\'en servir.</i>'},
+  quiz:{q:'On veut un e.e. d\'au moins 90 %. Quelle température choisir, et combien de temps faudra-t-il&nbsp;?',
+        a:'Un e.e. de 90 % correspond à un e.r. de 95 : 5, donc ln(e.r.) = 2,944. Avec ln(e.r.) = 1336/T − 2,636, on trouve T = 1336/5,580 = 239 K, soit environ <b>−34 °C</b>. La durée estimée est alors d\'environ <b>25 h</b>. C\'est presque exactement la deuxième ligne de ton tableau — ce qui montre que l\'ajustement est bon.'}
+});
+
+/* ==========================================================================
+   GROUPE G — Le contrôle cinétique
+   ========================================================================== */
+const GG='G — Contrôle cinétique';
+
+S({
+  grp:GG, title:'Le diagramme d\'énergie (version corrigée)',
   consigne:'Fais glisser les deux curseurs et regarde l\'e.e. réagir — puis appuie sur « réactif achiral ».',
   build(host){
-    const fig=el('div','figbox');
-    const ctl=el('div','card');
+    const fig=el('div','figbox'), ctl=el('div','card');
     ctl.innerHTML=`
       <div class="slab"><span>ΔΔG‡</span><b><span id="vd">8,0</span> kJ·mol⁻¹</b></div>
       <input type="range" id="sd" min="0" max="12" step="0.1" value="8">
@@ -950,24 +2519,207 @@ S({
     $('bexp').onclick=()=>{$('sd').value=6.5;$('st').value=-78;upd();};
     upd();
   },
-  expl:`<p>Une réaction énantiosélective est sous <b>contrôle cinétique</b> : les deux produits sont des énantiomères, donc ils ont exactement la même énergie. Rien ne peut donc être décidé par la thermodynamique.</p>
-  <p>Ce qui les départage, ce sont les deux états de transition. Comme ils contiennent à la fois le substrat prochiral et la source de chiralité, ils sont <b>diastéréoisomères</b> l'un de l'autre : leurs énergies diffèrent de ΔΔG‡, et c'est tout ce dont on a besoin.</p>
-  <p>Le rapport des vitesses suit une exponentielle : quelques kJ·mol⁻¹ suffisent. À −78 °C, 6,5 kJ·mol⁻¹ donnent déjà 98,5:1,5. Baisser T augmente le rapport, ce qui explique la phrase de tes notes : « quand on fait des réactions énantiosélectives, on ne chauffe pas ».</p>`,
+  une:'Les deux produits ont la même énergie, donc la thermodynamique ne peut rien départager : tout se joue sur la différence de hauteur des deux états de transition.',
+  probleme:'<p>On a dit en section A qu\'un réactif chiral « casse la symétrie ». Mais concrètement, <i>où</i>&nbsp;? Ce diagramme répond à la question, et il faut le lire dans le bon ordre : d\'abord les produits, ensuite les états de transition.</p>',
+  etapes:[
+   {q:'D\'abord : regarde les deux puits de produits.',
+    t:'Ils sont <b>exactement à la même hauteur</b>. Ce sont deux énantiomères : ils ont rigoureusement la même énergie interne. Ce n\'est pas une approximation, c\'est une identité.'},
+   {q:'Conséquence immédiate.',
+    t:'La thermodynamique est muette. Si la réaction était réversible et arrivait à l\'équilibre, on obtiendrait 50 : 50 quelle que soit la source de chiralité. Une réaction énantiosélective doit donc être <b>irréversible</b>, et sous contrôle <b>cinétique</b>.'},
+   {q:'Ensuite : regarde les deux sommets.',
+    t:'Eux ne sont pas à la même hauteur. Pourquoi&nbsp;? Parce qu\'ils contiennent à la fois le substrat et la source de chiralité : ce sont donc des <b>diastéréoisomères</b>, pas des énantiomères. Rien ne les oblige à être égaux.'},
+   {q:'Comment l\'écart se transforme-t-il en sélectivité ?',
+    t:'Par une exponentielle : e.r. = exp(ΔΔG‡/RT). Comme RT vaut environ 1,6 kJ·mol⁻¹ à −78 °C, quelques kJ·mol⁻¹ suffisent. 6,5 kJ·mol⁻¹ donnent déjà 98,5 : 1,5.'},
+   {q:'Pourquoi ne chauffe-t-on pas ?',
+    t:'Parce que T est au <b>dénominateur</b> de l\'exponentielle. Chauffer augmente RT, donc rapproche l\'exponentielle de 1, donc rapproche le mélange du racémique. D\'où la phrase de tes notes : « quand on fait des réactions énantiosélectives, on ne chauffe pas ».'},
+   {q:'Et le bouton « réactif achiral » ?',
+    t:'Il met ΔΔG‡ à zéro : les deux sommets fusionnent, l\'exponentielle vaut 1, et on retombe sur le 50 : 50 de la section A. La boucle est bouclée.'}
+  ],
+  retenir:[
+   'Produits énantiomères ⇒ même énergie ⇒ contrôle cinétique obligatoire.',
+   'États de transition diastéréoisomères ⇒ ΔΔG‡ ≠ 0 ⇒ sélectivité possible.',
+   'e.r. = exp(ΔΔG‡/RT) : quelques kJ·mol⁻¹ suffisent.',
+   'Baisser T augmente la sélectivité mais ralentit tout : d\'où les 120 h à −78 °C.'
+  ],
+  plus:{titre:'Quelques ordres de grandeur à garder en tête',
+    body:'<p>À −78 °C (195 K), RT = 1,62 kJ·mol⁻¹. À 25 °C (298 K), RT = 2,48 kJ·mol⁻¹.</p><p>Ce que « coûte » un e.e. donné, à −78 °C :</p><ul class="keys"><li>e.r. 90 : 10 (e.e. 80 %) → ΔΔG‡ = 3,6 kJ·mol⁻¹</li><li>e.r. 95 : 5 (e.e. 90 %) → ΔΔG‡ = 4,8 kJ·mol⁻¹</li><li>e.r. 99 : 1 (e.e. 98 %) → ΔΔG‡ = 7,5 kJ·mol⁻¹</li></ul><p>Autrement dit : toute la différence entre une réaction médiocre et une réaction excellente tient dans <b>4 kJ·mol⁻¹</b>, soit environ un dixième d\'une liaison hydrogène. C\'est pour cela que la mise au point d\'un catalyseur énantiosélectif est si difficile — et si impressionnante quand elle réussit.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, fig. 2.2 et 2.3, p. 6 (noter que les deux puits de produits y sont bien au même niveau).'},
   quiz:{q:'Avec ΔΔG‡ = 6 kJ·mol⁻¹, l\'e.e. est-il meilleur à −78 °C ou à +25 °C&nbsp;? Vérifie avec les curseurs.',
-        a:'À −78 °C (T = 195,15 K) : e.r. = exp(6000/(8,314×195,15)) = 40,9 → e.e. ≈ 95,2 %. À +25 °C (298,15 K) : e.r. = exp(6000/(8,314×298,15)) = 11,2 → e.e. ≈ 83,6 %. Le <b>même</b> ΔΔG‡ donne un bien meilleur e.e. à froid, parce que RT est au dénominateur de l\'exponentielle.'},
-  flag:'⚠️ Dans tes notes, le puits de P<sub>S</sub> et celui de P<sub>R</sub> ne sont pas à la même hauteur. Deux énantiomères ont rigoureusement la même énergie : c\'est corrigé ici.'
+        a:'À −78 °C (195,15 K) : e.r. = exp(6000 / (8,314 × 195,15)) = 40,9 → e.e. ≈ 95,2 %. À +25 °C (298,15 K) : e.r. = exp(6000 / (8,314 × 298,15)) = 11,2 → e.e. ≈ 83,6 %. Le <b>même</b> ΔΔG‡ donne un bien meilleur e.e. à froid, parce que RT est au dénominateur.'},
+  flag:'⚠️ Dans tes notes, le puits de P<sub>S</sub> et celui de P<sub>R</sub> ne sont pas à la même hauteur. Deux énantiomères ont rigoureusement la même énergie : le diagramme est corrigé ici. Procter dessine d\'ailleurs bien les deux puits au même niveau (fig. 2.2 et 2.3).'
 });
 
 /* ==========================================================================
-   4. Rendu, navigation, thème
+   GROUPE H — Catalyseur chiral : époxydation de Sharpless
+   ========================================================================== */
+const GH='H — Catalyseur chiral : Sharpless';
+
+S({
+  grp:GH, title:'Le moyen mnémotechnique : dessine, puis regarde d\'où vient l\'oxygène',
+  consigne:'Bascule entre L-(+)-DET et D-(−)-DET et regarde la flèche verte changer de côté.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'); let cur='L';
+    const draw=()=>{fig.innerHTML=figSharpMnemo(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
+    [['L','L-(+)-DET'],['D','D-(−)-DET']].forEach(([k,t])=>{
+      const b=el('button','btn blue'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig);
+    host.appendChild(el('div','note','<b>Comment s\'en servir.</b> Dessine toujours ton alcool allylique de la même façon : la double liaison en haut à gauche, le CH₂–OH en bas à droite, le tout à plat. Ensuite, la règle est mécanique : (+)-DET livre l\'oxygène par‑dessous, (−)-DET par‑dessus. Procter signale que plus de trois cents exemples y obéissent sans exception.'));
+    draw();
+  },
+  une:'Un seul dessin, toujours le même, et une règle qui ne souffre pas d\'exception : c\'est le modèle prédictif le plus fiable de toute la synthèse asymétrique.',
+  probleme:'<p>Avec un auxiliaire, on peut retrouver la face bloquée en regardant la molécule. Avec un catalyseur, le complexe est un <b>dimère de titane</b> avec deux tartrates et une dizaine de ligands : impossible de raisonner à vue d\'œil.</p><p>Sharpless a donc proposé autre chose : pas un modèle mécanistique, mais un <b>moyen mnémotechnique</b> qui marche à tous les coups.</p>',
+  etapes:[
+   {q:'Quelle est la condition sur le substrat ?',
+    t:'Il faut un <b>alcool allylique</b> : un OH sur le carbone voisin de la double liaison. Ce n\'est pas un détail — c\'est par cet OH que le substrat se fixe sur le titane. Sans lui, la réaction n\'a pas lieu du tout.'},
+   {q:'Comment dessiner ?',
+    t:'Toujours de la même façon : la molécule à plat, la double liaison en haut à gauche, le <b>CH₂–OH en bas à droite</b>. Si tu dessines autrement, la règle te donnera l\'inverse.'},
+   {q:'Quelle est la règle ?',
+    t:'L-(+)-DET → l\'oxygène est livré par la face du <b>dessous</b>. D-(−)-DET → par la face du <b>dessus</b>. C\'est tout.'},
+   {q:'Vérifions sur ton exemple.',
+    t:'Le (E)-déc-2-én-1-ol avec le L-(+)-DET : oxygène par‑dessous → époxyde <b>(2S,3S)</b>, 99 % de rendement et 96 % d\'e.e. C\'est exactement ce qu\'indiquent tes notes.'},
+   {q:'Et le tartrate lui-même ?',
+    t:'Le L-(+)-DET est le tartrate de diéthyle de configuration <b>(R,R)</b> — tes notes l\'annotent correctement. Il vient de l\'acide tartrique naturel, sous-produit de la vinification : énantiopur et très bon marché.'}
+  ],
+  retenir:[
+   'Substrat obligatoire : alcool allylique (le OH sert d\'ancrage sur le titane).',
+   'Dessin imposé : C=C en haut à gauche, CH₂OH en bas à droite.',
+   '(+)-DET = oxygène par-dessous ; (−)-DET = oxygène par-dessus.',
+   'L-(+)-DET = (R,R)-tartrate de diéthyle.'
+  ],
+  plus:{titre:'Pourquoi le moyen mnémotechnique compte autant',
+    body:'<p>Procter écrit : « <i>Ce modèle prédictif extrêmement fiable est l\'une des grandes forces de l\'époxydation asymétrique de Sharpless, avec plus de trois cents exemples qui s\'y conforment tous.</i> »</p><p>Il faut mesurer ce que cela veut dire. En synthèse totale, on planifie une séquence de vingt étapes sur le papier avant de toucher un flacon. Une réaction dont on ne peut pas prédire l\'issue est inutilisable dans ce contexte, même si elle donne 99 % d\'e.e. sur un substrat modèle.</p><p>La <b>prévisibilité</b> est donc un critère à part entière — tu le retrouveras dans le cahier des charges des auxiliaires (section B). C\'est aussi pour cela que Sharpless a reçu le prix Nobel en 2001.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, §7, fig. 7.54 et tableau 7.8, p. 176–177.'},
+  quiz:{q:'On veut l\'époxyde (2R,3R) à partir du même (E)-déc-2-én-1-ol. Que faut-il changer&nbsp;?',
+        a:'Rien, sauf le tartrate : on prend le <b>D-(−)-DET</b>, c\'est-à-dire le (S,S)-tartrate de diéthyle. L\'oxygène est alors livré par la face du dessus et on obtient l\'énantiomère. C\'est le grand avantage de la voie catalytique ici : les deux énantiomères de l\'acide tartrique sont disponibles et bon marché — contrairement à la spartéine, où un seul énantiomère existe naturellement.'}
+});
+
+S({
+  grp:GH, title:'Le cycle catalytique, tour par tour',
+  consigne:'Appuie sur « étape suivante » et lis ce qui change à chaque tour.',
+  build(host){
+    const fig=el('div','figbox'), row=el('div','btnrow'), st=el('div','statusline'); let k=0;
+    const prev=el('button','btn'), next=el('button','btn');
+    prev.textContent='‹ Étape'; next.textContent='Étape suivante ›';
+    const draw=()=>{fig.innerHTML=figCycle(k); st.innerHTML=CYCLE[k].d;
+      prev.disabled=(k===0); next.disabled=(k===4);
+      prev.style.opacity=k===0?.4:1; next.style.opacity=k===4?.4:1;};
+    prev.onclick=()=>{if(k>0){k--;draw();}}; next.onclick=()=>{if(k<4){k++;draw();}};
+    row.appendChild(prev); row.appendChild(next);
+    host.appendChild(fig); host.appendChild(row); host.appendChild(st); draw();
+  },
+  une:'Le titane est une pince à quatre doigts : il tient le tartrate chiral, l\'oxydant et le substrat en même temps — et c\'est pour cela qu\'il peut imposer une face.',
+  probleme:'<p>Avec un auxiliaire ou un réactif, on voit tout de suite où est la chiralité. Ici, le tartrate n\'est même pas en contact avec la double liaison. Comment peut‑il décider de quelle face l\'oxygène arrive&nbsp;?</p><p>La réponse tient en un mot : <b>proximité imposée</b>. Le métal réunit les partenaires à distance fixe.</p>',
+  etapes:[
+   {q:'Étape 1 — le titane change de ligands.',
+    t:'Ti(OiPr)₄ échange très rapidement ses alcoolates avec n\'importe quel alcool. Avec le tartrate — un <b>diol</b>, donc un ligand bidenté — l\'équilibre est nettement déplacé vers le chélate, plus stable. Il se forme Ti(tartrate)₂(OR)₂.'},
+   {q:'Étapes 2 et 3 — on charge le complexe.',
+    t:'Deux nouveaux échanges : le tert-butylhydroperoxyde d\'abord, l\'alcool allylique ensuite. Chacun remplace un alcoolate restant. Le complexe n\'est actif que lorsqu\'il porte <b>les deux</b>.'},
+   {q:'Étape 4 — le transfert d\'oxygène.',
+    t:'C\'est l\'étape clé. Le substrat et l\'oxydant sont sur le <b>même</b> titane, à distance fixe, dans une orientation imposée par le tartrate. L\'oxygène passe de l\'hydroperoxyde à la double liaison : une seule face est géométriquement atteignable.'},
+   {q:'Étape 5 — la libération.',
+    t:'L\'époxy-alcool et le tert-butanolate quittent le titane, remplacés par de nouvelles molécules. Le complexe est revenu à son état initial : il peut recommencer. C\'est ce retour à l\'état de départ qui définit un catalyseur.'},
+   {q:'Pourquoi le OH du substrat est-il indispensable ?',
+    t:'Parce que c\'est sa seule façon de monter sur le titane. Procter est catégorique : « <i>le substrat doit posséder un groupe capable de se coordonner au catalyseur, presque toujours un hydroxyle ; sans un tel groupe, l\'époxydation asymétrique n\'a pas lieu.</i> » Un alcène isolé ne réagit pas.'}
+  ],
+  retenir:[
+   'Le titane réunit tartrate + oxydant + substrat sur un même centre.',
+   'Le tartrate ne touche jamais la double liaison : il agit en imposant la géométrie.',
+   'L\'alcool allylique n\'est pas un caprice : c\'est l\'ancrage.',
+   'Retour à l\'état initial = catalyse ; 7,3 mol % suffisent.'
+  ],
+  plus:{titre:'À quoi ressemble vraiment le catalyseur',
+    body:'<p>Le complexe actif — celui que Procter appelle « <i>fully loaded</i> » — est un <b>dimère</b> : deux atomes de titane pontés, deux tartrates, plus l\'hydroperoxyde et le substrat. Cette structure est cohérente avec les études cinétiques et spectroscopiques.</p><p>Points importants pour ton cours :</p><ul class="keys"><li>Le complexe est <b>neutre</b> dans son ensemble.</li><li>Le titane est au degré d\'oxydation <b>+IV</b>, comme dans Ti(OiPr)₄ de départ. Il ne change jamais : ce n\'est pas une catalyse rédox au sens d\'un couple Ti(II)/Ti(IV).</li><li>Le tartrate est un ligand <b>dianionique</b> : ses deux OH <i>alcooliques</i> sont déprotonés et liés au titane. Les deux esters éthyliques, eux, restent intacts et ne se coordonnent pas.</li></ul><p>C\'est le point à vérifier sur tes notes : si une charge positive est écrite sur le tartrate ou une charge négative sur le titane, c\'est inversé.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, §7, fig. 7.67–7.69, p. 182–183.'},
+  quiz:{q:'Pourquoi le même titane ne fonctionne-t-il pas sur un alcène isolé, même en présence de tartrate&nbsp;?',
+        a:'Parce qu\'un alcène isolé n\'a aucun moyen de se fixer sur le titane. Il resterait en solution, loin du complexe, et rencontrerait l\'hydroperoxyde au hasard — sans aucune sélectivité, et très lentement puisque t-BuOOH seul est un oxydant médiocre. Toute la stratégie repose sur la <b>coordination préalable</b> du substrat : c\'est le principe même de ce qu\'on appelle une réaction « dirigée par un groupe ».'}
+});
+
+S({
+  grp:GH, title:'Le tamis 4 Å : sans lui, plus de catalyse',
+  consigne:'Bascule entre « sans tamis » et « avec tamis 4 Å ».',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'); let cur=false;
+    const draw=()=>{fig.innerHTML=figSieves(cur);[...row.children].forEach(b=>b.classList.toggle('on',(b.dataset.k==='1')===cur));};
+    [['0','Sans tamis'],['1','Avec tamis 4 Å']].forEach(([k,t])=>{
+      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=(k==='1');draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); draw();
+  },
+  une:'Le titane(IV) est détruit par l\'eau. Sans tamis moléculaire, le catalyseur meurt en cours de route et il faut en mettre un équivalent entier.',
+  probleme:'<p>Dans tes notes, le tamis 4 Å apparaît discrètement sous la flèche, comme un détail de protocole. C\'est en réalité <b>la</b> condition qui a transformé la réaction de Sharpless en vraie méthode catalytique — et ça mérite une section.</p>',
+  etapes:[
+   {q:'Qu\'est-ce qu\'un tamis moléculaire 4 Å ?',
+    t:'Une zéolithe : un solide poreux dont les cavités font environ 4 ångströms. Les petites molécules — l\'eau au premier chef — y entrent et y restent piégées ; les molécules organiques, trop grosses, n\'y entrent pas.'},
+   {q:'Pourquoi l\'eau est-elle un problème ?',
+    t:'Le titane(IV) est un acide de Lewis très oxophile. L\'eau hydrolyse ses liaisons Ti–O : le complexe se transforme en <b>oxydes et hydroxydes de titane</b>, insolubles et totalement inactifs. Le catalyseur ne revient jamais dans le cycle.'},
+   {q:'Quelle est la conséquence pratique ?',
+    t:'Sans tamis, il faut mettre un <b>équivalent</b> de Ti(OiPr)₄ et de tartrate, parce que chaque molécule de catalyseur ne fait qu\'un tour ou deux avant de mourir. La réaction marche, mais ce n\'est plus de la catalyse.'},
+   {q:'Avec le tamis ?',
+    t:'L\'eau est retirée du jeu en permanence. Le complexe survit, tourne des dizaines de fois, et <b>7,3 mol %</b> suffisent à transformer tout le substrat. C\'est la version « catalytique » que tes notes décrivent.'},
+   {q:'Où l\'eau arrive-t-elle, d\'ailleurs ?',
+    t:'Un peu par le solvant, un peu par la verrerie, mais surtout avec le t-BuOOH commercial, souvent vendu en solution aqueuse ou humide. C\'est pour cela que le protocole insiste aussi sur du t-BuOOH anhydre.'}
+  ],
+  retenir:[
+   'Tamis 4 Å = capteur d\'eau, exactement comme MgSO₄ chez Ellman.',
+   'Ti(IV) + H₂O → oxydes insolubles inactifs : mort du catalyseur.',
+   'Sans tamis : 1 équivalent. Avec tamis : quelques mol %.',
+   'Un « détail de protocole » peut faire toute la différence entre stœchiométrique et catalytique.'
+  ],
+  quiz:{q:'On retrouve un desséchant chez Ellman (MgSO₄) et chez Sharpless (tamis 4 Å). Le rôle est-il le même&nbsp;?',
+        a:'Le <b>moyen</b> est le même — retirer l\'eau — mais pas le <b>but</b>. Chez Ellman, l\'eau est un <i>produit</i> de la réaction : on la retire pour déplacer un équilibre (Le Chatelier). Chez Sharpless, l\'eau est une <i>impureté</i> qui détruit le catalyseur : on la retire pour le protéger. Savoir distinguer « déplacer un équilibre » de « protéger un réactif » est un bon réflexe de lecture de protocole.'}
+});
+
+S({
+  grp:GH, title:'Pourquoi un léger excès de tartrate',
+  consigne:'Bascule entre les deux rapports et regarde la largeur des deux barres.',
+  build(host){
+    const row=el('div','btnrow'), fig=el('div','figbox'); let cur='tart';
+    const draw=()=>{fig.innerHTML=figRatio(cur);[...row.children].forEach(b=>b.classList.toggle('on',b.dataset.k===cur));};
+    [['tart','Tartrate en excès'],['ti','Titane en excès']].forEach(([k,t])=>{
+      const b=el('button','btn'); b.textContent=t; b.dataset.k=k; b.onclick=()=>{cur=k;draw();}; row.appendChild(b);
+    });
+    host.appendChild(row); host.appendChild(fig); draw();
+  },
+  une:'Du titane sans tartrate est un catalyseur parfaitement actif — mais achiral. Il fabrique du racémique en parallèle et fait chuter l\'e.e.',
+  probleme:'<p>Tes notes donnent 5 mol % de DET pour 7,3 mol % de Ti(OiPr)₄. Cela ressemble à un chiffre arbitraire. Mais Procter précise que les conditions catalytiques utilisent un rapport tartrate : titane de <b>1,1 à 1,2 pour 1</b> — donc un léger excès de <i>tartrate</i>. Il y a une raison.</p>',
+  etapes:[
+   {q:'Que fait le titane libre ?',
+    t:'Il catalyse l\'époxydation, exactement comme le complexe chiral : c\'est le même acide de Lewis, le même transfert d\'oxygène. Simplement, il n\'a aucune information chirale à transmettre.'},
+   {q:'Quel est le résultat ?',
+    t:'Une <b>voie parallèle racémique</b>. Chaque molécule de substrat qui passe par le titane nu donne 50 : 50. Ces produits viennent diluer l\'excès obtenu par la voie chirale.'},
+   {q:'Pourquoi c\'est grave ?',
+    t:'Parce que le titane nu est souvent <b>plus rapide</b> : il est moins encombré, donc plus accessible. Même une petite proportion de titane libre peut consommer une fraction importante du substrat.'},
+   {q:'La solution ?',
+    t:'S\'assurer qu\'il ne reste <b>aucun</b> titane sans tartrate, en mettant le tartrate en léger excès. C\'est exactement ce que font les 1,1 à 1,2 équivalents par titane.'},
+   {q:'Pourquoi pas un gros excès, alors ?',
+    t:'Parce que le tartrate en excès finit par ralentir la réaction : il occupe des sites de coordination dont le substrat et l\'oxydant ont besoin. On cherche le minimum qui garantisse qu\'il ne reste pas de titane nu.'}
+  ],
+  retenir:[
+   'Titane libre = catalyseur actif mais achiral = voie racémique parallèle.',
+   'Voie racémique souvent plus rapide, parce que moins encombrée.',
+   'D\'où le léger excès de tartrate : 1,1 à 1,2 pour 1 titane.',
+   'Règle générale en catalyse asymétrique : tout métal non ligandé est un ennemi.'
+  ],
+  plus:{titre:'Le même piège, ailleurs',
+    body:'<p>Ce raisonnement se généralise à presque toute la catalyse asymétrique. Chaque fois qu\'un métal peut exister sous forme libre à côté de sa forme ligandée, il faut se demander si la forme libre catalyse la même réaction.</p><ul class="keys"><li>Hydrogénation au rhodium : Rh sans phosphine chirale hydrogène quand même — en racémique.</li><li>Organocatalyse : une amine achirale résiduelle catalyse l\'énamine sans sélectivité.</li><li>Sharpless : ici même.</li></ul><p>C\'est pour cela qu\'un protocole de catalyse asymétrique précise toujours le <b>rapport ligand/métal</b>, et qu\'il est presque toujours supérieur à 1. Ce n\'est jamais un chiffre décoratif.</p>',
+    src:'<b>Procter, <i>Asymmetric Synthesis</i></b>, §7, fig. 7.51, p. 175 (« <i>tartrate:Ti(OiPr)₄ ratio 1.1:1 to 1.2:1</i> »).'},
+  quiz:{q:'Un e.e. qui plafonne à 70 % au lieu des 96 % attendus, avec une réaction très rapide. Quelle hypothèse testes-tu en premier&nbsp;?',
+        a:'Une <b>voie racémique parallèle</b> par du métal non ligandé. La combinaison « plus rapide que prévu » + « e.e. plafonné » en est la signature : une partie du substrat emprunte un chemin sans sélectivité. Premier test : augmenter le rapport ligand/métal. Si l\'e.e. remonte et que la réaction ralentit, le diagnostic est confirmé.'},
+  flag:'⚠️ <b>À vérifier sur ton support de cours.</b> Tes notes donnent L-(+)-DET <b>5 mol %</b> et Ti(OiPr)₄ <b>7,3 mol %</b>, soit un rapport tartrate : Ti de 0,68 — donc un excès de <i>titane</i>, l\'inverse de ce que prescrit Procter (1,1 à 1,2 de tartrate pour 1 titane). Ou bien les deux chiffres ont été intervertis en recopiant, ou bien ils viennent d\'un protocole particulier. Le raisonnement de cette section, lui, ne dépend pas des chiffres : du titane non ligandé fabrique du racémique.'
+});
+
+/* ==========================================================================
+   Rendu, navigation, thème
    ========================================================================== */
 const stage=document.getElementById('stage');
 const tocEl=document.getElementById('toc');
 const navpos=document.getElementById('navpos');
 const prevbtn=document.getElementById('prevbtn'), nextbtn=document.getElementById('nextbtn');
 let idx=0;
-
 function store(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){} return null; }
+
+function blk(titre,inner){ return '<div class="blk"><h3>'+titre+'</h3>'+inner+'</div>'; }
 
 function renderSection(i){
   idx=i; stage.innerHTML='';
@@ -975,24 +2727,37 @@ function renderSection(i){
   const sec=el('section','sec');
   sec.appendChild(el('div','kicker',d.grp));
   sec.appendChild(el('h2','sectitle',d.title));
+  if(d.une) sec.appendChild(el('div','une','<span class="t">En une phrase</span>'+d.une));
+  if(d.probleme) sec.appendChild(el('div','blk','<h3>Le problème</h3>'+d.probleme));
   if(d.consigne) sec.appendChild(el('div','consigne','<span class="ic">👉</span><span>'+d.consigne+'</span>'));
-  const card=el('div','card');
-  d.build(card);
-  sec.appendChild(card);
+  const card=el('div','card'); d.build(card); sec.appendChild(card);
   if(d.flag) sec.appendChild(el('div','warnbox',d.flag));
-  sec.appendChild(el('div','expl',d.expl));
-  const q=el('div','quiz');
-  q.innerHTML='<p class="q">'+d.quiz.q+'</p><button type="button">Voir la réponse</button><div class="a">'+d.quiz.a+'</div>';
-  q.querySelector('button').onclick=()=>{ q.classList.toggle('show');
-    q.querySelector('button').textContent=q.classList.contains('show')?'Masquer la réponse':'Voir la réponse'; };
-  sec.appendChild(q);
+  if(d.etapes){
+    const ol='<ol class="steps">'+d.etapes.map(s=>'<li>'+(s.q?'<span class="q">'+s.q+'</span>':'')+s.t+'</li>').join('')+'</ol>';
+    sec.appendChild(el('div','blk','<h3>Le raisonnement, pas à pas</h3>'+ol));
+  }
+  if(d.expl) sec.appendChild(el('div','expl',d.expl));
+  if(d.retenir){
+    sec.appendChild(el('div','blk','<h3>À retenir</h3><ul class="keys">'+d.retenir.map(r=>'<li>'+r+'</li>').join('')+'</ul>'));
+  }
+  if(d.plus){
+    const dt=el('details','plus');
+    dt.innerHTML='<summary>Pour aller plus loin — '+d.plus.titre+'</summary><div class="body">'+d.plus.body
+      +(d.plus.src?'<div class="src">Source : '+d.plus.src+'</div>':'')+'</div>';
+    sec.appendChild(dt);
+  }
+  if(d.quiz){
+    const q=el('div','quiz');
+    q.innerHTML='<p class="q">'+d.quiz.q+'</p><button type="button">Voir la réponse</button><div class="a">'+d.quiz.a+'</div>';
+    q.querySelector('button').onclick=()=>{ q.classList.toggle('show');
+      q.querySelector('button').textContent=q.classList.contains('show')?'Masquer la réponse':'Voir la réponse'; };
+    sec.appendChild(q);
+  }
   stage.appendChild(sec);
   navpos.textContent=(i+1)+' / '+SECTIONS.length;
   prevbtn.disabled=(i===0); nextbtn.disabled=(i===SECTIONS.length-1);
   document.getElementById('hsub').textContent=d.grp;
-  buildToc();
-  window.scrollTo(0,0);
-  store('ch0904.sec',String(i));
+  buildToc(); window.scrollTo(0,0); store('ch0904.sec',String(i));
 }
 function buildToc(){
   let g=null, h='';
@@ -1008,12 +2773,10 @@ prevbtn.onclick=()=>{ if(idx>0) renderSection(idx-1); };
 nextbtn.onclick=()=>{ if(idx<SECTIONS.length-1) renderSection(idx+1); };
 document.getElementById('tocbtn').onclick=()=>{ tocEl.classList.toggle('open'); };
 
-/* légende */
 const lbar=document.getElementById('legendbar'), ltog=document.getElementById('legendtoggle');
 ltog.onclick=()=>{ const o=lbar.classList.toggle('open'); ltog.setAttribute('aria-expanded',o?'true':'false'); store('ch0904.leg',o?'1':'0'); };
 if(store('ch0904.leg')==='1'){ lbar.classList.add('open'); ltog.setAttribute('aria-expanded','true'); }
 
-/* thème : auto → clair → sombre → auto */
 const tbtn=document.getElementById('themebtn');
 function applyTheme(t){
   if(t==='light'||t==='dark') document.documentElement.setAttribute('data-theme',t);
@@ -1024,7 +2787,6 @@ function applyTheme(t){
 let theme=store('ch0904.theme')||'auto'; applyTheme(theme);
 tbtn.onclick=()=>{ theme = theme==='auto'?'light':(theme==='light'?'dark':'auto'); applyTheme(theme); renderSection(idx); };
 
-/* démarrage */
 const saved=parseInt(store('ch0904.sec')||'0',10);
 renderSection(Number.isFinite(saved)&&saved>=0&&saved<SECTIONS.length?saved:0);
 </script>

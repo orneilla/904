@@ -96,22 +96,79 @@ for geo,me,hh in (('Z',(215,78),(215,114)),('E',(215,116),(215,78))):
     report(build(A,B,"enol"),f"Enolate dessine pour le bouton « {geo} »",f"liaison C=C : {geo}")
 
 print("="*74)
-print("D. CARTON DE LA SECTION 0b (acide 2-methyl-3-phenylpropanoique)")
+print("D. CARTON « CARBONE STEREOGENE » DE LA SECTION 0b")
+print("   (disposition en Y : 2 liaisons en haut, 1 liaison gras/pointille en bas)")
 print("="*74)
-# stereoC : U=(0,-28) gras, D=(0,28) pointille, L=(-34,0), R=(+34,0)  [coords SVG]
-for tag,lft,rgt in (('gauche','CH3','CH2Ph'),('droite','CH2Ph','CH3')):
-    cx,cy=100,100
-    A=[('C',cx,cy),('C',cx,cy-28),('O',cx-16,cy-50),('O',cx+16,cy-50)]   # CO2H en GRAS vers le haut
-    B=[(1,2,1,1),(2,3,2,0),(2,4,1,0)]
-    def chain(px,py,kind,start):
-        if kind=='CH3': return [('C',px,py)],[(1,start,1,0)]
-        aa=[('C',px,py),('C',px+(26 if px>cx else -26),py+16),('C',px+(52 if px>cx else -52),py+4),
-            ('C',px+(78 if px>cx else -78),py+20),('C',px+(78 if px>cx else -78),py+46),
-            ('C',px+(52 if px>cx else -52),py+58),('C',px+(26 if px>cx else -26),py+42)]
-        bb=[(1,start,1,0),(start,start+1,1,0),(start+1,start+2,2,0),(start+2,start+3,1,0),
-            (start+3,start+4,2,0),(start+4,start+5,1,0),(start+5,start+6,2,0),(start+6,start+1,1,0)]
-        return aa,bb
-    a1,b1=chain(cx-34,cy,lft,5); A+=a1; B+=b1
-    a2,b2=chain(cx+34,cy,rgt,len(A)+1); A+=a2; B+=b2
-    report(build(A,B,"cart"),f"Carton {tag} : CO2H en gras vers le haut, {lft} a gauche, {rgt} a droite",
-           "R" if tag=='gauche' else "S")
+# acide 2-methyl-3-phenylpropanoique
+def carton(lft,rgt,down,wedge,name):
+    cx,cy=120,100
+    A=[('C',cx,cy)]; B=[]
+    def put(px,py,kind,flag):
+        st=len(A)+1
+        if kind=='CH3':
+            A.append(('C',px,py)); B.append((1,st,1,flag))
+        elif kind=='CO2H':
+            A.extend([('C',px,py),('O',px-14,py-22),('O',px+14,py-22)])
+            B.extend([(1,st,1,flag),(st,st+1,2,0),(st,st+2,1,0)])
+        elif kind=='CH2Ph':
+            A.extend([('C',px,py),('C',px,py+30),('C',px-26,py+45),('C',px-26,py+75),
+                      ('C',px,py+90),('C',px+26,py+75),('C',px+26,py+45)])
+            B.extend([(1,st,1,flag),(st,st+1,1,0),(st+1,st+2,2,0),(st+2,st+3,1,0),
+                      (st+3,st+4,2,0),(st+4,st+5,1,0),(st+5,st+6,2,0),(st+6,st+1,1,0)])
+    put(cx-34,cy-16,lft,0); put(cx+34,cy-16,rgt,0); put(cx,cy+34,down, 1 if wedge else 6)
+    report(build(A,B,'c'),name)
+carton('CO2H','CH3','CH2Ph',False,"CO2H haut-gauche, CH3 haut-droite, CH2Ph POINTILLE en bas -> (R)")
+carton('CO2H','CH3','CH2Ph',True ,"CO2H haut-gauche, CH3 haut-droite, CH2Ph GRAS en bas -> (S)")
+carton('CH3','CO2H','CH2Ph',True ,"miroir : CH3 haut-gauche, CO2H haut-droite, CH2Ph GRAS -> (R)")
+
+# ============================================================================
+# Deuxième vague : Hoppe, époxyde de la chalcone, époxyde de Sharpless, cartons
+# ============================================================================
+import math
+def phenyl(A,B,cx,cy,att):
+    st=len(A)+1
+    for i in range(6):
+        a=math.radians(60*i); A.append(('C',cx+26*math.cos(a),cy+26*math.sin(a)))
+    for i in range(6): B.append((st+i, st+(i+1)%6, 2 if i%2==0 else 1, 0))
+    return st+att
+
+print("="*74); print("E. PRODUIT DE HOPPE (figHoppeTopic)"); print("="*74)
+def hoppe(pos,flag):
+    cx,cy=180,120
+    A=[('C',cx,cy)]; B=[]
+    A+=[('O',cx-40,cy-20),('C',cx-68,cy-38),('O',cx-68,cy-68),('N',cx-96,cy-20),
+        ('C',cx-124,cy-38),('C',cx-96,cy+10)]
+    B+=[(1,2,1,0),(2,3,1,0),(3,4,2,0),(3,5,1,0),(5,6,1,0),(5,7,1,0)]
+    A+=[('C',cx+40,cy-20)]; B+=[(1,8,1,0)]
+    dx,dy = ((-24,38) if pos=='a' else (24,38))
+    A+=[('C',cx+dx,cy+dy),('O',cx+dx-18,cy+dy+26),('O',cx+dx+18,cy+dy+26)]
+    B+=[(1,9,1,flag),(9,10,2,0),(9,11,1,0)]
+    return A,B
+A,B=hoppe('a',1); report(build(A,B,'h'),"Hₐ (bas-gauche, GRAS) remplacé par CO2H")
+A,B=hoppe('b',6); report(build(A,B,'h'),"Hᵦ (bas-droite, POINTILLÉ) remplacé par CO2H")
+
+print("="*74); print("F. ÉPOXYDE DE LA CHALCONE (figWeitz, étape 5)"); print("="*74)
+def epox(ph_flag,co_flag,name):
+    A=[('C',150,130),('C',200,130),('O',175,100)]
+    B=[(1,2,1,0),(1,3,1,0),(2,3,1,0)]
+    A.append(('C',232,158)); B.append((2,4,1,co_flag))
+    A.append(('O',232,190)); B.append((4,5,2,0))
+    v=phenyl(A,B,278,140,3); B.append((4,v,1,0))
+    v2=phenyl(A,B,104,150,0); B.append((1,v2,1,ph_flag))
+    report(build(A,B,'e'),name)
+epox(1,6,"Ph en GRAS sur C3 ; C(=O)Ph en POINTILLÉ sur C2  (trans)")
+epox(6,1,"Ph en POINTILLÉ sur C3 ; C(=O)Ph en GRAS sur C2  (trans)")
+
+print("="*74); print("H. ÉPOXYDE DE SHARPLESS (figSharpMnemo)"); print("="*74)
+def sharp(r_flag,ch2_flag,name):
+    A=[('C',150,130),('C',200,130),('O',175,100)]
+    B=[(1,2,1,0),(1,3,1,0),(2,3,1,0)]
+    x,y=150,130; prev=1
+    for i in range(7):
+        x-=24; y+= 14 if i%2==0 else -14
+        A.append(('C',x,y)); B.append((prev,len(A),1, r_flag if i==0 else 0)); prev=len(A)
+    A.append(('C',232,152)); B.append((2,len(A),1,ch2_flag)); c1=len(A)
+    A.append(('O',264,140)); B.append((c1,len(A),1,0))
+    report(build(A,B,'s'),name)
+sharp(6,1,"C7H15 en POINTILLÉ sur C3 ; CH2OH en GRAS sur C2  → attendu (2S,3S)")
+sharp(1,6,"C7H15 en GRAS sur C3 ; CH2OH en POINTILLÉ sur C2  → attendu (2R,3R)")
