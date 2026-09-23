@@ -1,0 +1,1491 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Voir en 3D — la méthode quand on ne visualise pas</title>
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#ffffff; --panel2:#f2f2ef; --ink:#1a1a18; --ink2:#55554e;
+  --line:#d8d8d2; --accent:#1f2937;
+  --blue:#1d4ed8;      /* source de chiralité */
+  --green:#0f7a34;     /* électrophile / nucléophile entrant */
+  --purple:#7326cc;    /* métal & chélate */
+  --red:#cf2222;       /* gêne stérique */
+  --redzone:rgba(207,34,34,.20);
+  --grey:#9a9a93;      /* face bloquée */
+  --greyface:rgba(120,120,115,.32);
+  --ok:#0f7a34; --warn:#b45309;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);
+}
+:root:not([data-theme="light"]) { }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15161a; --panel:#1e2027; --panel2:#282b33; --ink:#eceef2; --ink2:#a9aeba;
+    --line:#3a3e48; --accent:#e5e7eb;
+    --blue:#7aa8ff; --green:#5fd48a; --purple:#c79cff; --red:#ff8f8f;
+    --redzone:rgba(255,120,120,.22);
+    --grey:#7c8290; --greyface:rgba(170,175,190,.28);
+    --ok:#5fd48a; --warn:#fbbf24;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15161a; --panel:#1e2027; --panel2:#282b33; --ink:#eceef2; --ink2:#a9aeba;
+  --line:#3a3e48; --accent:#e5e7eb;
+  --blue:#7aa8ff; --green:#5fd48a; --purple:#c79cff; --red:#ff8f8f;
+  --redzone:rgba(255,120,120,.22);
+  --grey:#7c8290; --greyface:rgba(170,175,190,.28);
+  --ok:#5fd48a; --warn:#fbbf24;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:400 17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  padding:0 0 92px;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:40;background:var(--bg);
+  border-bottom:1px solid var(--line);
+}
+.hbar{display:flex;align-items:center;gap:8px;min-height:56px}
+.htitle{font-size:15px;font-weight:600;letter-spacing:.01em;flex:1;line-height:1.2}
+.htitle small{display:block;font-weight:400;font-size:12.5px;color:var(--ink2)}
+.iconbtn{
+  min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;color:var(--ink);
+  font-size:18px;cursor:pointer;padding:0 10px;
+}
+.iconbtn:active{background:var(--panel2)}
+
+/* ---------- légende ---------- */
+#legendbar{border-bottom:1px solid var(--line);background:var(--panel2)}
+#legendtoggle{
+  width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;
+  background:none;border:0;color:var(--ink);font:inherit;font-size:15px;font-weight:600;
+  padding:10px 16px;cursor:pointer;
+}
+#legendtoggle .chev{transition:transform .18s;font-size:13px;color:var(--ink2)}
+#legendbar.open #legendtoggle .chev{transform:rotate(180deg)}
+#legendbody{display:none;padding:0 16px 14px}
+#legendbar.open #legendbody{display:block}
+.leg{display:flex;align-items:flex-start;gap:10px;font-size:14.5px;line-height:1.4;padding:5px 0;color:var(--ink2)}
+.leg b{color:var(--ink);font-weight:600}
+.swatch{flex:0 0 26px;height:20px;margin-top:1px;border-radius:5px;display:block}
+
+/* ---------- sommaire ---------- */
+#toc{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;display:none;padding-bottom:40px}
+#toc.open{display:block}
+.tocitem{
+  display:flex;gap:12px;align-items:baseline;width:100%;text-align:left;
+  min-height:52px;padding:12px 16px;background:none;border:0;border-bottom:1px solid var(--line);
+  color:var(--ink);font:inherit;font-size:16px;cursor:pointer;
+}
+.tocitem .n{color:var(--ink2);font-variant-numeric:tabular-nums;font-size:14px;flex:0 0 34px}
+.tocitem.cur{background:var(--panel2);font-weight:600}
+.tocgroup{padding:16px 16px 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);font-weight:700}
+
+/* ---------- section ---------- */
+section.sec{padding-top:18px;padding-bottom:104px}
+h2.sectitle{font-size:20px;line-height:1.25;margin:0 0 4px;font-weight:700}
+.kicker{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);font-weight:700;margin-bottom:6px}
+.consigne{
+  display:flex;gap:9px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:12px;padding:11px 13px;margin:12px 0 14px;font-size:15.5px;line-height:1.45;
+}
+.consigne .ic{flex:0 0 auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px;margin:0 0 14px}
+.figbox{width:100%;overflow:hidden;border-radius:10px;background:var(--panel)}
+.cv3dwrap{width:100%;border-radius:12px;background:var(--panel);border:1px solid var(--line);
+  overflow:hidden;position:relative;margin:0 0 6px}
+.cv3dwrap canvas{display:block;cursor:grab}
+.cv3dwrap canvas:active{cursor:grabbing}
+.cv3dhint{font-size:12.5px;color:var(--ink2);text-align:center;margin:0 0 10px}
+.etape3d{counter-reset:none;margin:0 0 12px}
+.etape3d li{margin:0 0 9px;line-height:1.55}
+.gros{font-size:17px;line-height:1.62}
+.gros b{font-weight:700}
+.dico{border-left:4px solid var(--blue);background:var(--panel2);border-radius:0 10px 10px 0;
+  padding:11px 13px;margin:10px 0;font-size:15px;line-height:1.55}
+.dico .m{font-weight:800;color:var(--blue);display:block;margin-bottom:3px}
+.rassure{border-left:4px solid var(--green);background:var(--panel2);border-radius:0 10px 10px 0;
+  padding:11px 13px;margin:10px 0;font-size:15px;line-height:1.55}
+.figbox svg{display:block;width:100%;height:auto}
+.expl{font-size:16.5px;line-height:1.6;margin:0 0 14px}
+.expl p{margin:0 0 10px}
+.note{font-size:14.5px;line-height:1.5;color:var(--ink2);border-left:3px solid var(--line);padding-left:11px;margin:12px 0}
+.warnbox{font-size:14.5px;line-height:1.5;border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin:12px 0;background:color-mix(in srgb,var(--warn) 9%,transparent)}
+.warnbox b{color:var(--warn)}
+
+/* ---------- boutons ---------- */
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.btn{
+  min-height:44px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);font:inherit;font-size:15.5px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;
+}
+.btn:active{transform:translateY(1px)}
+.btn.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.btn.blue.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.green.on{background:var(--green);border-color:var(--green);color:#fff}
+.btn.wide{flex:1 1 100%}
+.statusline{
+  font-size:15.5px;line-height:1.5;padding:11px 13px;border-radius:12px;
+  background:var(--panel2);border:1px solid var(--line);margin:0 0 12px;
+}
+.statusline b{font-weight:700}
+
+/* ---------- quiz ---------- */
+.quiz{border:1px solid var(--line);border-radius:14px;padding:13px;background:var(--panel);margin:6px 0 4px}
+.quiz .q{font-size:16px;font-weight:600;line-height:1.45;margin:0 0 11px}
+.quiz .a{display:none;font-size:15.5px;line-height:1.55;color:var(--ink);border-top:1px dashed var(--line);padding-top:11px;margin-top:2px}
+.quiz.show .a{display:block}
+.quiz button{min-height:44px;width:100%;border-radius:11px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:inherit;font-size:15.5px;cursor:pointer}
+
+/* ---------- tableau ---------- */
+table.dat{width:100%;border-collapse:collapse;font-size:15px}
+table.dat th,table.dat td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--line)}
+table.dat th{font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink2)}
+table.dat tr.sel td{background:var(--panel2);font-weight:600}
+table.dat tbody tr{cursor:pointer}
+table.dat td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+
+/* ---------- sliders ---------- */
+.slab{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;margin:10px 0 2px}
+.slab b{font-variant-numeric:tabular-nums;font-size:16px}
+input[type=range]{width:100%;height:44px;background:transparent;-webkit-appearance:none;appearance:none;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:5px;background:var(--panel2);border:1px solid var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:var(--blue);border:3px solid var(--panel);margin-top:-12px;box-shadow:var(--shadow)}
+input[type=range]::-moz-range-track{height:8px;border-radius:5px;background:var(--panel2);border:1px solid var(--line)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--blue);border:3px solid var(--panel)}
+
+.bars{margin:10px 0 2px}
+.barrow{display:flex;align-items:center;gap:8px;font-size:14.5px;margin:6px 0}
+.barrow .k{flex:0 0 74px;color:var(--ink2)}
+.bartrack{flex:1 1 auto;height:22px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);overflow:hidden;display:flex}
+.barfill{height:100%;background:var(--blue)}
+.barfill.b2{background:var(--grey)}
+.barrow .v{flex:0 0 auto;font-variant-numeric:tabular-nums;font-weight:600}
+
+/* ---------- footer nav ---------- */
+#nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--bg);
+  border-top:1px solid var(--line);padding:8px 0 max(8px,env(safe-area-inset-bottom));
+}
+.navin{display:flex;gap:8px;align-items:center}
+.navbtn{
+  flex:1 1 0;min-height:48px;border-radius:13px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);font:inherit;font-size:15.5px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.navbtn[disabled]{opacity:.38}
+.navpos{flex:0 0 auto;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums;min-width:52px;text-align:center}
+
+
+/* ---------- blocs pédagogiques ---------- */
+.une{
+  border:2px solid var(--blue);border-radius:14px;padding:12px 14px;margin:0 0 14px;
+  font-size:17px;line-height:1.5;background:color-mix(in srgb,var(--blue) 7%,transparent);
+}
+.une .t{display:block;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:800;color:var(--blue);margin-bottom:5px}
+.blk{margin:0 0 16px}
+.blk>h3{
+  font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);
+  font-weight:800;margin:0 0 8px;display:flex;align-items:center;gap:8px;
+}
+.blk>h3::after{content:"";flex:1;height:1px;background:var(--line)}
+.blk p{margin:0 0 10px;font-size:16.5px;line-height:1.6}
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:st}
+ol.steps li{
+  counter-increment:st;position:relative;padding:0 0 14px 42px;font-size:16.5px;line-height:1.55;
+}
+ol.steps li::before{
+  content:counter(st);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;
+  background:var(--blue);color:#fff;font-size:14px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+ol.steps li::after{
+  content:"";position:absolute;left:13px;top:32px;bottom:2px;width:2px;background:var(--line);
+}
+ol.steps li:last-child{padding-bottom:0}
+ol.steps li:last-child::after{display:none}
+ol.steps li b{font-weight:700}
+ol.steps li .q{display:block;font-size:14px;color:var(--ink2);font-style:italic;margin-bottom:3px}
+ul.keys{list-style:none;margin:0;padding:0}
+ul.keys li{position:relative;padding:0 0 9px 26px;font-size:16px;line-height:1.5}
+ul.keys li::before{content:"◆";position:absolute;left:2px;top:0;color:var(--green);font-size:13px}
+details.plus{border:1px solid var(--line);border-radius:13px;background:var(--panel2);margin:0 0 16px;overflow:hidden}
+details.plus>summary{
+  list-style:none;cursor:pointer;min-height:48px;display:flex;align-items:center;gap:8px;
+  padding:12px 14px;font-size:15.5px;font-weight:600;
+}
+details.plus>summary::-webkit-details-marker{display:none}
+details.plus>summary::before{content:"▸";color:var(--ink2);font-size:13px;transition:transform .18s}
+details.plus[open]>summary::before{transform:rotate(90deg)}
+details.plus .body{padding:0 14px 14px;font-size:15.5px;line-height:1.6}
+details.plus .body p{margin:0 0 10px}
+.src{font-size:13.5px;line-height:1.45;color:var(--ink2);border-top:1px dashed var(--line);padding-top:9px;margin-top:10px}
+.src b{color:var(--ink);font-weight:600}
+.vocab{border-bottom:2px dotted var(--blue);cursor:help}
+.inlinebtn{background:none;border:0;color:var(--blue);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:0}
+
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid currentColor}
+.c-blue{color:var(--blue)} .c-green{color:var(--green)} .c-purple{color:var(--purple)} .c-red{color:var(--red)} .c-grey{color:var(--grey)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hbar">
+    <button class="iconbtn" id="tocbtn" aria-label="Ouvrir le sommaire">☰</button>
+    <div class="htitle">Voir en 3D<small id="hsub">La stéréochimie sans rien imaginer</small></div>
+    <button class="iconbtn" id="themebtn" aria-label="Changer de thème">◐</button>
+  </div>
+</header>
+
+<div id="legendbar">
+  <button id="legendtoggle" aria-expanded="false">
+    <span>Légende des couleurs</span><span class="chev">▼</span>
+  </button>
+  <div id="legendbody">
+    <div class="leg"><span class="swatch" style="background:var(--blue)"></span><span><b>Bleu — source de chiralité.</b> Auxiliaire, ligand, réactif chiral, groupe directeur (iPr, tBu, Ph/Me).</span></div>
+    <div class="leg"><span class="swatch" style="background:var(--green)"></span><span><b>Vert — partenaire entrant.</b> Électrophile ou nucléophile qui arrive : E, R, CO₂, O.</span></div>
+    <div class="leg"><span class="swatch" style="background:var(--purple)"></span><span><b>Violet — métal et chélate.</b> Li, Mg, Ti.</span></div>
+    <div class="leg"><span class="swatch" style="background:linear-gradient(90deg,var(--ink) 0 5px,transparent 5px 9px,var(--ink) 9px 14px,transparent 14px 18px,var(--ink) 18px 23px)"></span><span><b>Pointillés — liaison en formation ou en rupture.</b></span></div>
+    <div class="leg"><span class="swatch" style="background:var(--redzone);border:1px solid var(--red)"></span><span><b>Zone rouge — gêne stérique.</b></span></div>
+    <div class="leg"><span class="swatch" style="background:var(--greyface)"></span><span><b>Gris — face bloquée.</b> La face libre porte la flèche d'attaque verte.</span></div>
+  </div>
+</div>
+
+<nav id="toc" aria-label="Sommaire"></nav>
+
+<main id="stage" class="wrap"></main>
+
+<div id="nav">
+  <div class="wrap navin">
+    <button class="navbtn" id="prevbtn">‹ Précédent</button>
+    <span class="navpos" id="navpos"></span>
+    <button class="navbtn" id="nextbtn">Suivant ›</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   1. Petite bibliothèque de dessin SVG (aucune dépendance externe)
+   ========================================================================== */
+const C = {
+  ink:'var(--ink)', ink2:'var(--ink2)',
+  blue:'var(--blue)', green:'var(--green)', purple:'var(--purple)',
+  red:'var(--red)', grey:'var(--grey)', line:'var(--line)'
+};
+const MK = {ink:'mkInk', blue:'mkBlue', green:'mkGreen', purple:'mkPurple', red:'mkRed', grey:'mkGrey'};
+function mkName(c){
+  if(c===C.blue) return MK.blue; if(c===C.green) return MK.green;
+  if(c===C.purple) return MK.purple; if(c===C.red) return MK.red;
+  if(c===C.grey) return MK.grey; return MK.ink;
+}
+/* définitions (marqueurs de flèche + hachures) injectées dans chaque <svg> */
+const DEFS = `<defs>
+ ${['Ink','Blue','Green','Purple','Red','Grey'].map((n,i)=>{
+   const col=[C.ink,C.blue,C.green,C.purple,C.red,C.grey][i];
+   return `<marker id="mk${n}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto-start-reverse">
+     <path d="M0,1 L9.5,5 L0,9 L2.6,5 Z" fill="${col}"/></marker>
+   <marker id="hk${n}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+     <path d="M0,1.2 L9.5,5" stroke="${col}" stroke-width="1.4" fill="none" stroke-linecap="round"/></marker>`;
+ }).join('')}
+ <pattern id="hatchRed" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+   <line x1="0" y1="0" x2="0" y2="7" stroke="${C.red}" stroke-width="2" opacity=".5"/>
+ </pattern>
+</defs>`;
+
+const E = (n)=>Math.round(n*100)/100;
+const Rgas=8.314;                       /* J·mol⁻¹·K⁻¹ */
+function erFromDdG(ddG_kJ,T_K){ return Math.exp((ddG_kJ*1000)/(Rgas*T_K)); }
+
+/* --- liaisons ------------------------------------------------------------ */
+function seg(a,b,o){ o=o||{};
+  return `<line x1="${E(a[0])}" y1="${E(a[1])}" x2="${E(b[0])}" y2="${E(b[1])}"`
+       + ` stroke="${o.c||C.ink}" stroke-width="${o.w||2.1}" stroke-linecap="round"`
+       + (o.dash?` stroke-dasharray="${o.dash}"`:'')
+       + (o.op?` opacity="${o.op}"`:'') + `/>`;
+}
+function unit(a,b){ const dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy)||1; return [dx/L,dy/L,L]; }
+function norm(a,b,d){ const [ux,uy]=unit(a,b); return [-uy*d, ux*d]; }
+/* raccourcit une liaison aux deux bouts (pour laisser la place aux étiquettes) */
+function trim(a,b,s,e){ const [ux,uy]=unit(a,b); return [[a[0]+ux*(s||0),a[1]+uy*(s||0)],[b[0]-ux*(e||0),b[1]-uy*(e||0)]]; }
+function bond(a,b,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); return seg(p,q,o); }
+function dbond(a,b,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); const n=norm(p,q,o.gap||3.1);
+  return seg([p[0]+n[0],p[1]+n[1]],[q[0]+n[0],q[1]+n[1]],o)+seg([p[0]-n[0],p[1]-n[1]],[q[0]-n[0],q[1]-n[1]],o); }
+/* double liaison "intérieure" : deuxième trait raccourci, décalé d'un seul côté */
+function dbondIn(a,b,side,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); const n=norm(p,q,(o.gap||3.4)*(side||1));
+  const [ux,uy]=unit(p,q);
+  return seg(p,q,o)+seg([p[0]+n[0]+ux*3,p[1]+n[1]+uy*3],[q[0]+n[0]-ux*3,q[1]+n[1]-uy*3],o); }
+function wedge(a,b,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); const n=norm(p,q,o.wide||4.6);
+  return `<polygon points="${E(p[0])},${E(p[1])} ${E(q[0]+n[0])},${E(q[1]+n[1])} ${E(q[0]-n[0])},${E(q[1]-n[1])}" fill="${o.c||C.ink}"/>`; }
+function hashb(a,b,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); const [ux,uy,L]=unit(p,q);
+  const n=6, out=[];
+  for(let i=1;i<=n;i++){ const t=i/n, w=1.1+ (o.wide||4.6)*t;
+    const cx=p[0]+ux*L*t, cy=p[1]+uy*L*t, nx=-uy*w, ny=ux*w;
+    out.push(seg([cx+nx,cy+ny],[cx-nx,cy-ny],{c:o.c||C.ink,w:1.9}));
+  } return out.join(''); }
+
+/* --- étiquettes d'atome -------------------------------------------------- */
+function lab(p,t,o){ o=o||{};
+  const fs=o.fs||15, r=o.r||(fs*0.72);
+  const bgc = o.nobg?'none':(o.bg||'var(--panel)');
+  return `<circle cx="${E(p[0])}" cy="${E(p[1])}" r="${E(r)}" fill="${bgc}"/>`
+   + `<text x="${E(p[0])}" y="${E(p[1])}" text-anchor="middle" dominant-baseline="central"`
+   + ` font-size="${fs}" font-weight="${o.fw||600}" fill="${o.c||C.ink}"`
+   + ` font-family="system-ui,-apple-system,sans-serif">${t}</text>`;
+}
+function txt(p,t,o){ o=o||{};
+  return `<text x="${E(p[0])}" y="${E(p[1])}" text-anchor="${o.anchor||'middle'}" dominant-baseline="${o.base||'central'}"`
+   + ` font-size="${o.fs||13}" font-weight="${o.fw||500}" fill="${o.c||C.ink}" ${o.op?`opacity="${o.op}"`:''}`
+   + ` font-family="system-ui,-apple-system,sans-serif"${o.style?` style="${o.style}"`:''}>${t}</text>`;
+}
+function txtLines(p,lines,o){ o=o||{}; const lh=o.lh||14;
+  return lines.map((t,i)=>txt([p[0],p[1]+i*lh],t,o)).join(''); }
+/* --- flèches ------------------------------------------------------------- */
+function arrow(a,b,o){ o=o||{}; const c=o.c||C.ink;
+  return `<line x1="${E(a[0])}" y1="${E(a[1])}" x2="${E(b[0])}" y2="${E(b[1])}" stroke="${c}"`
+   + ` stroke-width="${o.w||2.4}" stroke-linecap="round" ${o.dash?`stroke-dasharray="${o.dash}"`:''}`
+   + ` marker-end="url(#${mkName(c)})"/>`;
+}
+/* flèche courbe : bow = flèche (bombement) perpendiculaire */
+function curve(a,b,bow,o){ o=o||{}; const c=o.c||C.ink;
+  const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2; const n=norm(a,b,bow);
+  const cx=mx+n[0], cy=my+n[1];
+  const head = o.half ? `url(#${mkName(c).replace('mk','hk')})` : `url(#${mkName(c)})`;
+  return `<path d="M${E(a[0])},${E(a[1])} Q${E(cx)},${E(cy)} ${E(b[0])},${E(b[1])}" fill="none"`
+   + ` stroke="${c}" stroke-width="${o.w||2.1}" stroke-linecap="round" marker-end="${head}"/>`;
+}
+/* liaison de coordination courbe (pointillés, sans tête) */
+function arcSeg(a,b,bow,o){ o=o||{};
+  const [p,q]=trim(a,b,o.s,o.e);
+  const mx=(p[0]+q[0])/2, my=(p[1]+q[1])/2, n=norm(p,q,bow);
+  return `<path d="M${E(p[0])},${E(p[1])} Q${E(mx+n[0])},${E(my+n[1])} ${E(q[0])},${E(q[1])}" fill="none"`
+   + ` stroke="${o.c||C.ink}" stroke-width="${o.w||2.2}" stroke-dasharray="${o.dash||'4 3'}"/>`;
+}
+/* flèche de réaction horizontale avec légende */
+function rxnArrow(x1,x2,y,top,bot,o){ o=o||{};
+  let s = arrow([x1,y],[x2,y],{c:o.c||C.ink,w:2.2});
+  const mx=(x1+x2)/2;
+  (top||[]).forEach((t,i)=> s+=txt([mx,y-13-i*13],t,{fs:o.fs||11.5,c:o.tc||C.ink}));
+  (bot||[]).forEach((t,i)=> s+=txt([mx,y+13+i*13],t,{fs:o.fs||11.5,c:o.bc||C.ink2}));
+  return s;
+}
+function polar(cx,cy,r,adeg){const a=(adeg-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+function sectorPath(cx,cy,r0,r1,a0,a1){
+  const p1=polar(cx,cy,r1,a0),p2=polar(cx,cy,r1,a1),p3=polar(cx,cy,r0,a1),p4=polar(cx,cy,r0,a0);
+  const big=(a1-a0)>180?1:0;
+  return `M${E(p1[0])},${E(p1[1])} A${r1},${r1} 0 ${big} 1 ${E(p2[0])},${E(p2[1])} L${E(p3[0])},${E(p3[1])} A${r0},${r0} 0 ${big} 0 ${E(p4[0])},${E(p4[1])} Z`;
+}
+
+/* --- zones --------------------------------------------------------------- */
+function stericZone(cx,cy,rx,ry,o){ o=o||{};
+  return `<ellipse cx="${E(cx)}" cy="${E(cy)}" rx="${E(rx)}" ry="${E(ry)}" fill="var(--redzone)"`
+   + ` stroke="${C.red}" stroke-width="1.4" stroke-dasharray="4 3"${o.rot?` transform="rotate(${o.rot} ${E(cx)} ${E(cy)})"`:''}/>`;
+}
+function blockedFace(pathD){ return `<path d="${pathD}" fill="var(--greyface)" stroke="${C.grey}" stroke-width="1.2" stroke-dasharray="5 4"/>`; }
+
+function svg(w,h,body,o){ o=o||{};
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${o.alt||'schéma'}" xmlns="http://www.w3.org/2000/svg">`
+   + DEFS + body + `</svg>`;
+}
+
+/* ==========================================================================
+   2. Briques chimiques réutilisables
+   ========================================================================== */
+const add=(p,d)=>[p[0]+d[0],p[1]+d[1]];
+
+/* Carbone stéréogène « cartoon » : 2 liaisons dans le plan (haut-gauche et
+   haut-droite) + 1 liaison gras/pointillé vers le bas ; H implicite.
+   Cette disposition est non dégénérée, contrairement à la « croix ». */
+function stereoC(p,o){
+  o=o||{};
+  const L=add(p,[-34,-16]), R=add(p,[34,-16]), D=add(p,[0,34]);
+  let s='';
+  s+=bond(p,L,{e:o.l?13:0}); s+=bond(p,R,{e:o.r?13:0});
+  s+= o.hash ? hashb(p,D,{e:12,c:o.dC||C.ink}) : wedge(p,D,{e:12,c:o.dC||C.ink});
+  if(o.l) s+=lab(L,o.l,{fs:12.5,c:o.lC,r:o.lr||16});
+  if(o.r) s+=lab(R,o.r,{fs:12.5,c:o.rC,r:o.rr||16});
+  s+=lab(D,o.d,{fs:12.5,c:o.dC||C.ink,fw:700,r:o.dr||19});
+  if(o.tag) s+=txt(add(p,[0,62]),o.tag,{fs:13,fw:700,c:o.tagC||C.ink});
+  return s;
+}
+/* Cycle oxazolidin-2-one. P = position de l'oxygène du cycle (O1).
+   opt.aux : 'ipr' (valinol) | 'noreph' (noréphédrine)
+   opt.wedge : true -> substituants en gras (vers nous) ; false -> pointillés
+   opt.co : direction du C2=O : 'up' | 'upright'                                */
+const RING = {O1:[0,28], C2:[8,0], N:[37,0], C4:[46,28], C5:[23,46]};
+function oxaz(P,opt){
+  opt=opt||{}; const g=(k)=>add(P,RING[k]); let s='';
+  const O1=g('O1'),C2=g('C2'),N=g('N'),C4=g('C4'),C5=g('C5');
+  const B={c:C.blue};
+  s+=bond(O1,C2,Object.assign({s:9,e:2},B));
+  s+=bond(C2,N,Object.assign({s:2,e:9},B));
+  s+=bond(N,C4,Object.assign({s:9,e:2},B));
+  s+=bond(C4,C5,B); s+=bond(C5,O1,Object.assign({e:9},B));
+  const Od = opt.co==='upright' ? add(C2,[16,-21]) : add(C2,[-10,-24]);
+  s+=dbond(C2,Od,Object.assign({e:9},B));
+  s+=lab(Od,'O',{fs:13.5,c:C.blue});
+  s+=lab(O1,'O',{fs:13.5,c:C.blue});
+  s+=lab(N,'N',{fs:13.5,c:C.blue});
+  if(opt.aux==='bn'){
+    const CH=add(C4,[12,26]), Ph=add(CH,[-4,28]);
+    s+= opt.wedge ? wedge(C4,CH,B) : hashb(C4,CH,B);
+    s+=bond(CH,Ph,Object.assign({e:11},B));
+    s+=lab(Ph,'Ph',{fs:12.5,c:C.blue,r:11});
+  } else if(opt.aux==='noreph'){
+    const Me=add(C4,[20,20]), Ph=add(C5,[-14,25]);
+    s+= opt.wedge ? wedge(C4,Me,Object.assign({e:10},B)) : hashb(C4,Me,Object.assign({e:10},B));
+    s+= opt.wedge ? wedge(C5,Ph,Object.assign({e:11},B)) : hashb(C5,Ph,Object.assign({e:11},B));
+    s+=lab(Me,'Me',{fs:12.5,c:C.blue,r:11});
+    s+=lab(Ph,'Ph',{fs:12.5,c:C.blue,r:11});
+  } else {
+    const CH=add(C4,[12,26]), m1=add(CH,[-14,22]), m2=add(CH,[22,8]);
+    s+= opt.wedge ? wedge(C4,CH,B) : hashb(C4,CH,B);
+    s+=bond(CH,m1,B); s+=bond(CH,m2,B);
+  }
+  if(opt.tag) s+=txt(add(P,[18,74]),opt.tag,{fs:12.5,fw:700,c:C.blue});
+  return s;
+}
+/* points d'ancrage du cycle */
+const oxN=(P)=>add(P,RING.N);
+const oxC2O=(P)=>add(add(P,RING.C2),[16,-21]);
+
+/* ==========================================================================
+   3. Moteur : liste des sections + rendu
+   ========================================================================== */
+const SECTIONS=[];
+const S=(d)=>SECTIONS.push(d);
+function el(tag,cls,html){const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e;}
+
+/* ==========================================================================
+   Petit moteur 3D (canvas, aucune dépendance).
+   Projection orthographique — ce qu'on voit est exactement ce qu'on mesure.
+   ========================================================================== */
+const COL3D = {C:'--ink', O:'--red', N:'--blue', F:'--green', S:'--purple', H:'--grey', X:'--ink2'};
+function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888'; }
+
+/* --- algèbre 3×3 minimale ------------------------------------------------- */
+const M3 = {
+  id:()=>[1,0,0, 0,1,0, 0,0,1],
+  mul:(a,b)=>{ const r=new Array(9);
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++){ let s=0;
+      for(let k=0;k<3;k++) s+=a[i*3+k]*b[k*3+j]; r[i*3+j]=s; } return r; },
+  app:(m,v)=>[m[0]*v[0]+m[1]*v[1]+m[2]*v[2], m[3]*v[0]+m[4]*v[1]+m[5]*v[2], m[6]*v[0]+m[7]*v[1]+m[8]*v[2]],
+  tr:(m)=>[m[0],m[3],m[6], m[1],m[4],m[7], m[2],m[5],m[8]],
+  rot:(ax,ang)=>{ const n=Math.hypot(ax[0],ax[1],ax[2])||1, x=ax[0]/n,y=ax[1]/n,z=ax[2]/n;
+    const c=Math.cos(ang), s=Math.sin(ang), t=1-c;
+    return [t*x*x+c, t*x*y-s*z, t*x*z+s*y,
+            t*x*y+s*z, t*y*y+c, t*y*z-s*x,
+            t*x*z-s*y, t*y*z+s*x, t*z*z+c]; }
+};
+/* interpolation entre deux orientations : axe + angle de la rotation relative */
+function slerp3(R0,R1,t){
+  const M=M3.mul(R1,M3.tr(R0));
+  let c=(M[0]+M[4]+M[8]-1)/2; c=Math.max(-1,Math.min(1,c));
+  const a=Math.acos(c);
+  if(a<1e-6) return R1.slice();
+  const s=2*Math.sin(a);
+  const ax=[(M[7]-M[5])/s,(M[2]-M[6])/s,(M[3]-M[1])/s];
+  return M3.mul(M3.rot(ax,a*t),R0);
+}
+
+/* Vue de trois quarts par défaut : légèrement inclinée pour qu'AUCUN groupe
+   ne soit caché derrière un autre (en vue strictement de face, la liaison qui
+   vient vers toi masque exactement celle qui part vers le fond). */
+const TILT = M3.mul(M3.rot([0,1,0],0.46), M3.rot([1,0,0],-0.26));
+
+/* --- le visualiseur ------------------------------------------------------- */
+function Viewer3D(host,mol,opt){
+  opt=opt||{};
+  const cv=document.createElement('canvas');
+  cv.className='cv3d'; cv.style.touchAction='none';
+  host.appendChild(cv);
+  const ctx=cv.getContext('2d');
+  let R = opt.R0 ? opt.R0.slice() : TILT.slice();
+  let spin = !!opt.spin, anim=null, W=0,H=0,S=1;
+  const decor = opt.decor||[];
+  const badges = opt.badges||[];
+
+  function resize(){
+    const r=host.getBoundingClientRect(), d=Math.min(window.devicePixelRatio||1,2.5);
+    W=Math.max(220,Math.round(r.width)); H=opt.h||260;
+    cv.width=W*d; cv.height=H*d; cv.style.width=W+'px'; cv.style.height=H+'px';
+    ctx.setTransform(d,0,0,d,0,0);
+    let m=0; mol.atoms.forEach(a=>{ m=Math.max(m,Math.hypot(a.p[0],a.p[1],a.p[2])); });
+    S=(Math.min(W,H)/2-22)/(m||1);   /* -22 px : place pour les boules et les étiquettes */
+    draw();
+  }
+  const proj=(p)=>{ const v=M3.app(R,p); return [W/2+v[0]*S, H/2-v[1]*S, v[2]]; };
+
+  function ellipse(P,n,r,col,op,txt){
+    const c=proj(P), nv=M3.app(R,n);
+    const len=Math.hypot(nv[0],nv[1]);
+    const ang=Math.atan2(-nv[1],nv[0]);
+    const rb=r*S, ra=rb*Math.abs(nv[2]);
+    ctx.save(); ctx.globalAlpha=op; ctx.fillStyle=col;
+    ctx.beginPath(); ctx.ellipse(c[0],c[1],rb,Math.max(ra,0.5),ang+Math.PI/2,0,Math.PI*2);
+    ctx.fill(); ctx.globalAlpha=Math.min(1,op*3.2); ctx.strokeStyle=col; ctx.lineWidth=1.6; ctx.stroke();
+    ctx.restore();
+  }
+  function tag3(P,txt,col,fs){
+    const c=proj(P); ctx.save();
+    ctx.font='800 '+(fs||12)+'px system-ui,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const w=ctx.measureText(txt).width+12;
+    ctx.globalAlpha=.88; ctx.fillStyle=cssv('--panel');
+    ctx.beginPath(); ctx.roundRect(c[0]-w/2,c[1]-10,w,20,10); ctx.fill();
+    ctx.globalAlpha=1; ctx.fillStyle=col; ctx.fillText(txt,c[0],c[1]+0.5);
+    ctx.restore();
+  }
+  function line3(a,b,col,dash,w){
+    const p=proj(a),q=proj(b);
+    ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=w||2; ctx.lineCap='round';
+    if(dash) ctx.setLineDash([6,5]);
+    ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); ctx.restore();
+  }
+  function arrow3(a,b,col){
+    const p=proj(a),q=proj(b);
+    const dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L;
+    ctx.save(); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=2.6; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0]-ux*8,q[1]-uy*8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(q[0],q[1]);
+    ctx.lineTo(q[0]-ux*11-uy*5.5, q[1]-uy*11+ux*5.5);
+    ctx.lineTo(q[0]-ux*11+uy*5.5, q[1]-uy*11-ux*5.5);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+
+  function draw(){
+    const ink=cssv('--ink'), panel=cssv('--panel'), line=cssv('--line');
+    ctx.clearRect(0,0,W,H);
+    /* décor arrière */
+    decor.forEach(d=>{ if(d.front) return; paintDecor(d); });
+    /* liaisons puis atomes, triés par profondeur */
+    const pts=mol.atoms.map(a=>proj(a.p));
+    const items=[];
+    mol.bonds.forEach(([i,j,o])=>{
+      items.push({z:(pts[i][2]+pts[j][2])/2, k:'b', i:i, j:j, o:o});
+    });
+    mol.atoms.forEach((a,i)=>{ items.push({z:pts[i][2], k:'a', i:i}); });
+    items.sort((u,v)=>u.z-v.z);
+    items.forEach(it=>{
+      if(it.k==='b'){
+        const p=pts[it.i], q=pts[it.j];
+        const fade=0.55+0.45*Math.max(0,Math.min(1,(it.z+3)/6));
+        ctx.save(); ctx.globalAlpha=fade; ctx.strokeStyle=ink; ctx.lineCap='round';
+        if(it.o>=2){
+          const dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy)||1, nx=-dy/L*3.2, ny=dx/L*3.2;
+          ctx.lineWidth=3;
+          ctx.beginPath(); ctx.moveTo(p[0]+nx,p[1]+ny); ctx.lineTo(q[0]+nx,q[1]+ny); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(p[0]-nx,p[1]-ny); ctx.lineTo(q[0]-nx,q[1]-ny); ctx.stroke();
+        } else { ctx.lineWidth=4.2; ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); }
+        ctx.restore();
+      } else {
+        const a=mol.atoms[it.i], p=pts[it.i];
+        const fade=0.6+0.4*Math.max(0,Math.min(1,(it.z+3)/6));
+        const col=cssv(a.c||COL3D[a.e]||COL3D.X);
+        const r=a.r||(a.e==='H'?5.2:(a.e==='C'?6.4:8));
+        ctx.save(); ctx.globalAlpha=fade;
+        ctx.fillStyle=col; ctx.beginPath(); ctx.arc(p[0],p[1],r,0,Math.PI*2); ctx.fill();
+        ctx.lineWidth=1.6; ctx.strokeStyle=panel; ctx.stroke();
+        const txt=(a.l!==undefined)?a.l:(a.e!=='C'?a.e:'');
+        if(txt){ ctx.globalAlpha=1; ctx.fillStyle=panel; ctx.font='800 '+(a.r?12:10)+'px system-ui,sans-serif';
+          ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(txt,p[0],p[1]+0.5); }
+        ctx.restore();
+      }
+    });
+    /* badges de priorité */
+    badges.forEach(b=>{
+      const p=pts[b.i], col=cssv(b.c||'--blue');
+      const off=b.o||[16,-16];
+      ctx.save(); ctx.globalAlpha=.95;
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(p[0]+off[0],p[1]+off[1],11,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=cssv('--panel'); ctx.lineWidth=2; ctx.stroke();
+      ctx.fillStyle=cssv('--panel'); ctx.font='800 13px system-ui,sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.t,p[0]+off[0],p[1]+off[1]+0.5);
+      ctx.strokeStyle=col; ctx.globalAlpha=.6; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(p[0]+off[0]*.55,p[1]+off[1]*.55); ctx.stroke();
+      ctx.restore();
+    });
+    decor.forEach(d=>{ if(d.front) paintDecor(d); });
+  }
+  function paintDecor(d){
+    const col=cssv(d.c||'--purple');
+    if(d.k==='disc') ellipse(d.p,d.n,d.r||1.6,col,d.op||0.2);
+    else if(d.k==='line') line3(d.a,d.b,col,d.dash,d.w);
+    else if(d.k==='arrow') arrow3(d.a,d.b,col);
+    else if(d.k==='tag') tag3(d.p,d.t,col,d.fs);
+  }
+
+  /* --- interaction --------------------------------------------------------- */
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY}; cv.setPointerCapture(e.pointerId);
+    spin=false; if(opt.onSpin) opt.onSpin(false); });
+  cv.addEventListener('pointermove',e=>{ if(!drag) return;
+    const dx=(e.clientX-drag.x)*0.011, dy=(e.clientY-drag.y)*0.011;
+    drag={x:e.clientX,y:e.clientY};
+    R=M3.mul(M3.mul(M3.rot([0,1,0],dx),M3.rot([1,0,0],dy)),R);
+    anim=null; draw(); });
+  const stop=()=>{ drag=null; };
+  cv.addEventListener('pointerup',stop); cv.addEventListener('pointercancel',stop);
+
+  let raf=null;
+  function tick(ts){
+    raf=null;
+    if(anim){
+      const t=Math.min(1,(ts-anim.t0)/anim.ms);
+      const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+      R=slerp3(anim.a,anim.b,e); draw();
+      if(t>=1){ anim=null; if(opt.onArrive) opt.onArrive(); }
+    } else if(spin){ R=M3.mul(M3.rot([0,1,0],0.012),R); draw(); }
+    if(anim||spin) raf=requestAnimationFrame(tick);
+  }
+  function kick(){ if(!raf) raf=requestAnimationFrame(tick); }
+
+  const api={
+    draw, resize,
+    reset(){ anim={a:R.slice(),b:(opt.R0?opt.R0.slice():TILT.slice()),t0:performance.now(),ms:700}; kick(); },
+    goto(Rt,ms){ anim={a:R.slice(),b:Rt.slice(),t0:performance.now(),ms:ms||900}; kick(); },
+    turn(ax,ang,ms){ api.goto(M3.mul(M3.rot(ax,ang),R),ms); },
+    spin(v){ spin=v; if(v) kick(); },
+    isSpinning(){ return spin; },
+    setBadges(b){ badges.length=0; (b||[]).forEach(x=>badges.push(x)); draw(); },
+    setDecor(d){ decor.length=0; (d||[]).forEach(x=>decor.push(x)); draw(); }
+  };
+  requestAnimationFrame(()=>{ resize(); if(spin) kick(); });
+  window.addEventListener('resize',resize);
+  return api;
+}
+
+/* fabrique un bloc « molécule + boutons » prêt à insérer dans une section */
+function bloc3D(host,mol,opt){
+  opt=opt||{};
+  const wrap=el('div','cv3dwrap');
+  const hint=el('div','cv3dhint','👆 fais glisser ton doigt sur la molécule pour la tourner');
+  host.appendChild(wrap); host.appendChild(hint);
+  const v=Viewer3D(wrap,mol,opt);
+  const row=el('div','btnrow');
+  (opt.boutons||[]).forEach(b=>{
+    const t=el('button','btn'); t.textContent=b.t; t.style.flex=b.f||'1 1 46%';
+    t.onclick=()=>b.go(v,t); row.appendChild(t);
+  });
+  const rb=el('button','btn'); rb.textContent='↺ Remettre comme le dessin'; rb.style.flex='1 1 100%';
+  rb.onclick=()=>v.reset(); row.appendChild(rb);
+  host.appendChild(row);
+  return v;
+}
+
+/* ===== Coordonnées 3D — produites par .build/gen3d.py, vérifiées par RDKit ===== */
+const MOL3D = {"butanolR": {"nom": "butan-2-ol (R)", "atoms": [{"e": "C", "p": [2.547, 0.178, -0.044]}, {"e": "C", "p": [1.222, 0.922, -0.002]}, {"e": "C", "p": [0.0, 0.0, 0.0]}, {"e": "C", "p": [-0.09, -0.88, 1.239]}, {"e": "O", "p": [-1.179, 0.804, -0.042]}, {"e": "H", "p": [-0.0, -0.633, -0.895]}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [2, 4, 1], [2, 5, 1]], "centre": 2, "cip": "R", "prio": [4, 1, 3, 5]}, "butanolS": {"nom": "butan-2-ol (S)", "atoms": [{"e": "C", "p": [-0.094, -0.146, 2.562]}, {"e": "C", "p": [-0.016, -0.899, 1.241]}, {"e": "C", "p": [0.0, 0.0, 0.0]}, {"e": "C", "p": [1.208, 0.924, -0.06]}, {"e": "O", "p": [-1.177, 0.801, -0.045]}, {"e": "H", "p": [-0.0, -0.633, -0.895]}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [2, 4, 1], [2, 5, 1]], "centre": 2, "cip": "S", "prio": [4, 1, 3, 5]}, "hexeneZ": {"nom": "(Z)-hex-3-ène", "atoms": [{"e": "C", "p": [-2.299, -1.343, 1.333]}, {"e": "C", "p": [-1.584, -1.193, -0.0]}, {"e": "C", "p": [-0.671, -0.0, 0.0]}, {"e": "C", "p": [0.671, 0.0, 0.0]}, {"e": "C", "p": [1.584, -1.191, 0.052]}, {"e": "C", "p": [2.299, -1.399, -1.274]}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 2], [3, 4, 1], [4, 5, 1]], "alcene": [2, 3]}, "aminocetone": {"nom": "4-aminobutan-2-one", "atoms": [{"e": "C", "p": [-1.291, -0.776, -0.0]}, {"e": "C", "p": [0.0, 0.0, 0.0]}, {"e": "O", "p": [0.0, 1.23, 0.0]}, {"e": "C", "p": [1.274, -0.821, -0.028]}, {"e": "C", "p": [2.509, 0.052, 0.152]}, {"e": "N", "p": [3.721, -0.767, 0.13]}], "bonds": [[0, 1, 1], [1, 2, 2], [1, 3, 1], [3, 4, 1], [4, 5, 1]], "sp2": 1, "prioF": [2, 3, 0]}, "cyclohexanone": {"nom": "4-tert-butylcyclohexanone", "atoms": [{"e": "O", "p": [-2.699, 0.136, -0.103]}, {"e": "C", "p": [-1.471, 0.06, -0.069]}, {"e": "C", "p": [-0.607, 0.8, -1.062]}, {"e": "C", "p": [0.722, 0.072, -1.233]}, {"e": "C", "p": [1.528, 0.007, 0.087]}, {"e": "C", "p": [0.589, -0.159, 1.31]}, {"e": "C", "p": [-0.761, -0.781, 0.967]}, {"e": "C", "p": [2.726, -1.014, 0.042]}, {"e": "C", "p": [3.668, -0.779, 1.245]}, {"e": "C", "p": [2.251, -2.478, 0.077]}, {"e": "C", "p": [3.567, -0.808, -1.237]}], "bonds": [[0, 1, 2], [1, 2, 1], [2, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [4, 7, 1], [7, 8, 1], [7, 9, 1], [7, 10, 1], [6, 1, 1]], "sp2": 1, "oxy": 0}, "biaryle": {"nom": "acide 6,6′-difluorobiphényl-2,2′-dicarboxylique", "atoms": [{"e": "O", "p": [-2.29, -1.498, -0.199]}, {"e": "C", "p": [-1.766, -1.84, 0.988]}, {"e": "O", "p": [-2.136, -2.848, 1.563]}, {"e": "C", "p": [-0.792, -0.857, 1.529]}, {"e": "C", "p": [-0.676, -0.829, 2.933]}, {"e": "C", "p": [0.201, 0.053, 3.564]}, {"e": "C", "p": [0.977, 0.91, 2.795]}, {"e": "C", "p": [0.875, 0.875, 1.406]}, {"e": "F", "p": [1.655, 1.707, 0.696]}, {"e": "C", "p": [0.0, 0.0, 0.736]}, {"e": "C", "p": [-0.0, 0.0, -0.736]}, {"e": "C", "p": [0.741, -0.987, -1.41]}, {"e": "F", "p": [1.406, -1.917, -0.705]}, {"e": "C", "p": [0.819, -1.041, -2.799]}, {"e": "C", "p": [0.148, -0.094, -3.562]}, {"e": "C", "p": [-0.598, 0.9, -2.927]}, {"e": "C", "p": [-0.679, 0.958, -1.52]}, {"e": "C", "p": [-1.511, 2.021, -0.885]}, {"e": "O", "p": [-1.916, 2.061, 0.261]}, {"e": "O", "p": [-1.797, 3.023, -1.739]}], "bonds": [[0, 1, 1], [1, 2, 2], [1, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [6, 7, 1], [7, 8, 1], [7, 9, 1], [9, 10, 1], [10, 11, 1], [11, 12, 1], [11, 13, 1], [13, 14, 1], [14, 15, 1], [15, 16, 1], [16, 17, 1], [17, 18, 2], [17, 19, 1], [9, 3, 1], [16, 10, 1]], "axe": [9, 10], "torsion": 98.1}};
+
+/* ==========================================================================
+   FIGURES 2D du support « Voir en 3D »
+   ========================================================================== */
+function figVolant(k){
+  const W=360,H=272,cx=180,cy=126,R=64; let s='';
+  const horaire = (k===0);
+  s+=txt([180,20],horaire?'Sens des aiguilles d\'une montre':'Sens inverse des aiguilles',{fs:13,fw:800});
+  /* le volant */
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${C.ink2}" stroke-width="6" opacity=".35"/>`;
+  const pos=[0,120,240].map(a=>polar(cx,cy,R,a));
+  const ordre = horaire ? [0,1,2] : [0,2,1];
+  const cols=[C.red,C.ink,C.ink];
+  ordre.forEach((p,i)=>{ s+=lab(pos[p],String(i+1),{fs:16,fw:800,c:cols[i],r:17,bg:'var(--panel2)'}); });
+  /* la colonne de direction : le n°4, vers le fond */
+  s+=`<circle cx="${cx}" cy="${cy}" r="17" fill="var(--panel2)" stroke="${C.grey}" stroke-width="2" stroke-dasharray="4 3"/>`;
+  s+=txt([cx,cy],'4',{fs:15,fw:800,c:C.grey});
+  s+=txt([cx,cy+R+30],'le n° 4 part vers le fond',{fs:11,c:C.grey,fw:600});
+  /* la flèche de sens */
+  const r2=R+22, dep=polar(cx,cy,r2,horaire?24:336), arr=polar(cx,cy,r2,horaire?96:264);
+  s+=`<path d="M${E(dep[0])},${E(dep[1])} A${r2},${r2} 0 0 ${horaire?1:0} ${E(arr[0])},${E(arr[1])}"`
+   +` fill="none" stroke="${C.green}" stroke-width="3" stroke-linecap="round" marker-end="url(#mkGreen)"/>`;
+  s+=`<rect x="70" y="232" width="220" height="32" rx="16" fill="${horaire?C.green:C.blue}" opacity=".14"/>`;
+  s+=txt([180,248],horaire?'configuration R':'configuration S',{fs:16,fw:800,c:horaire?C.green:C.blue});
+  return svg(W,H,s,{alt:'volant '+(horaire?'R':'S')});
+}
+
+function figEchange(){
+  const W=360,H=264; let s='';
+  const dessine=(cx,cy,ordre)=>{
+    let t='';
+    const UL=[cx-34,cy-20], UR=[cx+34,cy-20], AV=[cx,cy+34], AR=[cx-2,cy-40];
+    t+=bond([cx,cy],UL,{e:14}); t+=bond([cx,cy],UR,{e:14});
+    t+=wedge([cx,cy],AV,{e:14}); t+=hashb([cx,cy],AR,{e:14});
+    t+=lab(UL,ordre[0],{fs:14,fw:800,c:C.red,r:13});
+    t+=lab(UR,ordre[1],{fs:14,fw:800,r:13});
+    t+=lab(AV,ordre[2],{fs:14,fw:800,r:13});
+    t+=lab(AR,ordre[3],{fs:14,fw:800,c:C.grey,r:13});
+    return t;
+  };
+  s+=txt([180,20],'Échanger deux groupes inverse la lettre',{fs:13,fw:800});
+  s+=dessine(86,112,['1','2','3','4']);
+  s+=txt([86,176],'on lit : R',{fs:13,fw:800,c:C.green});
+  s+=arrow([150,112],[212,112],{c:C.red,w:2.6});
+  s+=txt([181,92],'on échange',{fs:11,fw:700,c:C.red});
+  s+=txt([181,132],'2 et 3',{fs:11,fw:700,c:C.red});
+  s+=dessine(276,112,['1','3','2','4']);
+  s+=txt([276,176],'on lit : S',{fs:13,fw:800,c:C.blue});
+  s+=`<rect x="20" y="200" width="320" height="52" rx="12" fill="${C.purple}" opacity=".11"/>`;
+  s+=txt([180,218],'1 échange → lettre inversée',{fs:12.5,fw:800,c:C.purple});
+  s+=txt([180,238],'2 échanges → lettre inchangée',{fs:12.5,fw:800,c:C.purple});
+  return svg(W,H,s,{alt:'effet d\'un échange de deux groupes'});
+}
+
+function figMainDroite(){
+  const W=360,H=214; let s='';
+  s+=txt([180,22],'Le truc de la main droite',{fs:13.5,fw:800});
+  s+=`<rect x="18" y="40" width="324" height="60" rx="12" fill="${C.green}" opacity=".11"/>`;
+  s+=txtLines([180,60],['Ferme ta main DROITE, pouce levé.','Pointe le pouce vers le FOND (loin de toi).'],{fs:12.5,lh:18,fw:600});
+  s+=`<rect x="18" y="110" width="324" height="44" rx="12" fill="${C.green}" opacity=".18"/>`;
+  s+=txt([180,132],'tes doigts s\'enroulent dans le sens R',{fs:13,fw:800,c:C.green});
+  s+=`<rect x="18" y="164" width="324" height="40" rx="12" fill="${C.blue}" opacity=".13"/>`;
+  s+=txt([180,184],'main GAUCHE, même geste → sens S',{fs:12.5,fw:800,c:C.blue});
+  return svg(W,H,s,{alt:'règle de la main droite'});
+}
+
+function figDeuxProduits(){
+  const W=360,H=250; let s='';
+  s+=txt([180,20],'Une cétone, deux attaques possibles',{fs:13,fw:800});
+  const co=[180,110];
+  s+=dbond(co,[180,72],{e:10}); s+=lab([180,70],'O',{fs:13});
+  s+=bond(co,[142,132],{e:12}); s+=lab([136,136],'CH₃',{fs:11.5,r:15});
+  s+=bond(co,[218,132],{e:12}); s+=lab([228,136],'chaîne',{fs:11,r:20});
+  s+=arrow([116,60],[162,96],{c:C.green,w:2.6});
+  s+=txt([92,48],'face avant',{fs:11,fw:700,c:C.green});
+  s+=arrow([244,60],[198,96],{c:C.red,w:2.6});
+  s+=txt([270,48],'face arrière',{fs:11,fw:700,c:C.red});
+  s+=`<rect x="18" y="166" width="156" height="66" rx="12" fill="${C.green}" opacity=".12"/>`;
+  s+=txtLines([96,188],['produit (S)','alcool « main gauche »'],{fs:11.5,lh:17,fw:700,c:C.green});
+  s+=`<rect x="186" y="166" width="156" height="66" rx="12" fill="${C.red}" opacity=".12"/>`;
+  s+=txtLines([264,188],['produit (R)','alcool « main droite »'],{fs:11.5,lh:17,fw:700,c:C.red});
+  s+=txt([180,246],'deux énantiomères → les faces sont ÉNANTIOTOPES',{fs:11,fw:700});
+  return svg(W,H,s,{alt:'attaque des deux faces d\'une cétone'});
+}
+
+function figModeles(){
+  const W=360,H=250; let s='';
+  s+=txt([180,20],'Fabrique-toi un modèle en 2 minutes',{fs:13.5,fw:800});
+  const ligne=(y,t1,t2,col)=>`<rect x="18" y="${y}" width="324" height="48" rx="11" fill="${col}" opacity=".11"/>`
+   +txt([180,y+17],t1,{fs:12.5,fw:800,c:col})+txt([180,y+34],t2,{fs:11,c:C.ink2});
+  s+=ligne(40,'Une gomme + 4 cure-dents','plante 4 cure-dents dans une gomme, le plus écartés possible',C.blue);
+  s+=ligne(96,'Pâte à modeler + allumettes','4 couleurs de pâte au bout des allumettes = 4 groupes',C.green);
+  s+=ligne(152,'Rien du tout : tes doigts','pouce, index, majeur, annulaire écartés = un tétraèdre',C.purple);
+  s+=txt([180,226],'Les chimistes professionnels ont tous une boîte de modèles',{fs:11,c:C.ink2});
+  s+=txt([180,242],'sur leur bureau. Ce n\'est pas de la triche.',{fs:11,c:C.ink2});
+  return svg(W,H,s,{alt:'fabriquer un modèle moléculaire'});
+}
+
+/* ==========================================================================
+   GROUPE 1 — D'abord, respirer
+   ========================================================================== */
+const V1='1 — D\'abord, respirer';
+
+/* tétraèdre générique : les quatre directions exactes du « Y » dessiné */
+const D4 = {ul:[-1.249,0.883,0], ur:[1.249,0.883,0], av:[0,-0.883,1.249], ar:[0,-0.883,-1.249]};
+function tetra(cols){
+  cols = cols || ['--blue','--green','--purple','--red'];
+  return {nom:'un carbone et ses quatre groupes', atoms:[
+    {e:'C',p:[0,0,0],r:9,l:'C'},
+    {e:'X',p:D4.ul,c:cols[0],r:12,l:'1'},
+    {e:'X',p:D4.ur,c:cols[1],r:12,l:'2'},
+    {e:'X',p:D4.av,c:cols[2],r:12,l:'3'},
+    {e:'X',p:D4.ar,c:cols[3],r:12,l:'4'}
+  ], bonds:[[0,1,1],[0,2,1],[0,3,1],[0,4,1]]};
+}
+function tetraMiroir(){
+  const t=tetra(); const a=t.atoms.map(x=>Object.assign({},x,{p:[x.p[0],x.p[1],-x.p[2]]}));
+  return {nom:t.nom, atoms:a, bonds:t.bonds};
+}
+
+S({
+  grp:V1, title:'Ce n\'est pas toi',
+  build(host){
+    const b=el('div','rassure');
+    b.innerHTML='<p style="margin:0 0 8px"><b>Ce que ce TD te demande vraiment, c\'est de faire tourner un objet dans ta tête à partir d\'un dessin plat.</b></p>'
+      +'<p style="margin:0 0 8px">Ce n\'est pas de la chimie. C\'est de la <b>rotation mentale</b>, et c\'est une compétence à part entière — mesurée, entraînable, et très inégalement répartie. Certaines personnes la font sans y penser, d\'autres non. Ça ne dit strictement rien de ton niveau en chimie.</p>'
+      +'<p style="margin:0">Et surtout : <b>ça se contourne</b>. Les chimistes qui ne visualisent pas bien ne devinent pas mieux avec le temps — ils utilisent des modèles, des méthodes mécaniques, et leurs mains. C\'est ce que ce support va te donner.</p>';
+    host.appendChild(b);
+    const t=el('div');
+    t.innerHTML='<table class="dat"><thead><tr><th>Ce qu\'on te demande</th><th>Ce qu\'on va faire à la place</th></tr></thead><tbody>'
+     +'<tr><td>« imagine que tu tournes la molécule »</td><td>tu la <b>tournes vraiment</b>, avec ton doigt</td></tr>'
+     +'<tr><td>« vois quelle face est devant »</td><td>la face avant est <b>coloriée en vert</b></td></tr>'
+     +'<tr><td>« mets le groupe 4 vers l\'arrière »</td><td>un <b>bouton</b> le fait, et tu regardes</td></tr>'
+     +'<tr><td>« déduis R ou S »</td><td>tu lis un <b>volant</b>, comme dans une voiture</td></tr>'
+     +'</tbody></table>';
+    host.appendChild(t);
+  },
+  une:'Tu n\'as pas un problème de chimie. Tu as un problème de <b>rotation mentale</b> — et on va simplement arrêter de te demander de tourner les choses dans ta tête.',
+  probleme:'<p>Un dessin de chimie est une <b>photo</b> d\'un objet en trois dimensions. Quand on te demande de raisonner dessus, on te demande en réalité de reconstruire l\'objet à partir de la photo, puis de le faire tourner sans le voir.</p><p>Les livres font comme si c\'était gratuit. Ça ne l\'est pas.</p>',
+  etapes:[
+   {q:'Ce qui se passe dans ta tête quand tu bloques.',
+    t:'Tu regardes un trait gras et un trait pointillé, et il ne se passe… rien. Pas d\'objet. C\'est normal : reconstruire un volume à partir d\'un schéma plat est un <b>effort cognitif réel</b>, et si personne ne te l\'a jamais entraîné, il n\'y a aucune raison qu\'il soit automatique.'},
+   {q:'Ce que font les chimistes que tu vois « réussir ».',
+    t:'Presque aucun ne visualise vraiment. Ils appliquent des <b>procédures mécaniques</b> : « si j\'échange deux groupes, la lettre s\'inverse », « si l\'hydrogène est vers moi, je lis et j\'inverse ». Ce sont des recettes, pas de la vision. On va te donner les mêmes.'},
+   {q:'Ce qui change avec un modèle qu\'on peut tourner.',
+    t:'Quand l\'objet tourne <b>devant toi</b>, ta mémoire n\'a plus rien à fabriquer. Tu regardes, tu constates. Au bout de quelques molécules, ton cerveau commence à anticiper le résultat tout seul — c\'est comme ça que la rotation mentale s\'apprend, par l\'exemple répété, jamais par la volonté.'},
+   {q:'Le plan de ce support.',
+    t:'D\'abord tourner un objet simple pour comprendre gras/pointillé. Puis R et S, très lentement, avec un volant. Puis les faces (exercice 1). Puis le cyclohexane (exercice 3e). Puis l\'axe des biaryles (exercice 2). Rien de nouveau en chimie : juste les mêmes choses, en volume.'}
+  ],
+  retenir:[
+   'La difficulté est <b>spatiale</b>, pas chimique.',
+   'Elle se contourne avec des procédures, pas avec de l\'effort.',
+   'Un objet qu\'on tourne vaut mille explications.',
+   'Tout ce qui suit peut se faire avec tes mains, sans rien imaginer.'
+  ]
+});
+
+S({
+  grp:V1, title:'Tourne-le. Vraiment.',
+  consigne:'Pose ton doigt sur la boule et fais-la glisser. Prends dix secondes, ça vaut le coup.',
+  build(host){
+    const v=bloc3D(host,tetra(),{h:270, boutons:[
+      {t:'▶ Le faire tourner tout seul', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+        btn.textContent = on?'⏸ Arrêter':'▶ Le faire tourner tout seul'; btn.classList.toggle('on',on); }}
+    ]});
+    host.appendChild(el('div','statusline','Voilà un carbone (au centre) et ses <b>quatre</b> groupes. Regarde ce qui se passe quand tu tournes : les boules qui étaient « devant » passent « derrière ». Le dessin change complètement — mais <b>l\'objet, lui, n\'a pas changé</b>.'));
+  },
+  une:'Un carbone avec quatre groupes n\'est pas une croix plate : c\'est une <b>pyramide à quatre pointes</b>. Les quatre groupes sont le plus loin possible les uns des autres.',
+  probleme:'<p>Sur le papier, on dessine un carbone avec deux traits normaux, un trait gras et un trait pointillé. Ça ressemble à une croix un peu bizarre.</p><p>En vrai, il n\'y a rien de bizarre : c\'est une forme très régulière, qu\'on appelle un <b>tétraèdre</b>. Les quatre groupes pointent vers les quatre coins d\'une pyramide.</p>',
+  etapes:[
+   {q:'Pourquoi une pyramide et pas une croix ?',
+    t:'Parce que les quatre groupes se repoussent. Ils s\'installent le plus loin possible les uns des autres. Sur une feuille, le plus loin possible ce serait 90° entre chacun ; dans l\'espace, on fait mieux : <b>109,5°</b>. C\'est exactement l\'angle d\'un tétraèdre.'},
+   {q:'L\'image à garder.',
+    t:'Un trépied posé par terre, avec un mât qui monte au milieu. Trois pieds en bas, un mât en haut. Ou bien : une fleur de trèfle à quatre branches qui ne tient pas à plat.'},
+   {q:'Ce que tu dois constater en tournant.',
+    t:'Tourne jusqu\'à ce que la boule <b>3</b> (celle qui était vers toi) passe derrière. Regarde : le dessin obtenu ne ressemble plus du tout au dessin de départ. Pourtant tu n\'as rien cassé, rien échangé. <b>C\'est toujours la même molécule.</b>'},
+   {q:'Et c\'est là tout le problème des dessins.',
+    t:'Un même objet peut être dessiné de dizaines de façons différentes. C\'est pour ça qu\'on a inventé R et S : pour donner un <b>nom</b> à l\'objet, qui ne dépende pas de la façon dont on l\'a dessiné.'}
+  ],
+  retenir:[
+   'Quatre groupes autour d\'un carbone = un <b>tétraèdre</b>, pas une croix.',
+   'Angle entre deux liaisons : 109,5°.',
+   'Tourner ne change <b>jamais</b> la molécule.',
+   'R et S servent justement à nommer l\'objet, pas le dessin.'
+  ],
+  quiz:{q:'Si je fais tourner une molécule et que le dessin obtenu est différent, est-ce que j\'ai changé de molécule&nbsp;?',
+    a:'<b>Non, jamais.</b> Faire tourner un objet ne le transforme pas. Tu peux tourner une chaise dans tous les sens, elle reste la même chaise.<br><br>Ce qui <b>changerait</b> la molécule, ce serait de <b>passer devant un miroir</b> (on obtient alors l\'autre main), ou d\'<b>échanger deux groupes</b> entre eux (ce qui revient au même). C\'est la seule chose à retenir de cette page : <b>tourner = autorisé, échanger = interdit</b>.'}
+});
+
+S({
+  grp:V1, title:'Ta main gauche et ta main droite',
+  consigne:'Compare les deux modèles. Ce sont les deux seuls objets possibles.',
+  build(host){
+    const w=el('div'); w.style.display='grid'; w.style.gap='4px'; host.appendChild(w);
+    const l1=el('div','cv3dhint','à gauche : <b>R</b> — à droite : <b>S</b>'); l1.style.marginBottom='2px';
+    const row=el('div'); row.style.display='grid'; row.style.gridTemplateColumns='1fr 1fr'; row.style.gap='8px';
+    const g=el('div','cv3dwrap'), d=el('div','cv3dwrap');
+    row.appendChild(g); row.appendChild(d); w.appendChild(row); w.appendChild(l1);
+    const vg=Viewer3D(g,tetra(),{h:190}), vd=Viewer3D(d,tetraMiroir(),{h:190});
+    const row2=el('div','btnrow');
+    const b1=el('button','btn'); b1.textContent='▶ Les faire tourner ensemble'; b1.style.flex='1 1 100%';
+    b1.onclick=()=>{ const on=!vg.isSpinning(); vg.spin(on); vd.spin(on);
+      b1.textContent=on?'⏸ Arrêter':'▶ Les faire tourner ensemble'; b1.classList.toggle('on',on); };
+    row2.appendChild(b1); host.appendChild(row2);
+    host.appendChild(el('div','statusline','Tourne-les autant que tu veux, dans n\'importe quel sens : tu n\'arriveras <b>jamais</b> à les superposer. Comme tes deux mains — même doigts, même paume, et pourtant le gant gauche ne va pas sur la main droite.'));
+  },
+  une:'Il n\'existe que <b>deux</b> façons d\'arranger quatre groupes différents autour d\'un carbone. Deux. Pas trois, pas dix. Et elles sont l\'image l\'une de l\'autre dans un miroir.',
+  probleme:'<p>C\'est la chose la plus importante de tout le chapitre, et elle est très simple : quand un carbone porte quatre groupes <b>tous différents</b>, il n\'y a que deux objets possibles.</p><p>On les appelle <b>R</b> et <b>S</b>. Tout le reste — les règles CIP, les faces, les auxiliaires — sert juste à savoir lequel des deux on a, et à fabriquer celui qu\'on veut.</p>',
+  etapes:[
+   {q:'Fais-le avec tes mains, maintenant.',
+    t:'Pose tes deux mains à plat devant toi, paumes vers le bas. Elles se ressemblent. Maintenant essaie de les superposer <b>en gardant les deux paumes vers le bas</b> : impossible, les pouces partent du mauvais côté. C\'est exactement ça, R et S.'},
+   {q:'Pourquoi ça a de l\'importance en vrai.',
+    t:'Ton corps est fait de molécules « d\'une seule main ». Une enzyme qui accueille la forme R peut être complètement indifférente à la forme S — ou pire. C\'est pour ça qu\'une industrie entière existe pour fabriquer une main plutôt que l\'autre.'},
+   {q:'Le mot à mettre dessus.',
+    t:'Deux objets non superposables, images l\'un de l\'autre dans un miroir, s\'appellent des <b>énantiomères</b>. Si tu ne retiens qu\'un mot de cette page, retiens que ça veut dire « <i>la main gauche et la main droite</i> ».'},
+   {q:'Et quand deux groupes sont identiques ?',
+    t:'Alors la molécule devient superposable à son miroir : il n\'y a plus qu\'un seul objet. C\'est pour ça qu\'on exige <b>quatre groupes différents</b>. C\'est aussi pourquoi, dans le TD, le produit de la question 3d n\'est pas stéréogène : il porte deux méthyles identiques.'}
+  ],
+  retenir:[
+   'Quatre groupes différents → exactement <b>deux</b> objets possibles.',
+   'Ils sont images l\'un de l\'autre dans un miroir : <b>énantiomères</b>.',
+   'Aucune rotation ne les superpose.',
+   'Deux groupes identiques → plus de chiralité du tout.'
+  ],
+  quiz:{q:'Ta main gauche et ta main droite : combien de plans de symétrie a l\'ensemble des deux&nbsp;? Et une main toute seule&nbsp;?',
+    a:'<b>Les deux ensemble</b>, posées en miroir, ont un plan de symétrie : le miroir lui-même. L\'ensemble est donc achiral.<br><br><b>Une main toute seule</b> n\'en a aucun. C\'est précisément ce qui la rend chirale : <i>chiral</i> vient du grec <i>kheir</i>, « la main ».<br><br>Retiens ce test : <b>si tu trouves un plan de symétrie dans la molécule, elle est achirale.</b> S\'il n\'y en a aucun (et pas d\'autre élément de symétrie impropre), elle est chirale.'}
+});
+
+/* ==========================================================================
+   GROUPE 2 — R et S, très lentement
+   ========================================================================== */
+const V2='2 — R ou S, très lentement';
+
+S({
+  grp:V2, title:'Gras, pointillé : ce que ça veut dire',
+  consigne:'Le modèle démarre comme le dessin de ton cours, juste un peu incliné pour que tu voies les quatre groupes. Tourne-le doucement.',
+  build(host){
+    bloc3D(host,MOL3D.butanolR,{h:280});
+    const d=el('div','dico');
+    d.innerHTML='<span class="m">Trait normal</span>La liaison est <b>dans le plan de la feuille</b>. Ni devant, ni derrière.'
+      +'<div style="height:9px"></div><span class="m">Trait gras (triangle plein)</span>La liaison <b>sort de la feuille</b>, elle vient vers toi. Le triangle est large du côté proche : c\'est la perspective, comme une route qui s\'élargit en s\'approchant.'
+      +'<div style="height:9px"></div><span class="m">Trait pointillé (hachures)</span>La liaison <b>rentre dans la feuille</b>, elle s\'éloigne de toi.';
+    host.appendChild(d);
+    host.appendChild(el('div','statusline','Le modèle ci-dessus est un <b>butan-2-ol</b>. Rouge = oxygène, gris clair = hydrogène. Au départ, l\'hydrogène est celui qui pointe vers le fond : c\'est lui qu\'on dessinerait en pointillé.'));
+  },
+  une:'Un trait gras vient vers toi, un trait pointillé s\'éloigne. C\'est tout. Le reste du dessin est à plat.',
+  probleme:'<p>Le problème n\'est pas la convention — elle tient en deux lignes. Le problème, c\'est qu\'on te demande ensuite de <b>reconstruire le volume</b> à partir de ces deux indices, et de le faire tourner.</p><p>Ici, tu n\'as plus à le reconstruire : il est déjà là.</p>',
+  etapes:[
+   {q:'Regarde d\'abord sans toucher.',
+    t:'Le modèle démarre dans la position du dessin classique : deux liaisons qui montent (dans le plan), une qui descend vers toi, une qui descend vers l\'arrière. C\'est le « Y » que tu vois dans les livres.'},
+   {q:'Maintenant tourne d\'un quart de tour vers la gauche.',
+    t:'La liaison qui pointait vers toi est maintenant sur le côté. Si tu redessinais la molécule <b>dans cette position</b>, tu n\'aurais plus du tout les mêmes traits gras et pointillés. <b>Même molécule, dessin différent.</b>'},
+   {q:'Ce que ça t\'apprend sur les exercices.',
+    t:'Quand on te donne deux dessins et qu\'on te demande « même molécule ou pas ? », la réponse ne se lit jamais sur l\'allure du dessin. Il faut soit tourner (mentalement ou avec un modèle), soit passer par les <b>noms</b> R et S — et c\'est bien plus sûr.'},
+   {q:'Pourquoi on passe toujours par R/S.',
+    t:'Parce que le nom, lui, ne bouge pas quand on tourne. C\'est une étiquette collée sur l\'objet. Deux dessins qui donnent le même nom sont la même molécule, point final. Tu n\'as plus jamais besoin de visualiser.'}
+  ],
+  retenir:[
+   'Gras = vers toi. Pointillé = vers le fond. Normal = dans le plan.',
+   'Un même objet a une infinité de dessins possibles.',
+   'Le <b>nom</b> (R ou S), lui, ne change jamais.',
+   'Donc : toujours nommer, jamais comparer des dessins à l\'œil.'
+  ]
+});
+
+S({
+  grp:V2, title:'Étape 1 — classer les quatre groupes',
+  consigne:'Cette étape se fait sur le papier, sans rien visualiser. C\'est la plus mécanique des quatre.',
+  build(host){
+    const b=el('div');
+    b.innerHTML='<table class="dat"><thead><tr><th class="num">Ordre</th><th>Ce qu\'on regarde</th></tr></thead><tbody>'
+     +'<tr><td class="num"><b>1</b></td><td>L\'atome <b>directement accroché</b> au carbone. Le plus lourd gagne.<br><span style="color:var(--ink2);font-size:13px">I &gt; Br &gt; Cl &gt; S &gt; F &gt; O &gt; N &gt; C &gt; H</span></td></tr>'
+     +'<tr><td class="num"><b>2</b></td><td>Égalité ? On avance d\'<b>un seul cran</b> et on compare les trois atomes suivants, du plus lourd au plus léger.<br><span style="color:var(--ink2);font-size:13px">(O,O,H) bat (O,H,H) — on compare rang par rang, jamais en faisant la somme.</span></td></tr>'
+     +'<tr><td class="num"><b>3</b></td><td>Une <b>double liaison</b> compte double : un C=O compte comme un carbone lié à <b>deux</b> oxygènes.</td></tr>'
+     +'<tr><td class="num"><b>4</b></td><td>L\'<b>hydrogène</b> est toujours dernier. Toujours.</td></tr>'
+     +'</tbody></table>';
+    host.appendChild(b);
+    const d=el('div','dico');
+    d.innerHTML='<span class="m">Sur le butan-2-ol, ça donne :</span>'
+     +'<b style="color:var(--red)">1 · OH</b> — l\'oxygène (8) écrase tous les carbones (6).<br>'
+     +'<b style="color:var(--ink)">2 · CH₂CH₃</b> — carbone, et ce carbone porte (C, H, H).<br>'
+     +'<b style="color:var(--ink)">3 · CH₃</b> — carbone aussi, mais il porte (H, H, H). Il perd.<br>'
+     +'<b style="color:var(--grey)">4 · H</b> — dernier, comme toujours.';
+    host.appendChild(d);
+    host.appendChild(el('div','statusline','Si tu bloques souvent ici, c\'est presque toujours à l\'étape 2 : on compare <b>rang par rang</b>, en alignant les trois atomes du plus lourd au plus léger de chaque côté. (O,C,H) bat (O,H,H) parce qu\'au deuxième rang, C bat H.'));
+  },
+  une:'On numérote les quatre groupes de 1 (le plus prioritaire) à 4 (le moins). Cette étape est du calcul, pas de la géométrie.',
+  probleme:'<p>Beaucoup d\'erreurs de R/S ne viennent pas de la géométrie mais de ce classement : on compare trop tôt, on oublie de dédoubler une double liaison, ou on fait une moyenne au lieu de comparer rang par rang.</p>',
+  etapes:[
+   {q:'La discipline : sphère par sphère.',
+    t:'On regarde d\'abord les quatre atomes <b>collés</b> au carbone. Si deux sont identiques, et <b>seulement</b> dans ce cas, on avance d\'un cran sur ces deux branches‑là. On ne saute jamais une étape.'},
+   {q:'Comparer rang par rang.',
+    t:'Pour chaque branche, on écrit les trois atomes suivants, rangés du plus lourd au plus léger : par exemple (O, C, H). Puis on compare les deux listes <b>terme à terme</b>. Le premier terme qui diffère tranche, et on arrête.'},
+   {q:'Les doubles liaisons.',
+    t:'Un C=O compte comme un carbone attaché à deux oxygènes : (O, O, quelque chose). C\'est pour ça qu\'un aldéhyde CHO bat un alcool CH₂OH — (O,O,H) contre (O,H,H).'},
+   {q:'Un raccourci que tu as le droit d\'utiliser.',
+    t:'Pour les groupes courants, tout le monde utilise une table de priorité toute faite :<br><b>OH &gt; NH₂ &gt; CO₂H &gt; CHO &gt; CH₂OH &gt; C₆H₅ &gt; C≡CH &gt; CH=CH₂ &gt; CH(CH₃)₂ &gt; CH₂CH₃ &gt; CH₃ &gt; H</b>.<br>Ce n\'est pas de la triche : c\'est ce que font les chimistes.'}
+  ],
+  retenir:[
+   'Numéro atomique le plus élevé d\'abord.',
+   'Égalité → on avance d\'un cran, et on compare <b>rang par rang</b>.',
+   'Double liaison = atome compté deux fois.',
+   'H toujours n° 4.'
+  ],
+  quiz:{q:'Entre –CH₂OH et –CHO, lequel est prioritaire&nbsp;?',
+    a:'<b>–CHO</b> (l\'aldéhyde).<br><br>Les deux commencent par un carbone : égalité. On avance d\'un cran.<br>• –CH₂OH : ce carbone porte <b>(O, H, H)</b>.<br>• –CHO : ce carbone est doublement lié à l\'oxygène, donc il compte comme portant <b>(O, O, H)</b>.<br><br>Premier rang : O = O, égalité. Deuxième rang : <b>O bat H</b>. C\'est tranché, on s\'arrête. L\'aldéhyde gagne.'}
+});
+
+S({
+  grp:V2, title:'Étape 2 — mettre le n° 4 derrière',
+  consigne:'Appuie sur le bouton et regarde le modèle tourner tout seul. Puis fais-le à la main.',
+  build(host){
+    const m=MOL3D.butanolR;
+    const bg=[{i:m.prio[0],t:'1',c:'--red',o:[-20,-14]},{i:m.prio[1],t:'2',c:'--ink',o:[22,-12]},
+              {i:m.prio[2],t:'3',c:'--ink',o:[20,16]},{i:m.prio[3],t:'4',c:'--grey',o:[-20,18]}];
+    const v=bloc3D(host,m,{h:290, badges:bg, boutons:[
+      {t:'⟳ Amener le n° 4 devant', go:(vv)=>vv.turn([1,0,0],Math.PI,900)},
+      {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+        btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+    ]});
+    host.appendChild(el('div','statusline','Au départ, le <b>4</b> (l\'hydrogène) est déjà vers le fond : c\'est la bonne position. Appuie sur le premier bouton pour l\'amener vers toi — tu verras que le sens de lecture s\'inverse. C\'est exactement le piège de l\'examen.'));
+  },
+  une:'On tourne la molécule jusqu\'à ce que le groupe n° 4 <b>s\'éloigne de toi</b>. On regarde alors les trois autres, qui forment un volant.',
+  probleme:'<p>Pourquoi le n° 4 doit-il partir derrière&nbsp;? Parce qu\'on veut regarder les trois <b>autres</b> groupes bien en face, comme un volant de voiture vu du siège conducteur. Le n° 4, c\'est la colonne de direction : elle part vers l\'avant de la voiture, donc loin de toi.</p>',
+  etapes:[
+   {q:'L\'image du volant, en détail.',
+    t:'Tu es assise dans la voiture. La colonne de direction s\'enfonce vers le moteur : c\'est le <b>n° 4</b>. Sur le volant lui-même, tu vois trois repères : <b>1</b>, <b>2</b> et <b>3</b>. Tu regardes dans quel sens ils se suivent.'},
+   {q:'Quand le dessin te donne déjà la bonne position.',
+    t:'Si le n° 4 est dessiné <b>en pointillé</b>, tu as de la chance : il est déjà vers le fond. Tu peux lire directement. C\'est le cas le plus fréquent dans les énoncés, parce que les auteurs sont gentils.'},
+   {q:'Quand il ne l\'est pas.',
+    t:'Si le n° 4 est en gras (vers toi), ou dans le plan, il faut tourner. Deux solutions : le modèle 3D ci-dessus, ou — beaucoup plus rapide en examen — <b>l\'astuce de l\'échange</b>, deux pages plus loin.'},
+   {q:'Fais l\'expérience maintenant.',
+    t:'Appuie sur « amener le n° 4 devant ». Regarde le volant 1 → 2 → 3 <b>avant</b> et <b>après</b>. Il tourne dans l\'autre sens. La molécule n\'a pas changé — c\'est ton point de vue qui a changé. D\'où la règle absolue : <b>on ne lit jamais le volant sans avoir mis le 4 derrière</b>.'}
+  ],
+  retenir:[
+   'Le n° 4 doit <b>s\'éloigner</b> de l\'observateur.',
+   'Les trois autres forment un volant qu\'on lit en face.',
+   'n° 4 dessiné en pointillé → on peut lire tout de suite.',
+   'Lire sans avoir placé le 4 derrière donne la <b>mauvaise lettre</b>.'
+  ]
+});
+
+S({
+  grp:V2, title:'Étape 3 — lire le volant',
+  consigne:'Le n° 4 est déjà derrière. Regarde simplement dans quel sens vont 1 → 2 → 3.',
+  build(host){
+    const f=el('div','figbox'); f.innerHTML=figVolant(0); host.appendChild(f);
+    const row=el('div','btnrow'); let k=0;
+    [['Sens des aiguilles → R','R'],['Sens inverse → S','S']].forEach((t,i)=>{
+      const b=el('button','btn'); b.textContent=t[0]; b.style.flex='1 1 46%';
+      b.onclick=()=>{ k=i; f.innerHTML=figVolant(i); [...row.children].forEach((x,j)=>x.classList.toggle('on',j===i)); };
+      row.appendChild(b);
+    });
+    host.appendChild(row); row.children[0].classList.add('on');
+    const m=MOL3D.butanolR;
+    const bg=[{i:m.prio[0],t:'1',c:'--red',o:[-20,-14]},{i:m.prio[1],t:'2',c:'--ink',o:[22,-12]},
+              {i:m.prio[2],t:'3',c:'--ink',o:[20,16]},{i:m.prio[3],t:'4',c:'--grey',o:[-20,18]}];
+    host.appendChild(el('div','statusline','Sur le butan-2-ol ci-dessous, l\'hydrogène (n° 4) part déjà vers le fond. Suis 1 → 2 → 3 des yeux : ils tournent <b>dans le sens des aiguilles d\'une montre</b>. Ce butan-2-ol est donc <b>(R)</b> — et RDKit le confirme.'));
+    bloc3D(host,m,{h:280, badges:bg});
+  },
+  une:'Sens des aiguilles d\'une montre = <b>R</b> (comme <i>rectus</i>, à droite). Sens inverse = <b>S</b> (comme <i>sinister</i>, à gauche).',
+  probleme:'<p>C\'est l\'étape la plus facile des quatre, et pourtant c\'est celle qu\'on rate — parce qu\'on l\'a faite sans avoir vérifié l\'étape 2.</p>',
+  etapes:[
+   {q:'Le moyen mnémotechnique le plus simple.',
+    t:'<b>R</b> comme la <b>R</b>oute : on tourne à droite. <b>S</b> comme <b>S</b>inistre, qui veut dire « gauche » en latin (et qui a mal tourné en français, justement). Une horloge tourne en R.'},
+   {q:'Un truc physique, avec ta main droite.',
+    t:'Referme ta main droite en gardant le pouce levé. Fais pointer ton <b>pouce vers le fond</b> (loin de toi) : tes doigts s\'enroulent dans le sens des aiguilles. Pouce = n° 4, doigts = 1 → 2 → 3. Si l\'ordre suit tes doigts de la main droite : c\'est <b>R</b>.'},
+   {q:'Vérifie que tu l\'as bien compris.',
+    t:'Refais-le avec la main <b>gauche</b> : pouce vers le fond, les doigts s\'enroulent dans l\'autre sens. C\'est <b>S</b>. Tu viens de fabriquer les deux énantiomères avec tes mains, sans rien dessiner.'},
+   {q:'Ce qu\'il ne faut surtout pas faire.',
+    t:'Ne cherche pas à « voir » la molécule en entier. Tu n\'as besoin que de trois points et d\'un sens de rotation. Tout le reste de la molécule est du décor.'}
+  ],
+  retenir:[
+   '1 → 2 → 3 dans le sens des aiguilles = <b>R</b>.',
+   'Sens inverse = <b>S</b>.',
+   'Pouce de la main droite vers le fond = R.',
+   'Valable <b>uniquement</b> si le n° 4 est déjà derrière.'
+  ],
+  quiz:{q:'Le n° 4 est vers toi (trait gras), et tu lis 1 → 2 → 3 dans le sens des aiguilles. La molécule est-elle R&nbsp;?',
+    a:'<b>Non, elle est S.</b><br><br>Tu as lu le volant « par derrière », c\'est-à-dire depuis le mauvais côté. Comme quand tu regardes une horloge à travers sa vitre depuis l\'arrière : les aiguilles semblent tourner à l\'envers.<br><br>La règle de rattrapage : <b>si le n° 4 est vers toi, lis normalement puis inverse la lettre.</b> C\'est exactement ce qu\'on va systématiser à la page suivante.'}
+});
+
+S({
+  grp:V2, title:'L\'astuce quand tu n\'arrives pas à tourner',
+  consigne:'Retiens ces deux phrases. Elles remplacent complètement la rotation mentale.',
+  build(host){
+    const d=el('div','rassure');
+    d.innerHTML='<p class="gros" style="margin:0 0 10px"><b>1.</b> Si le n° 4 est <b>vers toi</b> : lis le volant normalement, puis <b>inverse la lettre</b>.</p>'
+      +'<p class="gros" style="margin:0"><b>2.</b> Chaque fois que tu <b>échanges deux groupes</b>, la lettre s\'inverse.</p>';
+    host.appendChild(d);
+    const f=el('div','figbox'); f.innerHTML=figEchange(); host.appendChild(f);
+    host.appendChild(el('div','statusline','La deuxième règle est la plus puissante des deux : elle te permet de <b>déplacer les groupes comme tu veux</b> sur le papier, en comptant simplement combien d\'échanges tu as faits. Nombre pair d\'échanges → même lettre. Nombre impair → lettre inversée.'));
+  },
+  une:'Tu n\'as jamais besoin de tourner quoi que ce soit dans ta tête : il suffit de compter des échanges.',
+  probleme:'<p>Faire tourner une molécule mentalement est difficile. <b>Échanger deux groupes sur un dessin</b> ne l\'est pas du tout : on gomme et on réécrit.</p><p>Or un échange a un effet parfaitement prévisible : il transforme la molécule en son image miroir, donc il inverse la lettre. En enchaînant des échanges, on se ramène toujours à une position facile à lire.</p>',
+  etapes:[
+   {q:'La méthode complète, en trois lignes.',
+    t:'<b>(a)</b> Classe les quatre groupes.<br><b>(b)</b> Si le n° 4 n\'est pas en pointillé, <b>échange-le</b> avec le groupe qui, lui, est en pointillé. Compte : 1 échange.<br><b>(c)</b> Lis le volant sur le dessin obtenu, puis inverse la lettre (car tu as fait un nombre impair d\'échanges).'},
+   {q:'Pourquoi un échange inverse la lettre.',
+    t:'Parce qu\'échanger deux groupes sur un carbone donne <b>exactement l\'image miroir</b>. Vérifie-le sur le modèle 3D de la page précédente : si tu échangeais deux boules, tu obtiendrais l\'autre main.'},
+   {q:'Deux échanges ramènent au point de départ.',
+    t:'Deux miroirs successifs se compensent : tu retrouves la molécule de départ, donc la même lettre. D\'où la règle : <b>pair = inchangé, impair = inversé</b>. Tu peux enchaîner autant d\'échanges que tu veux.'},
+   {q:'Un exemple concret.',
+    t:'Le n° 4 est en trait gras (vers toi), le n° 2 est en pointillé. Tu les échanges : le 4 part en pointillé, le 2 vient en gras. Tu lis le nouveau volant et tu trouves « R ». Comme tu as fait <b>un</b> échange, la vraie réponse est <b>S</b>.'},
+   {q:'Pourquoi cette méthode est la bonne en examen.',
+    t:'Elle est purement mécanique. Elle ne demande aucune visualisation, elle se fait au crayon, et elle ne rate jamais. Les gens qui « voient » en 3D vont plus vite ; ceux qui comptent les échanges ne se trompent pas. Choisis d\'être du deuxième groupe.'}
+  ],
+  retenir:[
+   'n° 4 vers toi → lis, puis <b>inverse</b>.',
+   'Un échange de deux groupes → lettre inversée.',
+   'Nombre pair d\'échanges → lettre inchangée.',
+   'Aucune rotation mentale n\'est nécessaire. Jamais.'
+  ],
+  quiz:{q:'Sur un dessin, tu échanges le groupe 1 avec le 3, puis le 2 avec le 4. Tu lis ensuite « S ». Quelle est la vraie configuration&nbsp;?',
+    a:'<b>S.</b><br><br>Tu as fait <b>deux</b> échanges, donc un nombre pair. Les deux inversions se compensent et la lettre lue est la bonne.<br><br>C\'est très utile en pratique : tu peux réorganiser complètement un dessin pour le rendre lisible, tant que tu comptes tes échanges. Deux échanges bien choisis permettent presque toujours d\'amener le n° 4 en pointillé <b>et</b> de mettre le volant dans une position confortable.'}
+});
+
+/* ==========================================================================
+   GROUPE 3 — Les faces (exercice 1 du TD)
+   ========================================================================== */
+const V3='3 — Les faces, en volume';
+
+S({
+  grp:V3, title:'Un carbone sp² est plat comme une crêpe',
+  consigne:'Tourne la molécule jusqu\'à la voir « par la tranche ». Tu verras que tout est aligné.',
+  build(host){
+    const m=MOL3D.aminocetone;
+    bloc3D(host,m,{h:290, decor:[
+      {k:'disc',p:[0,0,0],n:[0,0,1],r:2.2,c:'--blue',op:.14},
+      {k:'arrow',a:[0,0,2.8],b:[0,0,0.9],c:'--green'},
+      {k:'arrow',a:[0,0,-2.8],b:[0,0,-0.9],c:'--red'},
+      {k:'tag',p:[0,0,3.4],t:'AVANT',c:'--green',front:true},
+      {k:'tag',p:[0,0,-3.4],t:'ARRIÈRE',c:'--red',front:true}
+    ], boutons:[
+      {t:'↻ Voir par la tranche', go:(vv)=>vv.turn([1,0,0],Math.PI/2,900)},
+      {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+        btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+    ]});
+    host.appendChild(el('div','statusline','C\'est la <b>4-aminobutan-2-one</b> du TD. Le carbone de la cétone, l\'oxygène et les deux carbones voisins sont dans <b>un seul plan</b> (le disque bleu). Ce plan a donc exactement deux côtés : le vert et le rouge.'));
+  },
+  une:'Autour d\'une double liaison, les atomes sont <b>dans un plan</b>. Un plan a deux côtés — c\'est de là que vient toute la notion de « face ».',
+  probleme:'<p>On te parle de « face <i>Re</i> », de « face avant », d\'« attaque par le dessus ». Ça suppose que tu voies le plan. Or sur un dessin, tout est plat : on ne voit pas <b>quel</b> plan est le bon.</p><p>Ici, le plan est colorié. Tourne, et regarde-le disparaître quand tu le vois par la tranche : c\'est la preuve qu\'il est bien plat.</p>',
+  etapes:[
+   {q:'Pourquoi c\'est plat.',
+    t:'Un carbone engagé dans une double liaison n\'a que <b>trois</b> voisins, pas quatre. Trois points définissent toujours un plan. Le carbone se met au milieu, à 120° de chacun : c\'est la forme la plus régulière possible, comme un panneau « attention danger ».'},
+   {q:'Ce que ça change.',
+    t:'Un carbone tétraédrique est <b>déjà</b> à droite ou à gauche : il a une main. Un carbone plan, lui, n\'a pas de main — mais il a deux <b>côtés</b>. Si quelque chose arrive d\'un côté plutôt que de l\'autre, le carbone devient tétraédrique et choisit sa main à cet instant.'},
+   {q:'D\'où le mot « face ».',
+    t:'Une face, c\'est un côté du plan. Le vert (vers toi) et le rouge (vers le fond) sur le modèle. Rien de plus compliqué que ça.'},
+   {q:'Vérifie par la tranche.',
+    t:'Appuie sur « voir par la tranche ». Les deux disques deviennent des traits, et tous les atomes s\'alignent. Si tu vois une molécule sp² comme un <b>morceau de papier</b> dans l\'espace, tu as tout compris.'}
+  ],
+  retenir:[
+   'Carbone sp² = 3 voisins, angles de 120°, tout dans un plan.',
+   'Un plan a <b>deux</b> côtés : deux faces.',
+   'Le carbone plan n\'a pas de main — il en choisit une quand on l\'attaque.',
+   'Image : un morceau de papier posé dans l\'espace.'
+  ]
+});
+
+S({
+  grp:V3, title:'Attaquer par devant, attaquer par derrière',
+  consigne:'Regarde les deux flèches sur le modèle. Ce sont les deux seules possibilités.',
+  build(host){
+    const m=MOL3D.aminocetone;
+    bloc3D(host,m,{h:290, decor:[
+      {k:'disc',p:[0,0,0],n:[0,0,1],r:2.2,c:'--blue',op:.11},
+      {k:'arrow',a:[0,0,3.2],b:[0,0,1.1],c:'--green'},
+      {k:'arrow',a:[0,0,-3.2],b:[0,0,-1.1],c:'--red'},
+      {k:'tag',p:[0,0,3.8],t:'attaque avant',c:'--green',fs:11,front:true},
+      {k:'tag',p:[0,0,-3.8],t:'attaque arrière',c:'--red',fs:11,front:true}
+    ], boutons:[
+      {t:'↻ Voir par la tranche', go:(vv)=>vv.turn([1,0,0],Math.PI/2,900)}
+    ]});
+    const f=el('div','figbox'); f.innerHTML=figDeuxProduits(); host.appendChild(f);
+    host.appendChild(el('div','statusline','Un hydrure (H⁻) arrive soit par le vert, soit par le rouge. Les deux produits obtenus sont <b>images l\'un de l\'autre dans un miroir</b> : ce sont des énantiomères. On dit donc que les deux faces sont <b>énantiotopes</b>.'));
+  },
+  une:'Pour savoir comment s\'appellent deux faces, on fabrique les deux produits et on les compare. C\'est <b>la définition</b>, pas une astuce.',
+  probleme:'<p>Les définitions officielles parlent d\'axes de symétrie et de réflexions. C\'est rigoureux mais imprenable quand on ne visualise pas.</p><p>La bonne nouvelle : la définition <b>par les produits</b> donne toujours la même réponse, et elle ne demande aucune vision dans l\'espace. Juste de dessiner deux produits.</p>',
+  etapes:[
+   {q:'Le test, en trois gestes.',
+    t:'<b>(1)</b> Attaque la face avant, dessine le produit. <b>(2)</b> Attaque la face arrière, dessine le produit. <b>(3)</b> Compare les deux.'},
+   {q:'Les trois réponses possibles.',
+    t:'<b>Produits identiques</b> → faces <b>homotopes</b>. <b>Produits énantiomères</b> (la main gauche et la main droite) → faces <b>énantiotopes</b>. <b>Produits diastéréoisomères</b> (ni identiques ni miroirs) → faces <b>diastéréotopes</b>.'},
+   {q:'Sur la 4-aminobutan-2-one.',
+    t:'Face avant → l\'alcool (S). Face arrière → l\'alcool (R). Deux énantiomères : les faces sont donc <b>énantiotopes</b>. Le mot savant pour ça : la cétone est <b>prochirale</b>.'},
+   {q:'Pourquoi ça compte pour la suite.',
+    t:'Faces énantiotopes = les deux chemins ont <b>exactement la même énergie</b>. Sans rien ajouter, on obtient 50 % de chaque : un racémique. Il faut un réactif chiral pour les départager. C\'est toute la raison d\'être de la synthèse asymétrique.'},
+   {q:'Et si les faces étaient diastéréotopes ?',
+    t:'Alors les deux chemins auraient déjà des énergies <b>différentes</b>, sans qu\'on ajoute quoi que ce soit. C\'est le cas dès que la molécule possède déjà un centre de chiralité quelque part.'}
+  ],
+  retenir:[
+   'Fabrique les deux produits, puis compare. C\'est tout.',
+   'Identiques → homotopes. Miroirs → énantiotopes. Le reste → diastéréotopes.',
+   'Énantiotopes = même énergie = il faut apporter la chiralité.',
+   'Diastéréotopes = énergies déjà différentes.'
+  ],
+  quiz:{q:'Une cétone donne, selon la face attaquée, deux produits qui ne sont <b>ni</b> identiques <b>ni</b> images miroir. Que peux-tu en déduire&nbsp;?',
+    a:'Que les deux faces sont <b>diastéréotopes</b>, et donc que la molécule contenait <b>déjà</b> un élément stéréogène ailleurs (un centre de chiralité, ou un repère comme un substituant sur un cycle).<br><br>Conséquence pratique très importante : tu obtiendras une sélectivité <b>même avec un réducteur banal et achiral</b> comme NaBH₄. C\'est exactement la situation de la question 3e du TD.'}
+});
+
+S({
+  grp:V3, title:'Le (Z)-hex-3-ène : tourne-le, tu vas comprendre',
+  consigne:'Appuie sur « tourner de 180° autour de l\'axe », puis regarde les deux disques colorés.',
+  build(host){
+    const m=MOL3D.hexeneZ;
+    const v=bloc3D(host,m,{h:300, decor:[
+      {k:'disc',p:[0,0,0],n:[0,0,1],r:2.3,c:'--ink2',op:.08},
+      {k:'arrow',a:[0,0,2.9],b:[0,0,1.0],c:'--green'},
+      {k:'arrow',a:[0,0,-2.9],b:[0,0,-1.0],c:'--red'},
+      {k:'line',a:[0,-3.0,0],b:[0,3.0,0],c:'--purple',dash:true,w:2.4},
+      {k:'tag',p:[0,0,3.5],t:'AVANT',c:'--green',front:true},
+      {k:'tag',p:[0,0,-3.5],t:'ARRIÈRE',c:'--red',front:true},
+    ], boutons:[
+      {t:'⟳ Tourner de 180° autour de l\'axe', go:(vv)=>vv.turn([0,1,0],Math.PI,1500), f:'1 1 100%'}
+    ]});
+    host.appendChild(el('div','statusline','Le trait violet est un <b>axe de symétrie</b> de la molécule. Après la rotation de 180°, la molécule <b>a exactement la même allure qu\'avant</b> — mais le disque vert est passé derrière. Autrement dit : une simple rotation a échangé les deux faces.'));
+  },
+  une:'Sur cet alcène, une simple rotation échange le devant et le derrière. Les deux faces sont donc <b>homotopes</b> — et aucune sélectivité n\'est possible.',
+  probleme:'<p>C\'est la molécule la plus déroutante du TD, parce que la réponse ne se lit pas du tout sur le dessin. On cherche instinctivement un plan de symétrie ; il faut chercher un <b>axe</b>, et cet axe est couché dans le plan de la feuille — donc invisible.</p><p>Ici, tu peux simplement faire la rotation et constater.</p>',
+  etapes:[
+   {q:'Repère l\'axe violet.',
+    t:'Il est <b>perpendiculaire</b> à la double liaison et il est <b>dans le plan</b> de la molécule. Il passe pile au milieu de la double liaison.'},
+   {q:'Fais la rotation de 180°.',
+    t:'La moitié gauche vient à droite, la droite vient à gauche — et surtout, <b>ce qui était devant part derrière</b>. Comme quand tu retournes une crêpe en la faisant pivoter autour d\'un axe horizontal.'},
+   {q:'Regarde le résultat.',
+    t:'La molécule est <b>identique</b> à ce qu\'elle était. Normal : les deux moitiés sont les mêmes (un éthyle de chaque côté, en <i>cis</i>). Mais le disque vert est maintenant au fond. <b>Une rotation a donc échangé les deux faces.</b>'},
+   {q:'La conclusion.',
+    t:'Deux faces qu\'une rotation échange sont <b>homotopes</b>. Il n\'y a qu\'un seul produit possible, quelle que soit la face attaquée. L\'époxydation donne un composé <i>méso</i> — la même molécule des deux côtés.'},
+   {q:'Vérifie par les produits, si tu préfères.',
+    t:'Époxyde la face avant : tu obtiens le <i>cis</i>-3,4-époxyhexane. Époxyde la face arrière : le même composé. Deux produits identiques → faces homotopes. <b>Les deux méthodes donnent la même réponse</b>, ce qui est rassurant.'},
+   {q:'Et si l\'alcène était (E) ?',
+    t:'L\'axe existerait encore, mais il serait <b>perpendiculaire au plan</b> de la molécule — donc il ne retournerait rien du tout. Les faces seraient alors <b>énantiotopes</b>, et l\'époxydation donnerait deux énantiomères. Un seul détail de géométrie change toute la réponse.'}
+  ],
+  retenir:[
+   'Axe perpendiculaire à C=C <b>et dans le plan</b> → faces homotopes.',
+   'Une rotation qui échange les faces = faces homotopes.',
+   'Un seul produit possible : composé <i>méso</i>, achiral.',
+   'Le même alcène en (E) aurait des faces énantiotopes.'
+  ],
+  quiz:{q:'Pourquoi cherche-t-on un <b>axe</b> et pas un <b>plan</b> pour conclure « homotopes »&nbsp;?',
+    a:'Parce qu\'un <b>plan</b> de symétrie est un miroir : il échange bien les deux faces, mais il transforme la molécule en son image miroir. Or on veut savoir si on retombe sur <b>la même</b> molécule, pas sur son reflet.<br><br>Un <b>axe</b> de rotation, lui, est une opération « physique » : tu peux vraiment attraper l\'objet et le tourner. Si une rotation réelle suffit à échanger les faces, alors elles sont interchangeables pour de bon → <b>homotopes</b>.<br><br>Si seul un miroir les échange (rotation impossible) → <b>énantiotopes</b>. Si même un miroir n\'y arrive pas → <b>diastéréotopes</b>. Les trois cas, dans l\'ordre.'}
+});
+
+/* ==========================================================================
+   GROUPE 4 — Le cyclohexane et l'axe des biaryles
+   ========================================================================== */
+const V4='4 — Les deux cas durs du TD';
+
+S({
+  grp:V4, title:'Exercice 3e — la chaise, et pourquoi les faces diffèrent',
+  consigne:'Tourne le cycle pour le voir par la tranche : tu verras la forme de chaise, et le tBu bien d\'un seul côté.',
+  build(host){
+    const m=MOL3D.cyclohexanone;
+    const p=m.atoms[m.sp2].p, n=[0,0.93,0.37];
+    const A=(s)=>[p[0]+n[0]*s,p[1]+n[1]*s,p[2]+n[2]*s];
+    bloc3D(host,m,{h:300, R0:M3.id(), decor:[
+      {k:'arrow',a:A(3.4),b:A(1.3),c:'--green'},
+      {k:'arrow',a:A(-3.4),b:A(-1.3),c:'--red'},
+      {k:'tag',p:A(4.1),t:'par le dessus',c:'--green',fs:11,front:true},
+      {k:'tag',p:A(-4.1),t:'par le dessous',c:'--red',fs:11,front:true}
+    ], boutons:[
+      {t:'↻ Voir par la tranche', go:(vv)=>vv.turn([1,0,0],Math.PI/2,900)},
+      {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+        btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+    ]});
+    host.appendChild(el('div','statusline','La 4-<i>tert</i>-butylcyclohexanone. Le gros groupe en bas est le <i>tert</i>-butyle : il est <b>d\'un seul côté</b> du cycle, et c\'est lui qui fait toute la différence entre la flèche verte et la flèche rouge.'));
+  },
+  une:'Cette molécule est <b>achirale</b>, et pourtant ses deux faces sont différentes : c\'est le <i>tert</i>-butyle qui sert de repère « haut / bas ».',
+  probleme:'<p>Là, l\'intuition trompe : on se dit « la molécule n\'est pas chirale, donc ses deux faces doivent être équivalentes ». C\'est faux, et c\'est la subtilité de la question 3e.</p><p>Être achirale veut dire qu\'on ne peut pas la distinguer de son reflet. Ça ne dit <b>rien</b> sur le fait que son dessus ressemble à son dessous.</p>',
+  etapes:[
+   {q:'Le repère, d\'abord.',
+    t:'Le <i>tert</i>-butyle est planté d\'un seul côté du cycle. Il définit un « bas » et donc un « haut ». Sans lui (avec une cyclohexanone toute nue), les deux faces seraient parfaitement identiques.'},
+   {q:'Attaque par le vert : où va l\'OH ?',
+    t:'L\'hydrure arrive par le dessus, donc l\'OH se retrouve <b>en dessous</b> — du même côté que le <i>tert</i>-butyle. Les deux groupes sont du même côté : c\'est l\'isomère <b>cis</b>.'},
+   {q:'Attaque par le rouge.',
+    t:'L\'hydrure arrive par le dessous, l\'OH se retrouve au-dessus, <b>à l\'opposé</b> du <i>tert</i>-butyle : c\'est l\'isomère <b>trans</b>.'},
+   {q:'Compare les deux produits.',
+    t:'<i>cis</i> et <i>trans</i> ne sont ni identiques, ni images miroir : ce sont des <b>diastéréoisomères</b>. Donc les deux faces sont <b>diastéréotopes</b>, et la réaction est diastéréosélective — même avec NaBH₄, qui est parfaitement achiral.'},
+   {q:'Lequel gagne, en pratique ?',
+    t:'NaBH₄ est un hydrure <b>petit</b>. Il passe par le chemin « axial », le plus direct, ce qui pose l\'OH en position équatoriale : on obtient majoritairement le <b>trans</b>. Avec un hydrure encombrant (L-Selectride), le chemin axial est bouché et on obtient le <b>cis</b>.'},
+   {q:'Le détail qui rapporte des points.',
+    t:'Les deux produits sont <b>achiraux</b> (ils ont un plan de symétrie qui passe par C1 et C4). C\'est pour ça que l\'énoncé écrit leurs descripteurs en <b>minuscules</b> : (1<i>r</i>,4<i>r</i>). Une minuscule = centre stéréogène mais pas chiral. La mention « (±) » de l\'énoncé, elle, n\'a pas de sens : un composé achiral n\'a pas d\'énantiomère.'}
+  ],
+  retenir:[
+   'Molécule achirale, mais faces <b>diastéréotopes</b> : le tBu sert de repère.',
+   'Les deux produits sont <i>cis</i> et <i>trans</i> : des diastéréoisomères.',
+   'Réaction diastéréosélective avec un réducteur achiral.',
+   'Petit hydrure → attaque axiale → OH équatorial → <i>trans</i>.'
+  ],
+  quiz:{q:'Si on enlevait le <i>tert</i>-butyle (cyclohexanone toute simple), que deviendraient les deux faces&nbsp;?',
+    a:'Elles deviendraient <b>homotopes</b>.<br><br>Sans repère sur le cycle, rien ne distingue le dessus du dessous : une rotation de la molécule échange les deux faces. Les deux attaques donneraient le <b>même</b> cyclohexanol, et il n\'y aurait plus rien à sélectionner.<br><br>C\'est la démonstration que le <i>tert</i>-butyle ne sert pas à « gêner » — il sert à <b>distinguer</b>. C\'est un repère, pas un obstacle. (Il aide aussi à bloquer la chaise dans une seule conformation, ce qui rend l\'expérience propre.)'}
+});
+
+S({
+  grp:V4, title:'Exercice 2 — pose le biaryle sur la tranche',
+  consigne:'Appuie sur « regarder dans l\'axe ». C\'est exactement ce qu\'on te demande d\'imaginer — sauf qu\'ici tu le vois.',
+  build(host){
+    const m=MOL3D.biaryle;
+    const v=bloc3D(host,m,{h:310, R0:M3.rot([1,0,0],Math.PI/2), decor:[
+      {k:'line',a:[0,0,-4.6],b:[0,0,4.6],c:'--red',dash:true,w:2.2}
+    ], boutons:[
+      {t:'👁 Regarder DANS l\'axe', go:(vv)=>vv.goto(M3.id(),1400), f:'1 1 100%'},
+      {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+        btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+    ]});
+    host.appendChild(el('div','statusline','C\'est l\'acide 6,6′-difluorobiphényl-2,2′-dicarboxylique de l\'exercice 2. Le trait rouge est l\'<b>axe</b>. Quand tu regardes dans l\'axe, les deux cycles apparaissent comme deux barres croisées : c\'est la fameuse « projection de Newman » — et elle n\'a plus rien de mystérieux.'));
+  },
+  une:'Les deux cycles ne sont pas dans le même plan : ils sont <b>croisés</b>, à peu près à 90°. C\'est cette torsion, et elle seule, qui rend la molécule chirale.',
+  probleme:'<p>Sur le dessin de l\'énoncé, les deux cycles sont dessinés à plat, l\'un au-dessus de l\'autre. Ça donne l\'impression qu\'ils sont dans le même plan — et alors la molécule aurait un plan de symétrie, donc serait achirale.</p><p>Le dessin ment. En vrai, ils ne <b>peuvent pas</b> être coplanaires : les substituants en ortho se rentrent dedans.</p>',
+  etapes:[
+   {q:'Pourquoi les cycles se croisent.',
+    t:'Chaque cycle porte deux groupes en position <b>ortho</b> (juste à côté de la liaison centrale). Si les deux cycles étaient à plat l\'un dans l\'autre, ces quatre groupes se toucheraient. La molécule se tord donc pour les écarter, jusqu\'à environ 90°.'},
+   {q:'Pourquoi la torsion crée de la chiralité.',
+    t:'Deux barres croisées, ça ressemble à un début d\'hélice — et une hélice a un sens. Un tire-bouchon existe en version droite et en version gauche. C\'est exactement ce qui se passe ici : la torsion peut se faire dans un sens ou dans l\'autre, et les deux versions sont images miroir.'},
+   {q:'Ce qu\'on appelle un « axe de chiralité ».',
+    t:'Il n\'y a <b>aucun carbone asymétrique</b> dans cette molécule. La chiralité n\'est pas à un point, elle est répartie <b>le long de la liaison centrale</b>. On parle donc d\'un axe, et non d\'un centre.'},
+   {q:'Pourquoi certaines de ces molécules ne comptent pas.',
+    t:'Parce que la torsion peut basculer d\'un sens à l\'autre en tournant autour de la liaison centrale. Si cette rotation est <b>rapide</b>, les deux formes s\'échangent en permanence et on ne peut pas les séparer. C\'est le cas de l\'acide biphényl-2,2′-dicarboxylique du TD, qui n\'a que <b>deux</b> groupes en ortho au lieu de quatre.'},
+   {q:'Le critère, chiffré.',
+    t:'Robinson donne le seuil : il faut une barrière de rotation supérieure à environ <b>90 kJ·mol⁻¹</b> pour pouvoir séparer les deux formes à température ambiante. En pratique, ça demande <b>trois ou quatre</b> substituants en ortho, ou deux très gros.'},
+   {q:'Et pour nommer, une fois dans l\'axe ?',
+    t:'Tu vois deux barres : celle du <b>cycle avant</b> et celle du <b>cycle arrière</b>. Sur chacune, tu repères le substituant prioritaire. Règle spéciale des axes : <b>tout ce qui est devant passe avant tout ce qui est derrière</b>. Tu obtiens donc 1 et 2 sur la barre avant, 3 et 4 sur la barre arrière, et tu lis 1 → 2 → 3 comme un volant ordinaire.'}
+  ],
+  retenir:[
+   'Les deux cycles sont <b>croisés</b>, pas coplanaires.',
+   'La torsion = une hélice = deux sens possibles = chiralité.',
+   'Chiralité <b>axiale</b> : aucun carbone asymétrique.',
+   'Il faut que la rotation soit lente (~90 kJ·mol⁻¹) pour que ça compte.'
+  ],
+  plus:{titre:'pourquoi on ne peut pas répondre sur le dessin de l\'énoncé',
+    body:'<p>Les quatre biaryles de l\'exercice 2 sont dessinés <b>à plat</b> : aucune liaison en gras, aucune liaison rompue, aucune perspective. Or le descripteur a<i>R</i>/a<i>S</i> se lit sur le <b>sens de la torsion</b>, qui n\'est pas représenté.</p><p>La réponse rigoureuse consiste donc à : identifier l\'élément (un axe), donner les priorités des substituants en ortho, expliquer la procédure — et signaler que le dessin ne permet pas de conclure. C\'est peut-être exactement ce que l\'exercice cherche à faire dire.</p><p>Pour information, le modèle ci-dessus a été construit et optimisé numériquement ; son angle de torsion mesuré est d\'environ 98°, ce qui confirme que les deux cycles sont bien quasi perpendiculaires.</p>',
+    src:'<b>Robinson, <i>Organic Stereochemistry</i></b>, §4.5, p. 44 (atropisomères, substituants ortho) et p. 46 (seuil de séparabilité).'},
+  quiz:{q:'Le BINOL et le BINAP ont des naphtalènes au lieu de simples benzènes. En quoi ça aide&nbsp;?',
+    a:'Le naphtalène est fait de <b>deux cycles soudés</b>. Le second cycle occupe donc de façon permanente une des deux positions ortho — et il est bien plus encombrant qu\'un simple substituant, parce qu\'il est rigide et qu\'il ne peut pas s\'écarter.<br><br>Résultat : avec un OH (ou un PPh₂) sur l\'autre position ortho, on a les quatre positions ortho occupées, dont deux par des blocs rigides. La rotation est totalement impossible, et le BINOL comme le BINAP s\'achètent sous forme énantiopure, stables indéfiniment.<br><br>C\'est précisément pour ça qu\'on les utilise comme source de chiralité en catalyse : ils ne racémisent jamais.'}
+});
+
+/* ==========================================================================
+   GROUPE 5 — Réviser quand on ne visualise pas
+   ========================================================================== */
+const V5='5 — Réviser autrement';
+
+S({
+  grp:V5, title:'Fabrique-toi un modèle, vraiment',
+  consigne:'Prends deux minutes maintenant. C\'est le meilleur investissement de toute ta révision.',
+  build(host){
+    const f=el('div','figbox'); f.innerHTML=figModeles(); host.appendChild(f);
+    const f2=el('div','figbox'); f2.innerHTML=figMainDroite(); host.appendChild(f2);
+    host.appendChild(el('div','statusline','Les vrais modèles moléculaires (boules et bâtonnets) coûtent une vingtaine d\'euros et sont autorisés dans beaucoup d\'examens de stéréochimie. Demande à ton enseignant : la réponse est souvent oui.'));
+  },
+  une:'Un objet qu\'on tient dans la main remplace définitivement la rotation mentale. Ce n\'est pas une béquille : c\'est l\'outil normal du métier.',
+  probleme:'<p>On a tendance à croire qu\'utiliser un modèle est un aveu de faiblesse. C\'est l\'inverse : Pasteur triait ses cristaux à la pince, Watson et Crick ont construit l\'ADN en fil de fer et en carton découpé.</p><p>Personne ne « voit » les molécules. Tout le monde bricole.</p>',
+  etapes:[
+   {q:'La version la plus rapide : une gomme et des cure-dents.',
+    t:'Plante quatre cure-dents dans une gomme, le plus écartés possible. Écris 1, 2, 3, 4 sur des bouts de papier et pique-les au bout. Tu viens de fabriquer un centre stéréogène que tu peux tourner dans tous les sens.'},
+   {q:'La version « sans rien ».',
+    t:'Écarte le pouce, l\'index, le majeur et l\'annulaire de ta main droite, le plus possible. Regarde-les : ils pointent à peu près vers les quatre coins d\'un tétraèdre. Avec un peu d\'habitude, c\'est suffisant pour lire un R/S.'},
+   {q:'Le geste de la main droite, à automatiser.',
+    t:'Poing fermé, pouce levé, pouce vers le fond : tes doigts tournent dans le sens <b>R</b>. C\'est le seul geste à retenir de tout le chapitre, et il marche à tous les coups.'},
+   {q:'Comment t\'entraîner efficacement.',
+    t:'Reprends <b>la même</b> molécule cinq fois de suite, dessinée dans cinq orientations différentes, et vérifie que tu retrouves la même lettre. C\'est beaucoup plus formateur que de faire cinq molécules différentes une fois chacune : c\'est exactement ce qui construit la rotation mentale.'}
+  ],
+  retenir:[
+   'Un modèle physique n\'est pas de la triche : c\'est l\'outil du métier.',
+   'Gomme + 4 cure-dents = un centre stéréogène en 2 minutes.',
+   'Poing droit, pouce vers le fond : les doigts tournent en R.',
+   'Entraîne-toi sur <b>la même</b> molécule dans plusieurs orientations.'
+  ]
+});
+
+S({
+  grp:V5, title:'La fiche de survie',
+  consigne:'Si tu ne retiens qu\'une page de tout ce support, c\'est celle-ci.',
+  build(host){
+    const mk=(t,c,items)=>{ const d=el('div','dico'); d.style.borderLeftColor='var('+c+')';
+      d.innerHTML='<span class="m" style="color:var('+c+')">'+t+'</span>'
+        +'<ul style="margin:6px 0 0;padding-left:18px;line-height:1.7">'+items.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+      return d; };
+    host.appendChild(mk('Pour trouver R ou S','--blue',[
+      'Classe les 4 groupes : le plus lourd d\'abord, H toujours dernier.',
+      'Le n° 4 doit partir <b>vers le fond</b>.',
+      'Lis 1 → 2 → 3 : aiguilles d\'une montre = <b>R</b>, sinon <b>S</b>.',
+      'Si le n° 4 est vers toi : lis, puis <b>inverse</b>.',
+      'Un échange de deux groupes inverse la lettre. Deux échanges : rien ne change.']));
+    host.appendChild(mk('Pour classer deux faces','--green',[
+      'Attaque la face avant → dessine le produit.',
+      'Attaque la face arrière → dessine le produit.',
+      'Produits identiques → <b>homotopes</b>.',
+      'Produits énantiomères → <b>énantiotopes</b> (substrat prochiral).',
+      'Ni l\'un ni l\'autre → <b>diastéréotopes</b>.']));
+    host.appendChild(mk('Pour dire diastéréo ou énantio','--red',[
+      'Rien de stéréogène n\'est créé → <b>ni l\'une ni l\'autre</b>.',
+      'Le substrat est déjà chiral → <b>diastéréo</b>sélective.',
+      'Substrat achiral + réactif chiral → <b>énantio</b>sélective.',
+      'Substrat achiral + réactif achiral → racémique, rien à dire.',
+      'Test : « si je change l\'énantiomère du réactif, le produit change-t-il ? »']));
+    host.appendChild(mk('Pour un axe de chiralité','--purple',[
+      'Chaque cycle doit avoir ses deux positions ortho <b>différentes</b>.',
+      'Il faut <b>3 ou 4</b> substituants ortho pour bloquer la rotation.',
+      'Seuil : barrière &gt; ~90 kJ·mol⁻¹ à température ambiante.',
+      'Pour nommer : on regarde dans l\'axe, l\'avant passe avant l\'arrière.',
+      'Un dessin plat ne permet <b>jamais</b> de conclure sur la configuration.']));
+  },
+  une:'Quatre recettes, aucune visualisation requise.',
+  retenir:[
+   'Tu n\'as jamais besoin de tourner une molécule dans ta tête.',
+   'Classer, compter des échanges, dessiner deux produits : c\'est mécanique.',
+   'La rotation mentale s\'acquiert en regardant, pas en forçant.',
+   'Si tu bloques : reprends le modèle 3D et tourne-le avec le doigt.'
+  ],
+  plus:{titre:'ce que disent les autres supports',
+    body:'<p><b>Les bases de la stéréochimie</b> reprend tout le vocabulaire en détail (CIP, Fischer, méso, pseudo-asymétrie, topicité) avec les sources.</p>'
+      +'<p><b>CH0904 — Chapitre 1</b> traite la synthèse asymétrique proprement dite : Evans, Ellman, Hoppe, TADDOL, Sharpless.</p>'
+      +'<p><b>TD de révision — corrigé</b> donne la réponse complète des trois exercices, avec la méthode avant la réponse, et signale les points douteux du sujet.</p>'
+      +'<p>Ce support-ci n\'est pas un résumé des autres : c\'est l\'étage du dessous. Si un passage des autres supports te bloque parce que tu n\'arrives pas à « voir », reviens ici et tourne la molécule correspondante.</p>'}
+});
+
+/* ==========================================================================
+   Rendu, navigation, thème
+   ========================================================================== */
+const stage=document.getElementById('stage');
+const tocEl=document.getElementById('toc');
+const navpos=document.getElementById('navpos');
+const prevbtn=document.getElementById('prevbtn'), nextbtn=document.getElementById('nextbtn');
+let idx=0;
+const STORE='voir3d';
+function store(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){} return null; }
+
+function blk(titre,inner){ return '<div class="blk"><h3>'+titre+'</h3>'+inner+'</div>'; }
+
+function renderSection(i){
+  idx=i; stage.innerHTML='';
+  const d=SECTIONS[i];
+  const sec=el('section','sec');
+  sec.appendChild(el('div','kicker',d.grp));
+  sec.appendChild(el('h2','sectitle',d.title));
+  if(d.une) sec.appendChild(el('div','une','<span class="t">En une phrase</span>'+d.une));
+  if(d.probleme) sec.appendChild(el('div','blk','<h3>Le problème</h3>'+d.probleme));
+  if(d.consigne) sec.appendChild(el('div','consigne','<span class="ic">👉</span><span>'+d.consigne+'</span>'));
+  const card=el('div','card'); d.build(card); sec.appendChild(card);
+  if(d.flag) sec.appendChild(el('div','warnbox',d.flag));
+  if(d.etapes){
+    const ol='<ol class="steps">'+d.etapes.map(s=>'<li>'+(s.q?'<span class="q">'+s.q+'</span>':'')+s.t+'</li>').join('')+'</ol>';
+    sec.appendChild(el('div','blk','<h3>Le raisonnement, pas à pas</h3>'+ol));
+  }
+  if(d.expl) sec.appendChild(el('div','expl',d.expl));
+  if(d.retenir){
+    sec.appendChild(el('div','blk','<h3>À retenir</h3><ul class="keys">'+d.retenir.map(r=>'<li>'+r+'</li>').join('')+'</ul>'));
+  }
+  if(d.plus){
+    const dt=el('details','plus');
+    dt.innerHTML='<summary>Pour aller plus loin — '+d.plus.titre+'</summary><div class="body">'+d.plus.body
+      +(d.plus.src?'<div class="src">Source : '+d.plus.src+'</div>':'')+'</div>';
+    sec.appendChild(dt);
+  }
+  if(d.quiz){
+    const q=el('div','quiz');
+    q.innerHTML='<p class="q">'+d.quiz.q+'</p><button type="button">Voir la réponse</button><div class="a">'+d.quiz.a+'</div>';
+    q.querySelector('button').onclick=()=>{ q.classList.toggle('show');
+      q.querySelector('button').textContent=q.classList.contains('show')?'Masquer la réponse':'Voir la réponse'; };
+    sec.appendChild(q);
+  }
+  stage.appendChild(sec);
+  navpos.textContent=(i+1)+' / '+SECTIONS.length;
+  prevbtn.disabled=(i===0); nextbtn.disabled=(i===SECTIONS.length-1);
+  document.getElementById('hsub').textContent=d.grp;
+  buildToc(); window.scrollTo(0,0); store(STORE+'.sec',String(i));
+}
+function buildToc(){
+  let g=null, h='';
+  SECTIONS.forEach((d,i)=>{
+    if(d.grp!==g){ g=d.grp; h+='<div class="tocgroup">'+g+'</div>'; }
+    h+='<button class="tocitem'+(i===idx?' cur':'')+'" data-i="'+i+'"><span class="n">'+(i+1)+'</span><span>'+d.title+'</span></button>';
+  });
+  tocEl.innerHTML='<button class="tocitem" id="toclose" style="font-weight:600"><span class="n">✕</span><span>Fermer le sommaire</span></button>'+h;
+  tocEl.querySelector('#toclose').onclick=()=>tocEl.classList.remove('open');
+  tocEl.querySelectorAll('.tocitem[data-i]').forEach(b=>b.onclick=()=>{tocEl.classList.remove('open');renderSection(+b.dataset.i);});
+}
+prevbtn.onclick=()=>{ if(idx>0) renderSection(idx-1); };
+nextbtn.onclick=()=>{ if(idx<SECTIONS.length-1) renderSection(idx+1); };
+document.getElementById('tocbtn').onclick=()=>{ tocEl.classList.toggle('open'); };
+
+const lbar=document.getElementById('legendbar'), ltog=document.getElementById('legendtoggle');
+ltog.onclick=()=>{ const o=lbar.classList.toggle('open'); ltog.setAttribute('aria-expanded',o?'true':'false'); store(STORE+'.leg',o?'1':'0'); };
+if(store(STORE+'.leg')==='1'){ lbar.classList.add('open'); ltog.setAttribute('aria-expanded','true'); }
+
+const tbtn=document.getElementById('themebtn');
+function applyTheme(t){
+  if(t==='light'||t==='dark') document.documentElement.setAttribute('data-theme',t);
+  else document.documentElement.removeAttribute('data-theme');
+  tbtn.textContent = t==='light'?'☀':(t==='dark'?'☾':'◐');
+  store(STORE+'.theme',t||'auto');
+}
+let theme=store(STORE+'.theme')||'auto'; applyTheme(theme);
+tbtn.onclick=()=>{ theme = theme==='auto'?'light':(theme==='light'?'dark':'auto'); applyTheme(theme); renderSection(idx); };
+
+const saved=parseInt(store(STORE+'.sec')||'0',10);
+renderSection(Number.isFinite(saved)&&saved>=0&&saved<SECTIONS.length?saved:0);
+</script>
+</body>
+</html>

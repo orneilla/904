@@ -298,6 +298,34 @@ l'œil. La chiralité axiale de l'exercice 2 n'est pas traitée par `rdCIPLabele
 
 ---
 
+## K. Support « Voir en 3D » — d'où viennent les coordonnées
+
+Les molécules du visualiseur ne sont pas dessinées à la main : elles sont **construites
+et vérifiées** par le script `.build/gen3d.py`, qui
+
+1. part d'un SMILES avec la stéréochimie imposée,
+2. génère une conformation 3D (ETKDGv3) puis l'optimise (MMFF94),
+3. **relit** la structure obtenue et fait attribuer les descripteurs CIP par RDKit,
+4. vérifie que le descripteur lu correspond bien à celui demandé,
+5. oriente la molécule dans un repère choisi, puis écrit les coordonnées.
+
+Résultats du contrôle :
+
+| Molécule | Attendu | Lu par RDKit |
+|---|---|---|
+| butan-2-ol (R) | R | **R** |
+| butan-2-ol (S) | S | **S** |
+| (Z)-hex-3-ène | Z | **Z** |
+| 4-aminobutan-2-one | aucun centre | **aucun** |
+| 4-tert-butylcyclohexanone | chaise | conformation chaise obtenue |
+| acide 6,6′-difluorobiphényl-2,2′-dicarboxylique | cycles non coplanaires | torsion F–C–C–F = **98,1°** |
+
+Le tétraèdre générique (les quatre boules numérotées) est placé à la main sur les quatre
+directions exactes du dessin en « Y ». La correspondance a été contrôlée séparément :
+**1 en haut à gauche, 2 en haut à droite, 3 vers l'observateur, 4 vers le fond → RDKit lit
+R**, et l'image miroir donne S. C'est cette orientation qui sert de référence dans tout
+le support.
+
 ## Annexe — sortie complète de `verif.py`
 
 ```
