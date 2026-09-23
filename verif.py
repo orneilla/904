@@ -302,6 +302,86 @@ check(build(*etha('a'), name="d"), "Ha promu (trait gras, bas-gauche)  → Ha es
 check(build(*etha('b'), name="d"), "Hb promu (trait pointillé, bas-droite) → Hb est pro-R", "C1=R")
 
 # ---------------------------------------------------------------------------
+
+# ============================================================ TD DE RÉVISION
+titre("16. TD DE RÉVISION — ce que dessine l'ÉNONCÉ")
+
+def hexa(A,B,cx,cy,r=26,att=0):
+    st=len(A)+1
+    for i in range(6):
+        a=math.radians(60*i); A.append(('C',cx+r*math.cos(a),cy+r*math.sin(a)))
+    for i in range(6): B.append((st+i, st+(i+1)%6, 2 if i%2==0 else 1, 0))
+    return st+att
+
+# --- exercice 1, molécule 2 : (E)-PhCH=CH-CH(OMe)CH3, OMe en GRAS
+A=[('C',92,178),('C',122,160),('O',122,122),('C',110,96),('C',152,180),('C',184,160),('C',216,180)]
+B=[(1,2,1,0),(2,3,1,1),(3,4,1,0),(2,5,1,0),(5,6,2,0),(6,7,1,0)]
+v=hexa(A,B,216+26,180+26); B.append((7,v,1,0))
+check(build(A,B,"ex1m2"), "ex. 1, molécule 2 — centre porteur de l'OMe", "C2=R")
+
+# --- exercice 3a : produit, époxyde en pointillé des deux côtés
+A=[('C',-52,-44),('C',-26,-26),('O',-8,4),('C',10,-26),('C',36,-8),('O',62,-8)]
+B=[(1,2,1,0),(2,3,1,6),(4,3,1,6),(2,4,1,0),(4,5,1,0),(5,6,1,0)]
+check(build(A,B,"ex3a",svg_y_down=False), "ex. 3a — époxyde de Sharpless dessiné (annoncé 2S,3S)", "C2=S")
+
+# --- exercice 3b : substrat (Z) et produit
+A=[('C',-70,-56),('C',-70,-26),('C',-44,-8),('C',-18,-26),('C',-18,-56),('C',8,-8),('O',34,-26)]
+B=[(1,2,1,0),(2,3,2,0),(3,4,1,0),(4,5,1,1),(4,6,1,0),(6,7,1,0)]
+check(build(A,B,"ex3b",svg_y_down=False), "ex. 3b — substrat dessiné (annoncé 2S, 3Z)", "C4=S")
+A=[('C',-40,-50),('C',-40,-20),('O',-30,14),('C',-10,0),('C',18,-18),('C',18,-48),('C',46,0),('O',74,-18)]
+B=[(1,2,1,0),(2,3,1,6),(4,3,1,6),(2,4,1,0),(4,5,1,0),(5,6,1,1),(5,7,1,0),(7,8,1,0)]
+lu=check(build(A,B,"ex3bp",svg_y_down=False), "ex. 3b — produit dessiné (annoncé 4S, 3R, 2R)", "C2=S")
+for att in ("C4=R","C5=R"): check(build(A,B,"ex3bp",svg_y_down=False), "ex. 3b — produit, autres centres ("+att+")", att)
+
+# --- exercice 3e : produit dessiné (OH en pointillé, tBu en gras)
+def cyclohexanol(oh,tbu):
+    A=[];B=[];r=30
+    for i in range(6):
+        a=math.radians(90+60*i); A.append(('C',r*math.cos(a),r*math.sin(a)))
+    for i in range(6): B.append((i+1,(i+1)%6+1,1,0))
+    A.append(('O',0,r+28)); B.append((1,7,1,oh))
+    A.append(('C',0,-r-28)); B.append((4,8,1,tbu))
+    A+=[('C',-26,-r-44),('C',26,-r-44),('C',0,-r-56)]
+    B+=[(8,9,1,0),(8,10,1,0),(8,11,1,0)]
+    return A,B
+lu=check(build(*cyclohexanol(6,1),name="ex3e",svg_y_down=False), "ex. 3e — alcool dessiné (annoncé r, r)", "C1=r")
+check(build(*cyclohexanol(6,1),name="ex3e",svg_y_down=False), "ex. 3e — second descripteur", "C4=r")
+print(f"       achirale ? {achirale(build(*cyclohexanol(6,1),name='x',svg_y_down=False))}   (la mention « (±) » de l'énoncé est donc de trop)")
+
+titre("17. TD DE RÉVISION — ce que dessine MON corrigé")
+# a) substrat (E)-but-2-én-1-ol du corrigé
+A=[('C',78,104),('C',104,86),('C',130,104),('C',156,86),('O',182,104)]
+B=[(1,2,1,0),(2,3,2,0),(3,4,1,0),(4,5,1,0)]
+check(build(A,B,"mya"), "mon dessin a) — alcool de départ (doit être E)", "E")
+# a) produit
+A=[('C',78,254),('C',104,236),('O',119,210),('C',134,236),('C',160,218),('O',186,236)]
+B=[(1,2,1,0),(2,3,1,6),(4,3,1,6),(2,4,1,0),(4,5,1,0),(5,6,1,0)]
+check(build(A,B,"myap"), "mon dessin a) — époxyde (doit être 2S,3S)", "C2=S")
+check(build(A,B,"myap"), "mon dessin a) — second centre", "C4=S")
+# b) substrat
+A=[('C',74,112),('C',74,84),('C',100,68),('C',126,86),('C',126,116),('C',152,68),('O',178,86)]
+B=[(1,2,1,0),(2,3,2,0),(3,4,1,0),(4,5,1,1),(4,6,1,0),(6,7,1,0)]
+check(build(A,B,"myb"), "mon dessin b) — substrat (doit être 2S et Z)", "C4=S")
+check(build(A,B,"myb"), "mon dessin b) — géométrie de l'alcène", "Z")
+# b) produit
+A=[('C',74,262),('C',100,244),('O',115,218),('C',130,244),('C',156,262),('C',156,292),('C',182,244),('O',208,262)]
+B=[(1,2,1,0),(2,3,1,6),(4,3,1,6),(2,4,1,0),(4,5,1,0),(5,6,1,1),(5,7,1,0),(7,8,1,0)]
+for att in ("C2=S","C4=R","C5=R"):
+    check(build(A,B,"mybp"), "mon dessin b) — produit ("+att+")", att)
+# e) produit : cycle dessiné en SVG (y vers le bas), OH en pointillé vers le haut, tBu en gras vers le bas
+A=[]; B=[]
+import math as _m
+for i in range(6):
+    a=_m.radians(-90+60*i); A.append(('C',280+30*_m.cos(a),150+30*_m.sin(a)))
+for i in range(6): B.append((i+1,(i+1)%6+1,1,0))
+A.append(('O',280,80)); B.append((1,7,1,6))
+A.append(('C',280,218)); B.append((4,8,1,1))
+A+=[('C',254,236),('C',306,236),('C',280,248)]
+B+=[(8,9,1,0),(8,10,1,0),(8,11,1,0)]
+check(build(A,B,"mye"), "mon dessin e) — alcool trans (doit être 1r,4r)", "C1=r")
+check(build(A,B,"mye"), "mon dessin e) — second descripteur", "C4=r")
+print(f"       achirale ? {achirale(build(A,B,'mye'))}")
+
 print("\n" + "=" * 74)
 if ERREURS:
     print(f"BILAN : {len(ERREURS)} VÉRIFICATION(S) EN ÉCHEC")

@@ -23,3 +23,8 @@ mk bases_stereochimie.html \
    "Les bases de la stéréochimie" "Les bases" "Stéréochimie organique — les fondations" "bases" \
    newfigs.js figB.js \
    secB1.js secB2.js secB3.js secB4.js secB5.js secB6.js
+
+mk td_revision_corrige.html \
+   "CH0904 — TD de révision, corrigé" "TD de révision" "CH0904 — corrigé détaillé" "td904" \
+   newfigs.js figTD.js \
+   secT0.js secT1.js secT2.js secT3.js

@@ -252,6 +252,52 @@ même côté, ce qui dessinait par erreur l'isomère Z ; c'est corrigé.
 
 ---
 
+## I. TD de révision — vérification des structures de l'énoncé
+
+Toutes les structures stéréochimiques du sujet `TD_revision_904.pdf` ont été
+reconstruites à partir des **coordonnées lues sur le scan** (positions des sommets,
+sens des traits gras et pointillés), puis lues par RDKit.
+
+| Structure de l'énoncé | Annoncé | Lu par RDKit | Verdict |
+|---|---|---|---|
+| Ex. 1, molécule 2 (OMe en gras) | — | **(R)**, alcène **E** | cohérent |
+| Ex. 3a — époxyde de Sharpless | (2S,3S) | **C2 = S ; C3 = S** | ✔ exact |
+| Ex. 3b — substrat | (2S), (3Z) | **C2 = S ; Z** | ✔ exact |
+| Ex. 3b — produit | (4S), (3R), (2R) | **C4 = S ; C3 = R ; C2 = R** | ✔ exact |
+| Ex. 3e — alcool | (r), (r), (±) | **(1r,4r)**, molécule **achirale** | descripteurs exacts, « (±) » incorrect |
+
+Le sens de l'époxydation de Sharpless est également cohérent avec la référence usuelle :
+le tartrate naturel **(R,R)**-DET sur un alcool allylique (E) donne l'époxyde **(2S,3S)**,
+comme pour le géraniol.
+
+Sur l'exercice 3b, un point mérite d'être noté : le centre C2 passe de **(S)** dans le
+substrat à **(R)** dans le produit alors qu'**aucune de ses liaisons n'est touchée**.
+Ce n'est pas une erreur de l'énoncé : dans le substrat, CH₂OH (O,H,H) bat le carbone
+voisin de la double liaison (C,C,H) ; dans le produit, ce voisin est devenu un carbone
+d'époxyde (O,C,H) et passe devant. Le descripteur décrit un **classement**, pas une
+position.
+
+## J. TD de révision — vérification de mes propres dessins
+
+Le corrigé `td_revision_corrige.html` redessine ces structures. Chacune a été vérifiée
+de la même façon, et les **SMILES canoniques sont identiques** à ceux des dessins de
+l'énoncé :
+
+| Mon dessin | SMILES obtenu | Identique à l'énoncé ? |
+|---|---|---|
+| a) alcool de départ | `C/C=C/CO` | (E), conforme |
+| a) époxyde | `C[C@@H]1O[C@H]1CO` | ✔ |
+| b) substrat | `C/C=C\[C@H](C)CO` | ✔ |
+| b) produit | `C[C@H](CO)[C@H]1O[C@H]1C` | ✔ |
+| e) alcool trans | `CC(C)(C)[C@H]1CC[C@H](O)CC1` | ✔ |
+
+Les faces *Re*/*Si* de l'exercice 1 ont été déterminées à partir des coordonnées du
+dessin et des priorités CIP, par un calcul d'orientation (produit vectoriel) et non à
+l'œil. La chiralité axiale de l'exercice 2 n'est pas traitée par `rdCIPLabeler` : elle a
+été établie à la main, avec la réserve signalée dans `A_VERIFIER.md`.
+
+---
+
 ## Annexe — sortie complète de `verif.py`
 
 ```
@@ -478,6 +524,88 @@ même côté, ce qui dessinait par erreur l'isomère Z ; c'est corrigé.
        lu       : C1=R
        attendu  : C1=R
        SMILES   : [2H][C@H](C)O
+
+==========================================================================
+16. TD DE RÉVISION — ce que dessine l'ÉNONCÉ
+==========================================================================
+  OK ex. 1, molécule 2 — centre porteur de l'OMe
+       lu       : C2=R; liaison 5=6 : E
+       attendu  : C2=R
+       SMILES   : CO[C@H](C)/C=C/Cc1ccccc1
+  OK ex. 3a — époxyde de Sharpless dessiné (annoncé 2S,3S)
+       lu       : C2=S; C4=S
+       attendu  : C2=S
+       SMILES   : C[C@@H]1O[C@H]1CO
+  OK ex. 3b — substrat dessiné (annoncé 2S, 3Z)
+       lu       : C4=S; liaison 2=3 : Z
+       attendu  : C4=S
+       SMILES   : C/C=C\[C@H](C)CO
+  OK ex. 3b — produit dessiné (annoncé 4S, 3R, 2R)
+       lu       : C2=S; C4=R; C5=R
+       attendu  : C2=S
+       SMILES   : C[C@H](CO)[C@H]1O[C@H]1C
+  OK ex. 3b — produit, autres centres (C4=R)
+       lu       : C2=S; C4=R; C5=R
+       attendu  : C4=R
+       SMILES   : C[C@H](CO)[C@H]1O[C@H]1C
+  OK ex. 3b — produit, autres centres (C5=R)
+       lu       : C2=S; C4=R; C5=R
+       attendu  : C5=R
+       SMILES   : C[C@H](CO)[C@H]1O[C@H]1C
+  OK ex. 3e — alcool dessiné (annoncé r, r)
+       lu       : C1=r; C4=r
+       attendu  : C1=r
+       SMILES   : CC(C)(C)[C@H]1CC[C@H](O)CC1
+  OK ex. 3e — second descripteur
+       lu       : C1=r; C4=r
+       attendu  : C4=r
+       SMILES   : CC(C)(C)[C@H]1CC[C@H](O)CC1
+       achirale ? True   (la mention « (±) » de l'énoncé est donc de trop)
+
+==========================================================================
+17. TD DE RÉVISION — ce que dessine MON corrigé
+==========================================================================
+  OK mon dessin a) — alcool de départ (doit être E)
+       lu       : liaison 2=3 : E
+       attendu  : E
+       SMILES   : C/C=C/CO
+  OK mon dessin a) — époxyde (doit être 2S,3S)
+       lu       : C2=S; C4=S
+       attendu  : C2=S
+       SMILES   : C[C@@H]1O[C@H]1CO
+  OK mon dessin a) — second centre
+       lu       : C2=S; C4=S
+       attendu  : C4=S
+       SMILES   : C[C@@H]1O[C@H]1CO
+  OK mon dessin b) — substrat (doit être 2S et Z)
+       lu       : C4=S; liaison 2=3 : Z
+       attendu  : C4=S
+       SMILES   : C/C=C\[C@H](C)CO
+  OK mon dessin b) — géométrie de l'alcène
+       lu       : C4=S; liaison 2=3 : Z
+       attendu  : Z
+       SMILES   : C/C=C\[C@H](C)CO
+  OK mon dessin b) — produit (C2=S)
+       lu       : C2=S; C4=R; C5=R
+       attendu  : C2=S
+       SMILES   : C[C@H](CO)[C@H]1O[C@H]1C
+  OK mon dessin b) — produit (C4=R)
+       lu       : C2=S; C4=R; C5=R
+       attendu  : C4=R
+       SMILES   : C[C@H](CO)[C@H]1O[C@H]1C
+  OK mon dessin b) — produit (C5=R)
+       lu       : C2=S; C4=R; C5=R
+       attendu  : C5=R
+       SMILES   : C[C@H](CO)[C@H]1O[C@H]1C
+  OK mon dessin e) — alcool trans (doit être 1r,4r)
+       lu       : C1=r; C4=r
+       attendu  : C1=r
+       SMILES   : CC(C)(C)[C@H]1CC[C@H](O)CC1
+  OK mon dessin e) — second descripteur
+       lu       : C1=r; C4=r
+       attendu  : C4=r
+       SMILES   : CC(C)(C)[C@H]1CC[C@H](O)CC1
+       achirale ? True
 
 ==========================================================================
 BILAN : toutes les vérifications passent.

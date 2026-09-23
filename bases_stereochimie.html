@@ -425,7 +425,12 @@ function oxaz(P,opt){
   s+=lab(Od,'O',{fs:13.5,c:C.blue});
   s+=lab(O1,'O',{fs:13.5,c:C.blue});
   s+=lab(N,'N',{fs:13.5,c:C.blue});
-  if(opt.aux==='noreph'){
+  if(opt.aux==='bn'){
+    const CH=add(C4,[12,26]), Ph=add(CH,[-4,28]);
+    s+= opt.wedge ? wedge(C4,CH,B) : hashb(C4,CH,B);
+    s+=bond(CH,Ph,Object.assign({e:11},B));
+    s+=lab(Ph,'Ph',{fs:12.5,c:C.blue,r:11});
+  } else if(opt.aux==='noreph'){
     const Me=add(C4,[20,20]), Ph=add(C5,[-14,25]);
     s+= opt.wedge ? wedge(C4,Me,Object.assign({e:10},B)) : hashb(C4,Me,Object.assign({e:10},B));
     s+= opt.wedge ? wedge(C5,Ph,Object.assign({e:11},B)) : hashb(C5,Ph,Object.assign({e:11},B));

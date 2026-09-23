@@ -249,3 +249,101 @@ Ces éléments sont des **compléments**, à valider si tu veux t'en servir en e
 
 *Dernière mise à jour : support complet (sections A à H), après lecture des quatre
 ouvrages déposés sur `main`.*
+
+---
+
+# TD de révision (`TD_revision_904.pdf`) — points à soulever en TD
+
+Ces cinq points concernent le **sujet de TD**, pas mes supports. Je ne tranche pas :
+je donne l'argument et la réponse que je proposerais.
+
+## 11. Exercice 3d — le produit dessiné n'a pas de carbone stéréogène
+
+**Ce que dit l'énoncé.** Une N-propanoyl-4-isopropyloxazolidin-2-one (R) est traitée par
+LDA puis par CH₃–I. Le produit est dessiné avec un trait gras sur un méthyle du carbone α.
+
+**Le problème.** Un propanoyle est N–CO–CH₂–CH₃. Sa méthylation en α donne
+N–CO–**CH(CH₃)₂**, c'est-à-dire un isobutyryle : le carbone α porte alors
+**deux méthyles identiques**, plus un H et le carbonyle. Il n'est donc pas stéréogène,
+et le trait gras du dessin n'a aucune signification.
+
+**Deux lectures possibles.**
+
+1. C'est un **second piège**, juste après celui de la question c) — le sujet
+   demanderait alors de répondre « aucune sélectivité, rien n'est créé », deux fois
+   de suite.
+2. C'est une **coquille**. Avec Br–CH₂Ph comme électrophile (l'exemple historique
+   d'Evans), ou avec un butanoyle au départ, la réaction devient le cas d'école de la
+   diastéréosélectivité.
+
+**Ce que fait le support.** Il donne le raisonnement complet de l'alkylation d'Evans
+(énolate Z(O), chélate au lithium, face bloquée par l'isopropyle) **et** signale le
+problème du dessin, sans trancher. Question à poser en TD.
+
+## 12. Exercice 3e — la mention « (±) » sur un produit achiral
+
+**Ce que dit l'énoncé.** Le 4-*tert*-butylcyclohexanol formé est annoté « (r) », « (r) »
+et « (±) ».
+
+**Ce que j'ai vérifié.** J'ai reconstruit le dessin (OH en pointillé sur C1, tBu en gras
+sur C4) et fait lire les descripteurs par RDKit : **(1r,4r)**, et la molécule est
+**achirale** (son SMILES canonique est identique à celui de son image miroir).
+
+Les deux minuscules sont donc correctes — une minuscule signale précisément un centre
+**stéréogène mais non chiral**. En revanche « (±) » désigne un **racémique**, c'est-à-dire
+un mélange équimolaire de deux énantiomères. Un composé achiral n'a pas d'énantiomère :
+la mention n'a pas de sens ici.
+
+**Hypothèse.** L'auteur a probablement voulu écrire « produit optiquement inactif », ce
+qui est vrai — mais pour une autre raison que la racémisation.
+
+## 13. Exercice 2 — aucune configuration n'est lisible sur les dessins
+
+**Ce que dit l'énoncé.** « Certaines des molécules ci-dessous possèdent des éléments de
+chiralité : les indiquer et **déterminer leurs configurations**. »
+
+**Le problème.** Les quatre biaryles sont dessinés **à plat**, sans aucune indication de
+torsion (ni liaison en gras, ni liaison rompue, ni perspective). Or la configuration d'un
+axe se lit sur l'**angle dièdre** entre les deux cycles. Un dessin plat ne le contient pas.
+
+**Ce que fait le support.** Il identifie l'élément (un axe), donne les priorités CIP des
+ligands ortho de chaque côté, explique la procédure complète d'attribution a*R*/a*S*, et
+précise que le descripteur n'est pas déterminable à partir de ces dessins. C'est peut-être
+exactement ce que l'exercice cherche à faire dire ; à confirmer.
+
+## 14. Exercice 2, molécule 2 — le fluor est-il assez gros ?
+
+L'acide 6,6'-difluorobiphényl-2,2'-dicarboxylique porte **quatre** substituants en ortho,
+ce qui correspond au critère donné par Robinson (§4.5, p. 44 : « un brome en ortho sur
+chaque cycle suffit » pour séparer les énantiomères vers 0 °C). La réponse attendue est
+donc : axe de chiralité.
+
+**Ma réserve.** Le fluor est le substituant le moins encombrant après l'hydrogène —
+bien plus petit qu'un brome. Les règles empiriques classiques sur l'encombrement des
+biphényles rangent ce composé parmi les cas **limites**, voire non résolubles.
+Je n'ai trouvé **aucune valeur de barrière mesurée** pour ce composé précis dans les
+ouvrages déposés dans le dépôt (Robinson, Procter, Kirby, Bochmann), et je ne veux pas
+affirmer une valeur de mémoire. Le support donne la réponse attendue **et** signale la
+réserve. À confirmer avec ton enseignant.
+
+## 15. Notations M / P contre a*R* / a*S* — une correspondance que je ne certifie pas
+
+Robinson définit M et P par le **signe de l'angle de torsion** entre le ligand prioritaire
+de l'avant et celui de l'arrière (§4.6, p. 52) : négatif → M, positif → P.
+
+La règle CIP pour un axe, elle, traite l'axe comme un **tétraèdre étiré** : les deux
+ligands du côté proche prennent les rangs 1 et 2, ceux du côté lointain les rangs 3 et 4,
+et on lit 1 → 2 → 3.
+
+**Le problème.** En construisant explicitement une géométrie 3D et en faisant attribuer le
+descripteur par RDKit sur le tétraèdre équivalent, j'obtiens une correspondance
+**opposée** à celle qu'on lit le plus souvent (« a*R* = P »). Mon calcul est cohérent avec
+lui-même (même réponse depuis les deux bouts de l'axe, inversion correcte pour l'image
+miroir), mais je n'ai pas de source dans tes ouvrages pour trancher, et je refuse de te
+faire apprendre une règle mnémotechnique dont je ne suis pas sûr.
+
+**Ce que fait le support.** Il enseigne uniquement la **procédure** CIP, qui donne
+directement a*R*/a*S* — ce que l'énoncé demande — et mentionne M/P avec sa définition par
+l'angle de torsion, sans proposer de correspondance. Si ton cours donne une règle
+« M = … », utilise la sienne.
+

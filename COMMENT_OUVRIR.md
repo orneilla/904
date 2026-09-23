@@ -1,14 +1,20 @@
 # Ouvrir les supports sur ton téléphone
 
-Il y a **deux fichiers**, à lire dans cet ordre :
+Il y a **trois fichiers**, à lire dans cet ordre :
 
 | Fichier | Contenu |
 |---|---|
 | `bases_stereochimie.html` | **Les bases** — 19 sections, d'après le chapitre 4 de Robinson. Classer, nommer, représenter, mesurer, topicité. |
 | `chap1_synthese_asymetrique.html` | **CH0904 chapitre 1** — 28 sections. Les trois stratégies, Evans, Ellman, Hoppe, TADDOL, Sharpless. |
+| `td_revision_corrige.html` | **Le TD de révision, corrigé** — 21 sections. Les trois exercices repris un par un, avec la méthode avant la réponse. |
 
-Chacun renvoie à l'autre. Si un mot te bloque dans le chapitre 1 (énantiotope, face Si,
-méso, pseudo-asymétrie), il est expliqué en détail dans le support « bases ».
+Les trois se répondent. Si un mot te bloque dans le chapitre 1 ou dans le corrigé
+(énantiotope, face Si, méso, pseudo-asymétrie), il est expliqué en détail dans le support
+« bases ».
+
+**Pour réviser avant l'examen** : fais le TD d'abord sans le corrigé, puis ouvre
+`td_revision_corrige.html` et compare — chaque exercice commence par la *méthode*, pas
+par la réponse.
 
 Chaque fichier est **autonome** : tout est dedans
 (structures, dessins, calculs). Aucune connexion n'est nécessaire une fois qu'il est
@@ -30,7 +36,7 @@ Le fichier est envoyé directement dans la conversation : appuie dessus, il s'ou
 
 - **iPhone** : une fois ouvert dans Safari, appuie sur le bouton Partager (carré avec
   une flèche) → **« Sur l'écran d'accueil »**. Tu auras une icône comme une app.
-  Fais-le pour les deux fichiers : tu auras deux icônes.
+  Fais-le pour les trois fichiers : tu auras trois icônes.
 - **Android** : menu ⋮ dans Chrome → **« Ajouter à l'écran d'accueil »**.
 
 ## Ce qui est mémorisé
