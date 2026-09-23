@@ -3,6 +3,14 @@
 Points chimiques douteux, contradictoires, ou que je n'ai pas pu trancher seul. Chaque
 entrée dit ce que disent tes notes, ce que fait le support interactif, et pourquoi.
 
+> **Note du 23/09/2026 — mes propres erreurs.** Les points numérotés ci-dessous
+> concernent la *chimie* : des endroits où je ne peux pas trancher seul. Ils ne doivent
+> pas être confondus avec les **erreurs que j'avais introduites dans les supports** et
+> que tu m'as signalées. Celles-là sont fautives, pas discutables : la liste complète
+> (13 erreurs : 6 dessins faux, 7 valeurs numériques fausses) et leur correction sont
+> dans la section **ERRATA** de `verification_stereo.md`. Elles sont toutes corrigées et
+> revérifiées.
+
 ---
 
 ## 0. Un fichier source manque toujours

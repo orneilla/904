@@ -41,7 +41,7 @@ S({
     };
     $('sd').oninput=upd; $('st').oninput=upd;
     $('bach').onclick=()=>{$('sd').value=0;upd();};
-    $('bexp').onclick=()=>{$('sd').value=6.5;$('st').value=-78;upd();};
+    $('bexp').onclick=()=>{$('sd').value=6.8;$('st').value=-78;upd();};
     upd();
   },
   une:'Les deux produits ont la même énergie, donc la thermodynamique ne peut rien départager : tout se joue sur la différence de hauteur des deux états de transition.',

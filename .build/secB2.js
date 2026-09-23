@@ -66,6 +66,8 @@ S({
   etapes:[
    {q:'Le mécanisme de l\'inversion.',
     t:'L\'atome pyramidal passe par un état de transition où il est <b>plan</b>, puis se retourne de l\'autre côté. Aucune liaison n\'est cassée : c\'est juste un pliage. D\'où des barrières souvent basses.'},
+   {q:'Le cas de référence : l\'ammoniac.',
+    t:'NH₃ s\'inverse avec une barrière de <b>24 kJ·mol⁻¹</b> : environ 2·10¹⁰ fois par seconde à température ambiante. Les amines trialkylées sont du même ordre, un peu plus lentes. Aucune chance d\'isoler les deux formes.'},
    {q:'Ce qui abaisse la barrière.',
     t:'Tout ce qui stabilise l\'azote plan. La <b>conjugaison</b> avec un accepteur π en est le meilleur exemple : dans un amide, le doublet de l\'azote part dans le carbonyle, l\'azote est déjà plan, et la barrière tombe à zéro.'},
    {q:'Ce qui l\'augmente — d\'abord la tension de cycle.',
@@ -83,8 +85,8 @@ S({
    'Deuxième période et au-delà (S, P) : barrières bien plus hautes que l\'azote.',
    'Seuil de séparabilité à 25 °C : environ 90 kJ·mol⁻¹ — le même que pour les conformères.'
   ],
-  plus:{titre:'Le cas des sels d\'ammonium',
-    body:'<p>Un ion ammonium quaternaire NR₄⁺ n\'a plus de doublet : il ne peut plus s\'inverser du tout. Les premiers exemples historiques de centres stéréogènes non carbonés étaient justement des sels d\'ammonium.</p><p>Mais attention au cas intermédiaire : un ion <b>trialkylammonium</b> HNRR\'R"⁺ se racémise facilement en solution, parce qu\'il suffit qu\'il perde son proton un instant. L\'amine libre s\'inverse, puis se reprotone de l\'autre côté. Robinson note que cela ne s\'arrête qu\'en milieu fortement acide, où la déprotonation devient trop lente.</p><p>Bonne habitude à prendre : quand on te dit qu\'un centre est « configurationnellement stable », demande‑toi toujours <i>par quel chemin</i> il pourrait s\'épimériser. Ici ce n\'est pas l\'inversion directe, c\'est le passage par la base libre.</p>',
+  plus:{titre:'D\'où viennent ces chiffres, et le cas des sels d\'ammonium',
+    body:'<p><b>Origine des valeurs du graphique.</b> Les barrières de l\'amide (≈ 0), de l\'aziridine N–Me (72), de l\'aziridine N–Cl (112) et de l\'oxaziridine (136) sont celles de Robinson, figure 4.10. Les deux autres sont des compléments : 24 kJ·mol⁻¹ est la valeur mesurée pour l\'ammoniac, et la barre « sulfoxyde » est un ordre de grandeur (150 à 200 kJ·mol⁻¹ selon les substituants), pas une valeur du livre.</p><p>Un ion ammonium quaternaire NR₄⁺ n\'a plus de doublet : il ne peut plus s\'inverser du tout. Les premiers exemples historiques de centres stéréogènes non carbonés étaient justement des sels d\'ammonium.</p><p>Mais attention au cas intermédiaire : un ion <b>trialkylammonium</b> HNRR\'R"⁺ se racémise facilement en solution, parce qu\'il suffit qu\'il perde son proton un instant. L\'amine libre s\'inverse, puis se reprotone de l\'autre côté. Robinson note que cela ne s\'arrête qu\'en milieu fortement acide, où la déprotonation devient trop lente.</p><p>Bonne habitude à prendre : quand on te dit qu\'un centre est « configurationnellement stable », demande‑toi toujours <i>par quel chemin</i> il pourrait s\'épimériser. Ici ce n\'est pas l\'inversion directe, c\'est le passage par la base libre.</p>',
     src:'<b>Robinson, <i>Organic Stereochemistry</i></b>, §4.5, fig. 4.9–4.11, p. 43–44.'},
   quiz:{q:'Pourquoi une phosphine chirale comme celles utilisées en catalyse ne se racémise-t-elle pas dans le ballon&nbsp;?',
         a:'Parce que la barrière d\'inversion du phosphore est très élevée — Robinson cite des valeurs supérieures à 160 kJ·mol⁻¹ pour certaines phosphines. À température ambiante, cela correspond à des demi‑vies astronomiques. C\'est ce qui rend possible toute la catalyse asymétrique au phosphore : le ligand garde sa main pendant les milliers de tours du cycle catalytique.'}

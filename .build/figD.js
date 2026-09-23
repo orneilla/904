@@ -57,13 +57,13 @@ function figSoufre(){
   s+=lab(Sp,'S',{fs:19,fw:700,c:C.blue,r:15});
   s+=tBu(Sp,[-52,-46],'wedge');
   s+=dbond(Sp,[210,120],{s:15,e:10,c:C.blue}); s+=lab([210,120],'O',{fs:14,c:C.blue,fw:700});
-  s+=hashb(Sp,[96,132],{s:14,e:12,c:C.blue}); s+=lab([96,132],'N',{fs:14,c:C.blue,fw:700});
+  s+=bond(Sp,[96,132],{s:14,e:12,c:C.blue}); s+=lab([96,132],'N',{fs:14,c:C.blue,fw:700});
   s+=seg([150,77],[150,58],{c:C.ink2,w:1.2,dash:'2 3'});
   s+=`<circle cx="145" cy="52" r="3.4" fill="${C.ink}"/><circle cx="157" cy="52" r="3.4" fill="${C.ink}"/>`;
   s+=txt([150,34],'doublet libre',{fs:11.5,fw:700});
   s+=txt([258,64],'4 « substituants »',{fs:11.5,fw:700});
   s+=txtLines([258,82],['différents autour de S','⇒ S stéréogène'],{fs:11,c:C.ink2,lh:14});
-  s+=txt([180,H-12],'ici la configuration est (R) — elle ne change plus de toute la séquence',{fs:11,c:C.ink2});
+  s+=txt([180,H-12],'configuration (R) — un seul trait gras suffit à la définir',{fs:11,c:C.ink2});
   return svg(W,H,s,{alt:'soufre stéréogène'});
 }
 
@@ -131,7 +131,7 @@ function figEllmanCleav(){
   s+=bond([286,102],[258,88],{}); s+=bond([286,102],[292,134],{e:12});
   s+=lab([292,134],'R',{fs:13,c:C.green,fw:700});
   s+=txtLines([282,168],['amine chirale','(chlorhydrate)'],{fs:10.5,c:C.ink2,lh:13});
-  s+=txtLines([180,H-22],['le soufre part en tert-butanesulfinate de méthyle :',
-    'aucune liaison du carbone stéréogène n\'est touchée'],{fs:10.5,c:C.ink2,lh:13});
+  s+=txtLines([180,H-22],['le soufre part en tert-butanesulfinate de méthyle : aucune liaison',
+    'du carbone stéréogène n\'est touchée (sa configuration n\'est pas dessinée ici)'],{fs:9.5,c:C.ink2,lh:13});
   return svg(W,H,s,{alt:'clivage Ellman'});
 }

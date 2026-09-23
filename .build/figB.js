@@ -68,7 +68,7 @@ function figArbre(ex){
 function figPaire(ex){
   const W=360,H=222; let s='';
   if(ex==='const'){
-    s+=bond([40,110],[74,92],{}); s+=dbondIn([74,92],[108,110],-1,{});
+    s+=dbondIn([40,110],[74,92],-1,{}); s+=bond([74,92],[108,110],{});
     s+=bond([108,110],[142,92],{});
     s+=txt([90,150],'but-1-ène',{fs:12,fw:700});
     s+=txt([90,168],'CH₂=CH–CH₂–CH₃',{fs:11,c:C.ink2});
@@ -78,10 +78,10 @@ function figPaire(ex){
     s+=txt([268,168],'CH₃–CH=CH–CH₃',{fs:11,c:C.ink2});
     s+=txt([180,190],'la double liaison n\'est pas au même endroit',{fs:11,c:C.ink2});
     /* repérer la double liaison */
-    s+=stericZone(91,101,26,16,{}); s+=stericZone(269,101,26,16,{});
+    s+=stericZone(57,101,26,16,{}); s+=stericZone(269,101,26,16,{});
   } else if(ex==='homo'){
-    s+=stereoC([92,86],{l:'HO',r:'CH₃',d:'C₂H₅',dC:C.ink,tag:'(R)-butan-2-ol'});
-    s+=stereoC([268,86],{l:'CH₃',r:'C₂H₅',d:'HO',dC:C.ink,tag:'(R)-butan-2-ol'});
+    s+=stereoC([92,86],{l:'HO',r:'CH₃',d:'C₂H₅',dC:C.ink,tag:'(S)-butan-2-ol'});
+    s+=stereoC([268,86],{l:'CH₃',r:'C₂H₅',d:'HO',dC:C.ink,tag:'(S)-butan-2-ol'});
     s+=txtLines([180,170],['Même molécule, deux orientations.','Une rotation suffit à les superposer.'],{fs:11.5,c:C.ink2,lh:15});
     s+=txt([180,16],'ATTENTION : ce n\'est pas un miroir, c\'est une rotation',{fs:11,fw:700,c:C.ink2});
   } else {
@@ -225,11 +225,11 @@ function figUnites(kind){
 /* --- 2.2 barrières d'inversion ------------------------------------------- */
 const BARR=[
   {v:0,   t:'amide R₂N–C=O',        d:'l\'azote est plan : il n\'y a même plus de pyramide'},
-  {v:24,  t:'amine simple NR₃',     d:'s\'inverse des milliards de fois par seconde à 25 °C'},
+  {v:24,  t:'ammoniac NH₃',         d:'s\'inverse environ 2·10¹⁰ fois par seconde à 25 °C ; les amines trialkylées sont du même ordre, un peu plus élevées'},
   {v:72,  t:'aziridine N–Me',       d:'la tension de cycle gêne le passage par l\'azote plan'},
   {v:112, t:'aziridine N–Cl',       d:'le chlore, très électronégatif, abaisse encore le doublet'},
   {v:136, t:'oxaziridine',          d:'cycle tendu + oxygène : on peut isoler les deux formes'},
-  {v:170, t:'sulfoxyde / sulfinamide', d:'parfaitement stable et séparable — c\'est ce qui rend l\'auxiliaire d\'Ellman possible'}
+  {v:170, t:'sulfoxyde / sulfinamide', d:'ordre de grandeur : 150 à 200 kJ·mol⁻¹ selon les substituants. Parfaitement stable et séparable — c\'est ce qui rend l\'auxiliaire d\'Ellman possible'}
 ];
 function figBarrieres(sel){
   const W=360,H=262; let s='';
@@ -283,27 +283,34 @@ function figCIP(k){
 
 /* --- 3.3 E/Z contre cis/trans -------------------------------------------- */
 const EZ=[
- {k:'but', t:'but-2-ène', l1:'Me',l2:'H', r1:'Me',r2:'H',
-  pl:'Me > H', pr:'Me > H', res:'Z', cis:'cis',
+ {t:'but-2-ène', ul:'Me',dl:'H', ur:'Me',dr:'H', pg:'ul', pd:'ur',
+  pl:'Me > H', pr:'Me > H', res:'Z', cis:'on dirait cis',
   why:'Les deux substituants prioritaires sont les deux méthyles, et ils sont du même côté : Z. Ici Z et cis désignent bien la même chose.'},
- {k:'brom', t:'2-bromobut-2-ène', l1:'Br',l2:'Me', r1:'Me',r2:'H',
-  pl:'Br > Me', pr:'Me > H', res:'E', cis:'« cis » (les 2 Me)',
-  why:'Les deux méthyles sont toujours du même côté — on serait tenté de dire cis. Mais à gauche, le prioritaire n\'est plus le méthyle : c\'est le brome. Le brome et le méthyle de droite sont de part et d\'autre : E.'}
+ {t:'2-bromobut-2-ène', ul:'Me',dl:'Br', ur:'Me',dr:'H', pg:'dl', pd:'ur',
+  pl:'Br > Me', pr:'Me > H', res:'E', cis:'on dirait cis (les 2 Me)',
+  why:'Les deux méthyles sont bien du même côté — on serait tenté de dire cis. Mais à gauche, le prioritaire n\'est pas le méthyle : c\'est le brome, qui se trouve en bas. Le brome et le méthyle de droite sont donc de part et d\'autre : E.'}
 ];
 function figEZ(i){
-  const W=360,H=232,d=EZ[i]; let s='';
-  const A=[146,108], B=[214,108];
+  const W=360,H=246,d=EZ[i]; let s='';
+  const A=[146,116], B=[214,116];
   s+=dbondIn(A,B,-1,{});
-  s+=bond(A,[112,88],{e:13}); s+=lab([106,84],d.l1,{fs:12,fw:700,r:15,c:C.blue});
-  s+=bond(A,[112,128],{e:11}); s+=lab([106,132],d.l2,{fs:12,fw:700,r:13});
-  s+=bond(B,[248,88],{e:13}); s+=lab([254,84],d.r1,{fs:12,fw:700,r:15,c:C.blue});
-  s+=bond(B,[248,128],{e:11}); s+=lab([254,132],d.r2,{fs:12,fw:700,r:13});
+  const put=(p,label,key,dx,dy)=>{
+    const q=[p[0]+dx,p[1]+dy], prio=(d.pg===key||d.pd===key);
+    let t=bond(p,q,{e:label.length>1?13:11});
+    t+=lab(q,label,{fs:12,fw:700,r:label.length>1?15:13,c:prio?C.blue:C.ink});
+    if(prio) t+=txt([q[0]+(dx<0?-24:24),q[1]],'1',{fs:12.5,fw:800,c:C.blue});
+    return t;
+  };
+  s+=put(A,d.ul,'ul',-34,-20); s+=put(A,d.dl,'dl',-34,20);
+  s+=put(B,d.ur,'ur', 34,-20); s+=put(B,d.dr,'dr', 34,20);
   s+=txt([180,20],d.t,{fs:13,fw:700});
-  s+=txt([106,58],d.pl,{fs:10.5,fw:700,c:C.blue});
-  s+=txt([254,58],d.pr,{fs:10.5,fw:700,c:C.blue});
-  s+=txt([180,166],'prioritaires du même côté ?  '+(d.res==='Z'?'OUI':'NON'),{fs:11.5,fw:700});
-  s+=`<rect x="98" y="182" width="164" height="34" rx="10" fill="none" stroke="${d.res==='Z'?C.green:C.red}" stroke-width="2.2"/>`;
-  s+=txt([180,199],d.res+'    (on dirait « '+d.cis+' »)',{fs:12.5,fw:800,c:d.res==='Z'?C.green:C.red});
+  s+=txt([98,62],d.pl,{fs:10.5,fw:700,c:C.blue});
+  s+=txt([262,62],d.pr,{fs:10.5,fw:700,c:C.blue});
+  s+=txt([180,42],'« 1 » = substituant prioritaire de chaque côté',{fs:10,c:C.ink2});
+  s+=txt([180,180],'les deux « 1 » sont-ils du même côté ?   '+(d.res==='Z'?'OUI':'NON'),{fs:11.5,fw:700});
+  s+=`<rect x="84" y="192" width="192" height="40" rx="10" fill="none" stroke="${d.res==='Z'?C.green:C.red}" stroke-width="2.2"/>`;
+  s+=txt([180,207],d.res,{fs:15,fw:800,c:d.res==='Z'?C.green:C.red});
+  s+=txt([180,224],'('+d.cis+')',{fs:10.5,c:C.ink2});
   return svg(W,H,s,{alt:'E ou Z'});
 }
 
@@ -314,16 +321,16 @@ function figFischerOK(k){
   s+=fischer([80,44],base,'CO₂H','CO₂H',{});
   s+=txt([80,190],'départ : (2R,3R)',{fs:11,fw:700});
   const ops=[
-   {t:'rotation de 180° dans le plan',ok:true,  rows:[['H','OH'],['HO','H']],
-    d:'Permis. La molécule est simplement retournée bout pour bout : c\'est la même.'},
-   {t:'rotation de 90° dans le plan',ok:false, rows:null,
+   {t:'rotation de 180° dans le plan',ok:true,  rows:[['H','HO'],['OH','H']], top:'CO₂H',
+    d:'Permis. Le dessin change — les deux lignes s\'échangent et la gauche devient la droite — mais c\'est la même molécule.'},
+   {t:'rotation de 90° dans le plan',ok:false, rows:null, top:'CO₂H',
     d:'INTERDIT. Les liaisons horizontales (vers l\'avant) deviendraient verticales (vers l\'arrière) : on change de configuration.'},
-   {t:'retournement (hors du plan)',ok:false, rows:[['OH','H'],['H','HO']],
-    d:'INTERDIT. C\'est un miroir : on obtient l\'énantiomère, pas la même molécule.'},
-   {t:'permutation circulaire de 3 ligands',ok:true, rows:[['OH','CO₂H'],['HO','H']],
-    d:'Permis. Faire tourner trois ligands autour du quatrième ne change pas la configuration.'}
+   {t:'retournement (hors du plan)',ok:false, rows:[['OH','H'],['H','HO']], top:'CO₂H',
+    d:'INTERDIT. C\'est un miroir : on obtient l\'énantiomère (2S,3S), pas la même molécule.'},
+   {t:'permutation circulaire de 3 ligands sur C2',ok:true, rows:[['CO₂H','H'],['HO','H']], top:'OH',
+    d:'Permis. Sur C2, les trois ligands CO₂H, H et OH ont tourné ensemble. Le dessin ne respecte plus la convention habituelle (la chaîne n\'est plus verticale) mais la configuration est intacte.'}
   ][k];
-  if(ops.rows){ s+=fischer([272,44],ops.rows,'CO₂H','CO₂H',{c:ops.ok?C.green:C.red}); }
+  if(ops.rows){ s+=fischer([272,44],ops.rows,ops.top,'CO₂H',{c:ops.ok?C.green:C.red}); }
   else {
     s+=txt([272,100],'⟲ 90°',{fs:20,fw:700,c:C.red});
     s+=seg([248,80],[296,128],{c:C.red,w:3.4}); s+=seg([296,80],[248,128],{c:C.red,w:3.4});

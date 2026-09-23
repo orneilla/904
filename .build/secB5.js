@@ -75,7 +75,7 @@ S({
    {q:'Ce qu\'on mesure directement.',
     t:'L\'angle α dont il faut tourner l\'analyseur. Il dépend de <b>tout</b> : la longueur de la cuve ℓ, la concentration c, la longueur d\'onde λ, la température, le solvant, et bien sûr la substance.'},
    {q:'La grandeur normalisée.',
-    t:'[α] = α / (ℓ × c), avec ℓ en dm et c en g/100 mL. Ses dimensions sont deg·cm³·g⁻¹ et non des degrés — c\'est pour cela qu\'on écrit <b>[α] = −14,1</b> et jamais −14,1°. Une petite rigueur qui montre qu\'on a compris.'},
+    t:'[α] = α / (ℓ × c), avec ℓ en dm et c en g/100 mL. Ses dimensions sont deg·cm²·g⁻¹ et non des degrés — c\'est pour cela qu\'on écrit <b>[α] = −14,1</b> et jamais −14,1°. Une petite rigueur qui montre qu\'on a compris.'},
    {q:'Pourquoi on précise toujours c et le solvant.',
     t:'Parce que [α] ne serait indépendant de c que pour une solution idéale, et les concentrations utilisées sont bien trop élevées pour cela. D\'où la notation « [α]<sub>D</sub> = +13,8 (H₂O, c = 1) ».'},
    {q:'Pureté optique.',
