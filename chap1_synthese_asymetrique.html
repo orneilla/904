@@ -293,6 +293,8 @@ const DEFS = `<defs>
 </defs>`;
 
 const E = (n)=>Math.round(n*100)/100;
+const Rgas=8.314;                       /* J·mol⁻¹·K⁻¹ */
+function erFromDdG(ddG_kJ,T_K){ return Math.exp((ddG_kJ*1000)/(Rgas*T_K)); }
 
 /* --- liaisons ------------------------------------------------------------ */
 function seg(a,b,o){ o=o||{};
@@ -366,6 +368,13 @@ function rxnArrow(x1,x2,y,top,bot,o){ o=o||{};
   (bot||[]).forEach((t,i)=> s+=txt([mx,y+13+i*13],t,{fs:o.fs||11.5,c:o.bc||C.ink2}));
   return s;
 }
+function polar(cx,cy,r,adeg){const a=(adeg-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+function sectorPath(cx,cy,r0,r1,a0,a1){
+  const p1=polar(cx,cy,r1,a0),p2=polar(cx,cy,r1,a1),p3=polar(cx,cy,r0,a1),p4=polar(cx,cy,r0,a0);
+  const big=(a1-a0)>180?1:0;
+  return `M${E(p1[0])},${E(p1[1])} A${r1},${r1} 0 ${big} 1 ${E(p2[0])},${E(p2[1])} L${E(p3[0])},${E(p3[1])} A${r0},${r0} 0 ${big} 0 ${E(p4[0])},${E(p4[1])} Z`;
+}
+
 /* --- zones --------------------------------------------------------------- */
 function stericZone(cx,cy,rx,ry,o){ o=o||{};
   return `<ellipse cx="${E(cx)}" cy="${E(cy)}" rx="${E(rx)}" ry="${E(ry)}" fill="var(--redzone)"`
@@ -695,12 +704,6 @@ const CLIV=[
   {k:'wei', reac:'MeNH(OMe)·HCl, AlMe₃', court:'Weinreb', head:'MeO(Me)N–OC', prod:'amide de Weinreb → cétone',
    why:'On échange l\'auxiliaire contre un amide de Weinreb, stable, qui donne ensuite proprement l\'aldéhyde (LiAlH₄) ou une cétone (R\'MgX) sans sur‑addition : le chélate à 5 chaînons bloque l\'intermédiaire tétraédrique.'}
 ];
-function polar(cx,cy,r,adeg){const a=(adeg-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
-function sectorPath(cx,cy,r0,r1,a0,a1){
-  const p1=polar(cx,cy,r1,a0),p2=polar(cx,cy,r1,a1),p3=polar(cx,cy,r0,a1),p4=polar(cx,cy,r0,a0);
-  const big=(a1-a0)>180?1:0;
-  return `M${E(p1[0])},${E(p1[1])} A${r1},${r1} 0 ${big} 1 ${E(p2[0])},${E(p2[1])} L${E(p3[0])},${E(p3[1])} A${r0},${r0} 0 ${big} 0 ${E(p4[0])},${E(p4[1])} Z`;
-}
 function figRoue(sel){
   const W=360,H=330,cx=180,cy=156; let s='';
   CLIV.forEach((c,i)=>{
@@ -749,8 +752,6 @@ function figCleavProd(sel){
 /* ==========================================================================
    Section 5 — Contrôle cinétique : le diagramme d'énergie
    ========================================================================== */
-const Rgas=8.314;                       /* J·mol⁻¹·K⁻¹ */
-function erFromDdG(ddG_kJ,T_K){ return Math.exp((ddG_kJ*1000)/(Rgas*T_K)); }
 function figEnergie(ddG,T_K){
   const W=360,H=266; let s='';
   const G1=50, G2=50+ddG, GP=-30;
@@ -1468,6 +1469,7 @@ const GA='A — Les bases';
 
 S({
   grp:GA, title:'Pourquoi une réaction ordinaire donne toujours 50 : 50',
+  note_bases:1,
   consigne:'Appuie sur « réactif chiral » et regarde ce qui disparaît en bas du schéma.',
   build(host){
     const row=el('div','btnrow'), fig=el('div','figbox'); let cur='achiral';
@@ -1478,7 +1480,7 @@ S({
     host.appendChild(row); host.appendChild(fig); draw();
   },
   une:'Tant que le système réactionnel tout entier possède un miroir, les deux énantiomères se forment exactement à la même vitesse. Faire de la synthèse asymétrique, c\'est supprimer ce miroir.',
-  probleme:'<p>On part du benzaldéhyde. Son carbone n\'est pas stéréogène : il est sp², donc <b>plan</b>. Mais dès qu\'un nucléophile s\'additionne dessus, il devient tétraédrique et donc stéréogène. On dit que le substrat est <b>prochiral</b> : il ne demande qu\'à devenir chiral.</p><p>Le problème, c\'est qu\'il y a deux façons d\'arriver sur un plan : par-dessus ou par-dessous.</p>',
+  probleme:'<p><b>Tu veux reprendre les bases d\'abord ?</b> Le support <i>bases_stereochimie.html</i>, dans le même dossier, reprend tout le chapitre 4 de Robinson : arbre de décision, échelle de temps, unités stéréogènes, règles CIP, Fischer, méso, polarimétrie, topicité. Ce groupe-ci n\'en garde que le strict nécessaire pour la synthèse asymétrique.</p><p>On part du benzaldéhyde. Son carbone n\'est pas stéréogène : il est sp², donc <b>plan</b>. Mais dès qu\'un nucléophile s\'additionne dessus, il devient tétraédrique et donc stéréogène. On dit que le substrat est <b>prochiral</b> : il ne demande qu\'à devenir chiral.</p><p>Le problème, c\'est qu\'il y a deux façons d\'arriver sur un plan : par-dessus ou par-dessous.</p>',
   etapes:[
    {q:'Pourquoi obtient-on deux produits différents ?',
     t:'Le nucléophile peut attaquer l\'une ou l\'autre face du carbonyle. Les deux produits ainsi formés sont images l\'un de l\'autre dans un miroir : ce sont les <b>deux énantiomères</b>.'},
@@ -2717,6 +2719,7 @@ const tocEl=document.getElementById('toc');
 const navpos=document.getElementById('navpos');
 const prevbtn=document.getElementById('prevbtn'), nextbtn=document.getElementById('nextbtn');
 let idx=0;
+const STORE='ch0904';
 function store(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){} return null; }
 
 function blk(titre,inner){ return '<div class="blk"><h3>'+titre+'</h3>'+inner+'</div>'; }
@@ -2757,7 +2760,7 @@ function renderSection(i){
   navpos.textContent=(i+1)+' / '+SECTIONS.length;
   prevbtn.disabled=(i===0); nextbtn.disabled=(i===SECTIONS.length-1);
   document.getElementById('hsub').textContent=d.grp;
-  buildToc(); window.scrollTo(0,0); store('ch0904.sec',String(i));
+  buildToc(); window.scrollTo(0,0); store(STORE+'.sec',String(i));
 }
 function buildToc(){
   let g=null, h='';
@@ -2774,20 +2777,20 @@ nextbtn.onclick=()=>{ if(idx<SECTIONS.length-1) renderSection(idx+1); };
 document.getElementById('tocbtn').onclick=()=>{ tocEl.classList.toggle('open'); };
 
 const lbar=document.getElementById('legendbar'), ltog=document.getElementById('legendtoggle');
-ltog.onclick=()=>{ const o=lbar.classList.toggle('open'); ltog.setAttribute('aria-expanded',o?'true':'false'); store('ch0904.leg',o?'1':'0'); };
-if(store('ch0904.leg')==='1'){ lbar.classList.add('open'); ltog.setAttribute('aria-expanded','true'); }
+ltog.onclick=()=>{ const o=lbar.classList.toggle('open'); ltog.setAttribute('aria-expanded',o?'true':'false'); store(STORE+'.leg',o?'1':'0'); };
+if(store(STORE+'.leg')==='1'){ lbar.classList.add('open'); ltog.setAttribute('aria-expanded','true'); }
 
 const tbtn=document.getElementById('themebtn');
 function applyTheme(t){
   if(t==='light'||t==='dark') document.documentElement.setAttribute('data-theme',t);
   else document.documentElement.removeAttribute('data-theme');
   tbtn.textContent = t==='light'?'☀':(t==='dark'?'☾':'◐');
-  store('ch0904.theme',t||'auto');
+  store(STORE+'.theme',t||'auto');
 }
-let theme=store('ch0904.theme')||'auto'; applyTheme(theme);
+let theme=store(STORE+'.theme')||'auto'; applyTheme(theme);
 tbtn.onclick=()=>{ theme = theme==='auto'?'light':(theme==='light'?'dark':'auto'); applyTheme(theme); renderSection(idx); };
 
-const saved=parseInt(store('ch0904.sec')||'0',10);
+const saved=parseInt(store(STORE+'.sec')||'0',10);
 renderSection(Number.isFinite(saved)&&saved>=0&&saved<SECTIONS.length?saved:0);
 </script>
 </body>

@@ -1,6 +1,16 @@
-# Ouvrir le support sur ton téléphone
+# Ouvrir les supports sur ton téléphone
 
-Le fichier `chap1_synthese_asymetrique.html` est **autonome** : tout est dedans
+Il y a **deux fichiers**, à lire dans cet ordre :
+
+| Fichier | Contenu |
+|---|---|
+| `bases_stereochimie.html` | **Les bases** — 19 sections, d'après le chapitre 4 de Robinson. Classer, nommer, représenter, mesurer, topicité. |
+| `chap1_synthese_asymetrique.html` | **CH0904 chapitre 1** — 28 sections. Les trois stratégies, Evans, Ellman, Hoppe, TADDOL, Sharpless. |
+
+Chacun renvoie à l'autre. Si un mot te bloque dans le chapitre 1 (énantiotope, face Si,
+méso, pseudo-asymétrie), il est expliqué en détail dans le support « bases ».
+
+Chaque fichier est **autonome** : tout est dedans
 (structures, dessins, calculs). Aucune connexion n'est nécessaire une fois qu'il est
 téléchargé. Tu peux le lire dans l'avion, dans le métro, en TP.
 
@@ -16,10 +26,11 @@ Le fichier est envoyé directement dans la conversation : appuie dessus, il s'ou
 4. Ouvre l'app **Fichiers**, va dans **Téléchargements**, appuie sur le fichier.
    Il s'ouvre dans Safari (iPhone) ou Chrome (Android).
 
-## Pour l'avoir toujours sous la main
+## Pour les avoir toujours sous la main
 
 - **iPhone** : une fois ouvert dans Safari, appuie sur le bouton Partager (carré avec
   une flèche) → **« Sur l'écran d'accueil »**. Tu auras une icône comme une app.
+  Fais-le pour les deux fichiers : tu auras deux icônes.
 - **Android** : menu ⋮ dans Chrome → **« Ajouter à l'écran d'accueil »**.
 
 ## Ce qui est mémorisé
@@ -31,7 +42,7 @@ nulle part.
 
 ## Comment il est organisé
 
-- **☰ en haut à gauche** : le sommaire complet, 28 sections en 8 groupes.
+- **☰ en haut à gauche** : le sommaire complet, par groupes.
 - **◐ en haut à droite** : bascule clair / sombre / automatique.
 - **« Légende des couleurs »** : à déplier une fois, le code couleur est le même partout.
 - **‹ Précédent / Suivant ›** en bas : pour avancer section par section.
@@ -56,3 +67,7 @@ reconstruire après une modification :
 ```sh
 sh .build/build.sh
 ```
+
+Cette commande reconstruit **les deux** fichiers. Les morceaux communs (la charpente
+HTML, la bibliothèque de dessin SVG, le moteur d'affichage) sont partagés : une
+correction de style s'applique automatiquement aux deux supports.

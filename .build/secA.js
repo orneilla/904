@@ -6,6 +6,7 @@ const GA='A — Les bases';
 
 S({
   grp:GA, title:'Pourquoi une réaction ordinaire donne toujours 50 : 50',
+  note_bases:1,
   consigne:'Appuie sur « réactif chiral » et regarde ce qui disparaît en bas du schéma.',
   build(host){
     const row=el('div','btnrow'), fig=el('div','figbox'); let cur='achiral';
@@ -16,7 +17,7 @@ S({
     host.appendChild(row); host.appendChild(fig); draw();
   },
   une:'Tant que le système réactionnel tout entier possède un miroir, les deux énantiomères se forment exactement à la même vitesse. Faire de la synthèse asymétrique, c\'est supprimer ce miroir.',
-  probleme:'<p>On part du benzaldéhyde. Son carbone n\'est pas stéréogène : il est sp², donc <b>plan</b>. Mais dès qu\'un nucléophile s\'additionne dessus, il devient tétraédrique et donc stéréogène. On dit que le substrat est <b>prochiral</b> : il ne demande qu\'à devenir chiral.</p><p>Le problème, c\'est qu\'il y a deux façons d\'arriver sur un plan : par-dessus ou par-dessous.</p>',
+  probleme:'<p><b>Tu veux reprendre les bases d\'abord ?</b> Le support <i>bases_stereochimie.html</i>, dans le même dossier, reprend tout le chapitre 4 de Robinson : arbre de décision, échelle de temps, unités stéréogènes, règles CIP, Fischer, méso, polarimétrie, topicité. Ce groupe-ci n\'en garde que le strict nécessaire pour la synthèse asymétrique.</p><p>On part du benzaldéhyde. Son carbone n\'est pas stéréogène : il est sp², donc <b>plan</b>. Mais dès qu\'un nucléophile s\'additionne dessus, il devient tétraédrique et donc stéréogène. On dit que le substrat est <b>prochiral</b> : il ne demande qu\'à devenir chiral.</p><p>Le problème, c\'est qu\'il y a deux façons d\'arriver sur un plan : par-dessus ou par-dessous.</p>',
   etapes:[
    {q:'Pourquoi obtient-on deux produits différents ?',
     t:'Le nucléophile peut attaquer l\'une ou l\'autre face du carbonyle. Les deux produits ainsi formés sont images l\'un de l\'autre dans un miroir : ce sont les <b>deux énantiomères</b>.'},

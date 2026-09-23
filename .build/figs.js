@@ -253,12 +253,6 @@ const CLIV=[
   {k:'wei', reac:'MeNH(OMe)·HCl, AlMe₃', court:'Weinreb', head:'MeO(Me)N–OC', prod:'amide de Weinreb → cétone',
    why:'On échange l\'auxiliaire contre un amide de Weinreb, stable, qui donne ensuite proprement l\'aldéhyde (LiAlH₄) ou une cétone (R\'MgX) sans sur‑addition : le chélate à 5 chaînons bloque l\'intermédiaire tétraédrique.'}
 ];
-function polar(cx,cy,r,adeg){const a=(adeg-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
-function sectorPath(cx,cy,r0,r1,a0,a1){
-  const p1=polar(cx,cy,r1,a0),p2=polar(cx,cy,r1,a1),p3=polar(cx,cy,r0,a1),p4=polar(cx,cy,r0,a0);
-  const big=(a1-a0)>180?1:0;
-  return `M${E(p1[0])},${E(p1[1])} A${r1},${r1} 0 ${big} 1 ${E(p2[0])},${E(p2[1])} L${E(p3[0])},${E(p3[1])} A${r0},${r0} 0 ${big} 0 ${E(p4[0])},${E(p4[1])} Z`;
-}
 function figRoue(sel){
   const W=360,H=330,cx=180,cy=156; let s='';
   CLIV.forEach((c,i)=>{
@@ -307,8 +301,6 @@ function figCleavProd(sel){
 /* ==========================================================================
    Section 5 — Contrôle cinétique : le diagramme d'énergie
    ========================================================================== */
-const Rgas=8.314;                       /* J·mol⁻¹·K⁻¹ */
-function erFromDdG(ddG_kJ,T_K){ return Math.exp((ddG_kJ*1000)/(Rgas*T_K)); }
 function figEnergie(ddG,T_K){
   const W=360,H=266; let s='';
   const G1=50, G2=50+ddG, GP=-30;
