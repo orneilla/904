@@ -95,3 +95,30 @@ function figModeles(){
   s+=txt([180,242],'sur leur bureau. Ce n\'est pas de la triche.',{fs:11,c:C.ink2});
   return svg(W,H,s,{alt:'fabriquer un modèle moléculaire'});
 }
+
+function figAxeNewman(k){
+  /* k=0 : ligand 3 (cycle arrière prioritaire) vers la DROITE ; k=1 : vers la GAUCHE */
+  const W=360,H=296,cx=180,cy=150,R=62; let s='';
+  s+=txt([180,20],'Vue le long de l\'axe',{fs:13,fw:800});
+  s+=txt([180,38],'bleu = cycle AVANT (rangs 1 et 2)',{fs:10.5,c:C.blue,fw:700});
+  s+=txt([180,54],'violet = cycle ARRIÈRE (rangs 3 et 4)',{fs:10.5,c:C.purple,fw:700});
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${C.ink2}" stroke-width="2"/>`;
+  const droite = (k===0);
+  const f3 = droite ? [cx+R,cy] : [cx-R,cy];
+  const f4 = droite ? [cx-R,cy] : [cx+R,cy];
+  s+=seg(f3,[f3[0]+(droite?32:-32),cy],{c:C.purple,w:2.8});
+  s+=seg(f4,[f4[0]+(droite?-32:32),cy],{c:C.purple,w:2.8});
+  s+=lab([f3[0]+(droite?48:-48),cy],'3',{fs:14,fw:800,c:C.purple,r:12});
+  s+=lab([f4[0]+(droite?-48:48),cy],'4',{fs:14,fw:800,c:C.purple,r:12});
+  s+=seg([cx,cy],[cx,cy-R],{c:C.blue,w:3}); s+=seg([cx,cy],[cx,cy+R],{c:C.blue,w:3});
+  s+=lab([cx,cy-R-15],'1',{fs:14,fw:800,c:C.blue,r:12});
+  s+=lab([cx,cy+R+15],'2',{fs:14,fw:800,c:C.blue,r:12});
+  /* le trajet 1 → 2 → 3, en faisant les trois quarts du tour */
+  const r2=R-17, dep=[cx,cy-r2], arr=droite?[cx+r2,cy]:[cx-r2,cy];
+  const sweep = droite ? 0 : 1;      /* 0 = antihoraire à l'écran (y vers le bas) */
+  s+=`<path d="M${E(dep[0])},${E(dep[1])} A${r2},${r2} 0 1 ${sweep} ${E(arr[0])},${E(arr[1])}"`
+   + ` fill="none" stroke="${C.green}" stroke-width="2.4" stroke-linecap="round" marker-end="url(#mkGreen)"/>`;
+  s+=txt([180,250],'1 → 2 → 3 : sens '+(droite?'ANTIhoraire':'HORAIRE'),{fs:12.5,fw:800,c:C.green});
+  s+=txt([180,274],droite?'configuration aS':'configuration aR',{fs:15,fw:800,c:C.green});
+  return svg(W,H,s,{alt:'projection de Newman le long de l\'axe'});
+}

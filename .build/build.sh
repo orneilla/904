@@ -30,6 +30,6 @@ mk td_revision_corrige.html \
    secT0.js secT1.js secT2.js secT3.js
 
 mk voir_en_3d.html \
-   "Voir en 3D — la méthode quand on ne visualise pas" "Voir en 3D" "La stéréochimie sans rien imaginer" "voir3d" \
+   "Voir en 3D — la méthode quand on ne visualise pas" "Voir en 3D" "Tout le TD en volume, sans rien imaginer" "voir3d" \
    lib3d.js mol3d.js figV.js \
-   secV1.js secV2.js secV3.js secV4.js secV5.js
+   secV1.js secV2.js secV3.js secV6.js secV7.js secV8.js secV5.js

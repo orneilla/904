@@ -245,7 +245,7 @@ details.plus .body p{margin:0 0 10px}
 <header>
   <div class="wrap hbar">
     <button class="iconbtn" id="tocbtn" aria-label="Ouvrir le sommaire">☰</button>
-    <div class="htitle">Voir en 3D<small id="hsub">La stéréochimie sans rien imaginer</small></div>
+    <div class="htitle">Voir en 3D<small id="hsub">Tout le TD en volume, sans rien imaginer</small></div>
     <button class="iconbtn" id="themebtn" aria-label="Changer de thème">◐</button>
   </div>
 </header>
@@ -462,6 +462,35 @@ function oxaz(P,opt){
 const oxN=(P)=>add(P,RING.N);
 const oxC2O=(P)=>add(add(P,RING.C2),[16,-21]);
 
+/* --- récapitulatif en blocs empilés (jamais de tableau large sur mobile) --- */
+function recapHTML(rows){
+  return rows.map(r=>`<div style="border-left:4px solid ${r.c};padding:10px 12px;margin:9px 0;background:var(--panel2);border-radius:0 10px 10px 0">`
+   +`<div style="font-weight:800;font-size:14px">${r.t}</div>`
+   +`<div style="font-weight:800;color:${r.c};font-size:13px;margin-top:3px">${r.v}</div>`
+   +`<div style="color:var(--ink2);font-size:12.5px;margin-top:4px;line-height:1.45">${r.d}</div></div>`).join('');
+}
+
+function figArbreSel(){
+  const W=360,H=300; let s='';
+  const q=(y,t)=>`<rect x="16" y="${y}" width="328" height="30" rx="8" fill="var(--panel2)" stroke="${C.line}"/>`
+    +txt([180,y+15],t,{fs:12,fw:700});
+  const rep=(y,t,col)=>`<rect x="40" y="${y}" width="280" height="28" rx="14" fill="${col}" opacity=".13"/>`
+    +txt([180,y+14],t,{fs:12,fw:800,c:col});
+  s+=q(14,'1. La réaction crée-t-elle un élément stéréogène ?');
+  s+=arrow([180,44],[180,56],{w:2});
+  s+=rep(58,'NON → ni diastéréo- ni énantiosélective',C.grey);
+  s+=q(96,'2. Le substrat est-il DÉJÀ chiral ?');
+  s+=arrow([180,126],[180,138],{w:2});
+  s+=rep(140,'OUI → DIASTÉRÉOsélective',C.red);
+  s+=txt([180,176],'(les deux états de transition sont diastéréoisomères :',{fs:10.5,c:C.ink2});
+  s+=txt([180,190],'ils ont des énergies différentes « gratuitement »)',{fs:10.5,c:C.ink2});
+  s+=q(204,'3. Sinon : le réactif ou le catalyseur est-il chiral ?');
+  s+=arrow([180,234],[180,246],{w:2});
+  s+=rep(248,'OUI → ÉNANTIOsélective',C.blue);
+  s+=txt([180,286],'NON → produit racémique, aucune sélectivité',{fs:11,fw:700,c:C.grey});
+  return svg(W,H,s,{alt:'arbre de décision diastéréo / énantio'});
+}
+
 /* ==========================================================================
    3. Moteur : liste des sections + rendu
    ========================================================================== */
@@ -473,7 +502,8 @@ function el(tag,cls,html){const e=document.createElement(tag); if(cls)e.classNam
    Petit moteur 3D (canvas, aucune dépendance).
    Projection orthographique — ce qu'on voit est exactement ce qu'on mesure.
    ========================================================================== */
-const COL3D = {C:'--ink', O:'--red', N:'--blue', F:'--green', S:'--purple', H:'--grey', X:'--ink2'};
+const COL3D = {C:'--ink', O:'--red', N:'--blue', F:'--green', S:'--purple',
+               P:'--purple', Si:'--purple', Cl:'--green', Br:'--green', H:'--grey', X:'--ink2'};
 function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888'; }
 
 /* --- algèbre 3×3 minimale ------------------------------------------------- */
@@ -513,7 +543,19 @@ function Viewer3D(host,mol,opt){
   cv.className='cv3d'; cv.style.touchAction='none';
   host.appendChild(cv);
   const ctx=cv.getContext('2d');
+  /* positions de travail : la torsion les modifie, les originales restent intactes */
+  /* centre de la boîte englobante (et non centroïde) : une chaîne latérale
+     ne décentre alors pas la molécule dans le cadre */
+  const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9];
+  mol.atoms.forEach(a=>{ for(let k=0;k<3;k++){
+    if(a.p[k]<lo[k]) lo[k]=a.p[k]; if(a.p[k]>hi[k]) hi[k]=a.p[k]; } });
+  const CEN=[(lo[0]+hi[0])/2,(lo[1]+hi[1])/2,(lo[2]+hi[2])/2];
+  const P0 = mol.atoms.map(a=>[a.p[0]-CEN[0],a.p[1]-CEN[1],a.p[2]-CEN[2]]);
+  const POS = P0.map(p=>p.slice());
+  const DEC = (v)=>[v[0]-CEN[0],v[1]-CEN[1],v[2]-CEN[2]];   /* décor : même repère */
+  const GROS = mol.atoms.length>28;
   let R = opt.R0 ? opt.R0.slice() : TILT.slice();
+  let tors = 0;
   let spin = !!opt.spin, anim=null, W=0,H=0,S=1;
   const decor = opt.decor||[];
   const badges = opt.badges||[];
@@ -523,7 +565,7 @@ function Viewer3D(host,mol,opt){
     W=Math.max(220,Math.round(r.width)); H=opt.h||260;
     cv.width=W*d; cv.height=H*d; cv.style.width=W+'px'; cv.style.height=H+'px';
     ctx.setTransform(d,0,0,d,0,0);
-    let m=0; mol.atoms.forEach(a=>{ m=Math.max(m,Math.hypot(a.p[0],a.p[1],a.p[2])); });
+    let m=0; P0.forEach(p=>{ m=Math.max(m,Math.hypot(p[0],p[1],p[2])); });
     S=(Math.min(W,H)/2-22)/(m||1);   /* -22 px : place pour les boules et les étiquettes */
     draw();
   }
@@ -572,7 +614,7 @@ function Viewer3D(host,mol,opt){
     /* décor arrière */
     decor.forEach(d=>{ if(d.front) return; paintDecor(d); });
     /* liaisons puis atomes, triés par profondeur */
-    const pts=mol.atoms.map(a=>proj(a.p));
+    const pts=POS.map(p=>proj(p));
     const items=[];
     mol.bonds.forEach(([i,j,o])=>{
       items.push({z:(pts[i][2]+pts[j][2])/2, k:'b', i:i, j:j, o:o});
@@ -586,21 +628,21 @@ function Viewer3D(host,mol,opt){
         ctx.save(); ctx.globalAlpha=fade; ctx.strokeStyle=ink; ctx.lineCap='round';
         if(it.o>=2){
           const dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy)||1, nx=-dy/L*3.2, ny=dx/L*3.2;
-          ctx.lineWidth=3;
+          ctx.lineWidth=GROS?2.2:3;
           ctx.beginPath(); ctx.moveTo(p[0]+nx,p[1]+ny); ctx.lineTo(q[0]+nx,q[1]+ny); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(p[0]-nx,p[1]-ny); ctx.lineTo(q[0]-nx,q[1]-ny); ctx.stroke();
-        } else { ctx.lineWidth=4.2; ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); }
+        } else { ctx.lineWidth=GROS?3:4.2; ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); }
         ctx.restore();
       } else {
         const a=mol.atoms[it.i], p=pts[it.i];
         const fade=0.6+0.4*Math.max(0,Math.min(1,(it.z+3)/6));
         const col=cssv(a.c||COL3D[a.e]||COL3D.X);
-        const r=a.r||(a.e==='H'?5.2:(a.e==='C'?6.4:8));
+        const r=(a.rad||(a.e==='H'?5.2:(a.e==='C'?6.4:8)))*(GROS?0.72:1);
         ctx.save(); ctx.globalAlpha=fade;
         ctx.fillStyle=col; ctx.beginPath(); ctx.arc(p[0],p[1],r,0,Math.PI*2); ctx.fill();
         ctx.lineWidth=1.6; ctx.strokeStyle=panel; ctx.stroke();
         const txt=(a.l!==undefined)?a.l:(a.e!=='C'?a.e:'');
-        if(txt){ ctx.globalAlpha=1; ctx.fillStyle=panel; ctx.font='800 '+(a.r?12:10)+'px system-ui,sans-serif';
+        if(txt){ ctx.globalAlpha=1; ctx.fillStyle=panel; ctx.font='800 '+(a.rad?12:10)+'px system-ui,sans-serif';
           ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(txt,p[0],p[1]+0.5); }
         ctx.restore();
       }
@@ -622,10 +664,10 @@ function Viewer3D(host,mol,opt){
   }
   function paintDecor(d){
     const col=cssv(d.c||'--purple');
-    if(d.k==='disc') ellipse(d.p,d.n,d.r||1.6,col,d.op||0.2);
-    else if(d.k==='line') line3(d.a,d.b,col,d.dash,d.w);
-    else if(d.k==='arrow') arrow3(d.a,d.b,col);
-    else if(d.k==='tag') tag3(d.p,d.t,col,d.fs);
+    if(d.k==='disc') ellipse(DEC(d.p),d.n,d.r||1.6,col,d.op||0.2);
+    else if(d.k==='line') line3(DEC(d.a),DEC(d.b),col,d.dash,d.w);
+    else if(d.k==='arrow') arrow3(DEC(d.a),DEC(d.b),col);
+    else if(d.k==='tag') tag3(DEC(d.p),d.t,col,d.fs);
   }
 
   /* --- interaction --------------------------------------------------------- */
@@ -653,8 +695,43 @@ function Viewer3D(host,mol,opt){
   }
   function kick(){ if(!raf) raf=requestAnimationFrame(tick); }
 
+  /* --- torsion autour de l'axe aryle-aryle -------------------------------- */
+  function applyTorsion(deg){
+    tors=deg;
+    if(!mol.axe||!mol.rotor){ return; }
+    const a=P0[mol.axe[0]], b=P0[mol.axe[1]];
+    const ax=[b[0]-a[0],b[1]-a[1],b[2]-a[2]];
+    const Rt=M3.rot(ax,deg*Math.PI/180);
+    for(let i=0;i<P0.length;i++){
+      if(mol.rotor.indexOf(i)<0){ POS[i]=P0[i].slice(); continue; }
+      const v=[P0[i][0]-a[0],P0[i][1]-a[1],P0[i][2]-a[2]];
+      const w=M3.app(Rt,v);
+      POS[i]=[w[0]+a[0],w[1]+a[1],w[2]+a[2]];
+    }
+  }
+  /* plus courte distance entre un atome de la partie fixe et un de la partie
+     qui tourne, en excluant les deux carbones de l'axe eux-mêmes */
+  function contact(){
+    if(!mol.axe||!mol.rotor) return null;
+    const rot=new Set(mol.rotor), ax=new Set(mol.axe);
+    let best=1e9, bi=-1, bj=-1;
+    for(let i=0;i<POS.length;i++){
+      if(rot.has(i)||ax.has(i)) continue;
+      for(const j of mol.rotor){
+        if(ax.has(j)) continue;
+        const d=Math.hypot(POS[i][0]-POS[j][0],POS[i][1]-POS[j][1],POS[i][2]-POS[j][2]);
+        if(d<best){ best=d; bi=i; bj=j; }
+      }
+    }
+    if(best===1e9) return null;
+    const A=mol.atoms[bi], B=mol.atoms[bj];
+    return {d:best, i:bi, j:bj, a:A.e, b:B.e, prof:Math.max(A.d||0, B.d||0)};
+  }
+
   const api={
-    draw, resize,
+    draw, resize, contact,
+    torsion(deg){ applyTorsion(deg); draw(); },
+    getTorsion(){ return tors; },
     reset(){ anim={a:R.slice(),b:(opt.R0?opt.R0.slice():TILT.slice()),t0:performance.now(),ms:700}; kick(); },
     goto(Rt,ms){ anim={a:R.slice(),b:Rt.slice(),t0:performance.now(),ms:ms||900}; kick(); },
     turn(ax,ang,ms){ api.goto(M3.mul(M3.rot(ax,ang),R),ms); },
@@ -687,7 +764,7 @@ function bloc3D(host,mol,opt){
 }
 
 /* ===== Coordonnées 3D — produites par .build/gen3d.py, vérifiées par RDKit ===== */
-const MOL3D = {"butanolR": {"nom": "butan-2-ol (R)", "atoms": [{"e": "C", "p": [2.547, 0.178, -0.044]}, {"e": "C", "p": [1.222, 0.922, -0.002]}, {"e": "C", "p": [0.0, 0.0, 0.0]}, {"e": "C", "p": [-0.09, -0.88, 1.239]}, {"e": "O", "p": [-1.179, 0.804, -0.042]}, {"e": "H", "p": [-0.0, -0.633, -0.895]}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [2, 4, 1], [2, 5, 1]], "centre": 2, "cip": "R", "prio": [4, 1, 3, 5]}, "butanolS": {"nom": "butan-2-ol (S)", "atoms": [{"e": "C", "p": [-0.094, -0.146, 2.562]}, {"e": "C", "p": [-0.016, -0.899, 1.241]}, {"e": "C", "p": [0.0, 0.0, 0.0]}, {"e": "C", "p": [1.208, 0.924, -0.06]}, {"e": "O", "p": [-1.177, 0.801, -0.045]}, {"e": "H", "p": [-0.0, -0.633, -0.895]}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [2, 4, 1], [2, 5, 1]], "centre": 2, "cip": "S", "prio": [4, 1, 3, 5]}, "hexeneZ": {"nom": "(Z)-hex-3-ène", "atoms": [{"e": "C", "p": [-2.299, -1.343, 1.333]}, {"e": "C", "p": [-1.584, -1.193, -0.0]}, {"e": "C", "p": [-0.671, -0.0, 0.0]}, {"e": "C", "p": [0.671, 0.0, 0.0]}, {"e": "C", "p": [1.584, -1.191, 0.052]}, {"e": "C", "p": [2.299, -1.399, -1.274]}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 2], [3, 4, 1], [4, 5, 1]], "alcene": [2, 3]}, "aminocetone": {"nom": "4-aminobutan-2-one", "atoms": [{"e": "C", "p": [-1.291, -0.776, -0.0]}, {"e": "C", "p": [0.0, 0.0, 0.0]}, {"e": "O", "p": [0.0, 1.23, 0.0]}, {"e": "C", "p": [1.274, -0.821, -0.028]}, {"e": "C", "p": [2.509, 0.052, 0.152]}, {"e": "N", "p": [3.721, -0.767, 0.13]}], "bonds": [[0, 1, 1], [1, 2, 2], [1, 3, 1], [3, 4, 1], [4, 5, 1]], "sp2": 1, "prioF": [2, 3, 0]}, "cyclohexanone": {"nom": "4-tert-butylcyclohexanone", "atoms": [{"e": "O", "p": [-2.699, 0.136, -0.103]}, {"e": "C", "p": [-1.471, 0.06, -0.069]}, {"e": "C", "p": [-0.607, 0.8, -1.062]}, {"e": "C", "p": [0.722, 0.072, -1.233]}, {"e": "C", "p": [1.528, 0.007, 0.087]}, {"e": "C", "p": [0.589, -0.159, 1.31]}, {"e": "C", "p": [-0.761, -0.781, 0.967]}, {"e": "C", "p": [2.726, -1.014, 0.042]}, {"e": "C", "p": [3.668, -0.779, 1.245]}, {"e": "C", "p": [2.251, -2.478, 0.077]}, {"e": "C", "p": [3.567, -0.808, -1.237]}], "bonds": [[0, 1, 2], [1, 2, 1], [2, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [4, 7, 1], [7, 8, 1], [7, 9, 1], [7, 10, 1], [6, 1, 1]], "sp2": 1, "oxy": 0}, "biaryle": {"nom": "acide 6,6′-difluorobiphényl-2,2′-dicarboxylique", "atoms": [{"e": "O", "p": [-2.29, -1.498, -0.199]}, {"e": "C", "p": [-1.766, -1.84, 0.988]}, {"e": "O", "p": [-2.136, -2.848, 1.563]}, {"e": "C", "p": [-0.792, -0.857, 1.529]}, {"e": "C", "p": [-0.676, -0.829, 2.933]}, {"e": "C", "p": [0.201, 0.053, 3.564]}, {"e": "C", "p": [0.977, 0.91, 2.795]}, {"e": "C", "p": [0.875, 0.875, 1.406]}, {"e": "F", "p": [1.655, 1.707, 0.696]}, {"e": "C", "p": [0.0, 0.0, 0.736]}, {"e": "C", "p": [-0.0, 0.0, -0.736]}, {"e": "C", "p": [0.741, -0.987, -1.41]}, {"e": "F", "p": [1.406, -1.917, -0.705]}, {"e": "C", "p": [0.819, -1.041, -2.799]}, {"e": "C", "p": [0.148, -0.094, -3.562]}, {"e": "C", "p": [-0.598, 0.9, -2.927]}, {"e": "C", "p": [-0.679, 0.958, -1.52]}, {"e": "C", "p": [-1.511, 2.021, -0.885]}, {"e": "O", "p": [-1.916, 2.061, 0.261]}, {"e": "O", "p": [-1.797, 3.023, -1.739]}], "bonds": [[0, 1, 1], [1, 2, 2], [1, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [6, 7, 1], [7, 8, 1], [7, 9, 1], [9, 10, 1], [10, 11, 1], [11, 12, 1], [11, 13, 1], [13, 14, 1], [14, 15, 1], [15, 16, 1], [16, 17, 1], [17, 18, 2], [17, 19, 1], [9, 3, 1], [16, 10, 1]], "axe": [9, 10], "torsion": 98.1}};
+const MOL3D = {"butanolR": {"nom": "butan-2-ol (R)", "atoms": [{"e": "C", "p": [2.547, 0.178, -0.044], "d": 9}, {"e": "C", "p": [1.222, 0.922, -0.002], "d": 9}, {"e": "C", "p": [0.0, 0.0, 0.0], "d": 9}, {"e": "C", "p": [-0.09, -0.88, 1.239], "d": 9}, {"e": "O", "p": [-1.179, 0.804, -0.042], "d": 9}, {"e": "H", "p": [-0.0, -0.633, -0.895], "d": 9}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [2, 4, 1], [2, 5, 1]], "centre": 2, "cip": "R", "prio": [4, 1, 3, 5]}, "butanolS": {"nom": "butan-2-ol (S)", "atoms": [{"e": "C", "p": [-0.094, -0.146, 2.562], "d": 9}, {"e": "C", "p": [-0.016, -0.899, 1.241], "d": 9}, {"e": "C", "p": [0.0, 0.0, 0.0], "d": 9}, {"e": "C", "p": [1.208, 0.924, -0.06], "d": 9}, {"e": "O", "p": [-1.177, 0.801, -0.045], "d": 9}, {"e": "H", "p": [-0.0, -0.633, -0.895], "d": 9}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [2, 4, 1], [2, 5, 1]], "centre": 2, "cip": "S", "prio": [4, 1, 3, 5]}, "hexeneZ": {"nom": "(Z)-hex-3-ène", "atoms": [{"e": "C", "p": [-2.299, -1.343, 1.333], "d": 9}, {"e": "C", "p": [-1.584, -1.193, -0.0], "d": 9}, {"e": "C", "p": [-0.671, -0.0, 0.0], "d": 9}, {"e": "C", "p": [0.671, 0.0, 0.0], "d": 9}, {"e": "C", "p": [1.584, -1.191, 0.052], "d": 9}, {"e": "C", "p": [2.299, -1.399, -1.274], "d": 9}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 2], [3, 4, 1], [4, 5, 1]], "alcene": [2, 3]}, "aminocetone": {"nom": "4-aminobutan-2-one", "atoms": [{"e": "C", "p": [-1.291, -0.776, -0.0], "d": 9}, {"e": "C", "p": [0.0, 0.0, 0.0], "d": 9}, {"e": "O", "p": [0.0, 1.23, 0.0], "d": 9}, {"e": "C", "p": [1.274, -0.821, -0.028], "d": 9}, {"e": "C", "p": [2.509, 0.052, 0.152], "d": 9}, {"e": "N", "p": [3.721, -0.767, 0.13], "d": 9}], "bonds": [[0, 1, 1], [1, 2, 2], [1, 3, 1], [3, 4, 1], [4, 5, 1]], "sp2": 1, "prioF": [2, 3, 0]}, "cyclohexanone": {"nom": "4-tert-butylcyclohexanone", "atoms": [{"e": "O", "p": [-2.699, 0.136, -0.103], "d": 1}, {"e": "C", "p": [-1.471, 0.06, -0.069], "d": 0}, {"e": "C", "p": [-0.607, 0.8, -1.062], "d": 0}, {"e": "C", "p": [0.722, 0.072, -1.233], "d": 0}, {"e": "C", "p": [1.528, 0.007, 0.087], "d": 0}, {"e": "C", "p": [0.589, -0.159, 1.31], "d": 0}, {"e": "C", "p": [-0.761, -0.781, 0.967], "d": 0}, {"e": "C", "p": [2.726, -1.014, 0.042], "d": 1}, {"e": "C", "p": [3.668, -0.779, 1.245], "d": 2}, {"e": "C", "p": [2.251, -2.478, 0.077], "d": 2}, {"e": "C", "p": [3.567, -0.808, -1.237], "d": 2}], "bonds": [[0, 1, 2], [1, 2, 1], [2, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [4, 7, 1], [7, 8, 1], [7, 9, 1], [7, 10, 1], [6, 1, 1]], "sp2": 1, "oxy": 0}, "biaryle": {"nom": "acide 6,6′-difluorobiphényl-2,2′-dicarboxylique", "atoms": [{"e": "O", "p": [-2.29, -1.498, -0.199], "d": 2}, {"e": "C", "p": [-1.766, -1.84, 0.988], "d": 1}, {"e": "O", "p": [-2.136, -2.848, 1.563], "d": 2}, {"e": "C", "p": [-0.792, -0.857, 1.529], "d": 0}, {"e": "C", "p": [-0.676, -0.829, 2.933], "d": 0}, {"e": "C", "p": [0.201, 0.053, 3.564], "d": 0}, {"e": "C", "p": [0.977, 0.91, 2.795], "d": 0}, {"e": "C", "p": [0.875, 0.875, 1.406], "d": 0}, {"e": "F", "p": [1.655, 1.707, 0.696], "d": 1}, {"e": "C", "p": [0.0, 0.0, 0.736], "d": 0}, {"e": "C", "p": [-0.0, 0.0, -0.736], "d": 0}, {"e": "C", "p": [0.741, -0.987, -1.41], "d": 0}, {"e": "F", "p": [1.406, -1.917, -0.705], "d": 1}, {"e": "C", "p": [0.819, -1.041, -2.799], "d": 0}, {"e": "C", "p": [0.148, -0.094, -3.562], "d": 0}, {"e": "C", "p": [-0.598, 0.9, -2.927], "d": 0}, {"e": "C", "p": [-0.679, 0.958, -1.52], "d": 0}, {"e": "C", "p": [-1.511, 2.021, -0.885], "d": 1}, {"e": "O", "p": [-1.916, 2.061, 0.261], "d": 2}, {"e": "O", "p": [-1.797, 3.023, -1.739], "d": 2}], "bonds": [[0, 1, 1], [1, 2, 2], [1, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [6, 7, 1], [7, 8, 1], [7, 9, 1], [9, 10, 1], [10, 11, 1], [11, 12, 1], [11, 13, 1], [13, 14, 1], [14, 15, 1], [15, 16, 1], [16, 17, 1], [17, 18, 2], [17, 19, 1], [9, 3, 1], [16, 10, 1]], "axe": [9, 10], "torsion": 98.1}, "ex1m2": {"nom": "(E)-PhCH=CH–CH(OMe)CH₃", "atoms": [{"e": "C", "p": [-1.863, 1.569, 2.329], "d": 5}, {"e": "O", "p": [-2.439, 1.185, 1.087], "d": 4}, {"e": "C", "p": [-1.511, 1.248, 0.0], "d": 3}, {"e": "C", "p": [-2.324, 1.333, -1.287], "d": 4}, {"e": "C", "p": [-0.672, -0.0, 0.0], "d": 2}, {"e": "C", "p": [0.672, -0.0, -0.0], "d": 1}, {"e": "C", "p": [1.497, -1.215, 0.003], "d": 0}, {"e": "C", "p": [2.716, -1.208, -0.689], "d": 0}, {"e": "C", "p": [3.544, -2.334, -0.686], "d": 0}, {"e": "C", "p": [3.167, -3.475, 0.018], "d": 0}, {"e": "C", "p": [1.966, -3.49, 0.723], "d": 0}, {"e": "C", "p": [1.137, -2.364, 0.72], "d": 0}, {"e": "H", "p": [-0.897, 2.154, 0.084], "d": 4}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [2, 4, 1], [4, 5, 2], [5, 6, 1], [6, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 6, 1], [2, 12, 1]], "centre": 2, "alcene": [4, 5]}, "ex1m3": {"nom": "éther d'énol silylé", "atoms": [{"e": "C", "p": [-1.374, 1.039, -2.966], "d": 3}, {"e": "Si", "p": [-2.15, 1.736, -1.399], "d": 2}, {"e": "C", "p": [-2.022, 3.616, -1.483], "d": 3}, {"e": "C", "p": [-3.977, 1.284, -1.387], "d": 3}, {"e": "O", "p": [-1.393, 1.186, 0.0], "d": 1}, {"e": "C", "p": [-0.675, -0.0, 0.0], "d": 0}, {"e": "C", "p": [0.675, -0.0, 0.0], "d": 0}, {"e": "C", "p": [1.509, 1.25, -0.075], "d": 1}, {"e": "C", "p": [1.475, -1.28, 0.085], "d": 0}, {"e": "C", "p": [0.661, -2.493, 0.537], "d": 0}, {"e": "C", "p": [-0.689, -2.536, -0.161], "d": 0}, {"e": "C", "p": [-1.491, -1.267, 0.128], "d": 0}], "bonds": [[0, 1, 1], [1, 2, 1], [1, 3, 1], [1, 4, 1], [4, 5, 1], [5, 6, 2], [6, 7, 1], [6, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 5, 1]], "alcene": [5, 6]}, "crotyl": {"nom": "(E)-but-2-én-1-ol", "atoms": [{"e": "C", "p": [-1.504, -1.241, -0.005], "d": 9}, {"e": "C", "p": [-0.671, 0.0, -0.0], "d": 9}, {"e": "C", "p": [0.671, -0.0, 0.0], "d": 9}, {"e": "C", "p": [1.516, 1.231, -0.0], "d": 9}, {"e": "O", "p": [2.309, 1.227, 1.175], "d": 9}], "bonds": [[0, 1, 1], [1, 2, 2], [2, 3, 1], [3, 4, 1]], "alcene": [1, 2]}, "epoxA": {"nom": "époxyde (2S,3S)", "atoms": [{"e": "C", "p": [-1.523, -0.249, -1.247], "d": 1}, {"e": "C", "p": [-0.754, 0.0, 0.0], "d": 0}, {"e": "O", "p": [-0.001, 1.223, -0.0], "d": 0}, {"e": "C", "p": [0.754, -0.0, -0.0], "d": 0}, {"e": "C", "p": [1.548, -0.25, 1.239], "d": 1}, {"e": "O", "p": [0.901, 0.286, 2.388], "d": 2}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [3, 4, 1], [4, 5, 1], [3, 1, 1]], "epox": [1, 3, 2]}, "subB": {"nom": "(2S,3Z)-2-méthylpent-3-én-1-ol", "atoms": [{"e": "C", "p": [-1.59, 1.179, -0.011], "d": 9}, {"e": "C", "p": [-0.672, 0.0, 0.0], "d": 9}, {"e": "C", "p": [0.672, -0.0, -0.0], "d": 9}, {"e": "C", "p": [1.601, 1.197, -0.0], "d": 9}, {"e": "C", "p": [2.335, 1.262, -1.34], "d": 9}, {"e": "C", "p": [2.614, 1.115, 1.155], "d": 9}, {"e": "O", "p": [1.962, 1.326, 2.404], "d": 9}], "bonds": [[0, 1, 1], [1, 2, 2], [2, 3, 1], [3, 4, 1], [3, 5, 1], [5, 6, 1]], "centre": 3, "alcene": [1, 2]}, "prodB": {"nom": "époxyde (2R,3R,4S)", "atoms": [{"e": "C", "p": [-1.357, 0.589, 2.432], "d": 2}, {"e": "C", "p": [-1.676, -0.221, 1.177], "d": 1}, {"e": "C", "p": [-1.768, -1.715, 1.516], "d": 2}, {"e": "O", "p": [-2.341, -2.427, 0.423], "d": 3}, {"e": "C", "p": [-0.759, -0.0, 0.0], "d": 0}, {"e": "O", "p": [-0.002, 1.217, 0.0], "d": 0}, {"e": "C", "p": [0.759, -0.0, 0.0], "d": 0}, {"e": "C", "p": [1.622, -0.184, 1.195], "d": 1}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [1, 4, 1], [4, 5, 1], [5, 6, 1], [6, 7, 1], [6, 4, 1]]}, "oxazNH": {"nom": "oxazolidinone (S), avant acylation", "atoms": [{"e": "O", "p": [-0.197, 2.379, 0.106], "d": 1}, {"e": "C", "p": [-0.106, 1.168, 0.021], "d": 0}, {"e": "O", "p": [-1.156, 0.296, 0.088], "d": 0}, {"e": "C", "p": [-0.642, -1.023, -0.15], "d": 0}, {"e": "C", "p": [0.84, -0.913, 0.161], "d": 0}, {"e": "C", "p": [1.128, -1.27, 1.631], "d": 1}, {"e": "C", "p": [2.594, -1.145, 1.977], "d": 0}, {"e": "C", "p": [3.071, -0.002, 2.635], "d": 0}, {"e": "C", "p": [4.428, 0.125, 2.935], "d": 0}, {"e": "C", "p": [5.319, -0.887, 2.581], "d": 0}, {"e": "C", "p": [4.855, -2.026, 1.927], "d": 0}, {"e": "C", "p": [3.499, -2.156, 1.625], "d": 0}, {"e": "N", "p": [1.062, 0.472, -0.12], "d": 0}, {"e": "H", "p": [1.443, -1.528, -0.515], "d": 1}], "bonds": [[0, 1, 2], [1, 2, 1], [2, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [6, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [4, 12, 1], [12, 1, 1], [11, 6, 1], [4, 13, 1]], "cycle": [1, 2, 3, 4, 12], "azote": 12, "centre": 4}, "oxazAc": {"nom": "l'auxiliaire acylé", "atoms": [{"e": "C", "p": [3.951, 2.87, -0.769], "d": 3}, {"e": "C", "p": [2.511, 2.462, -0.504], "d": 2}, {"e": "C", "p": [2.367, 0.966, -0.281], "d": 1}, {"e": "O", "p": [3.341, 0.211, -0.265], "d": 2}, {"e": "N", "p": [1.081, 0.48, -0.092], "d": 0}, {"e": "C", "p": [-0.118, 1.175, -0.009], "d": 0}, {"e": "O", "p": [-0.285, 2.382, -0.018], "d": 1}, {"e": "O", "p": [-1.156, 0.288, 0.11], "d": 0}, {"e": "C", "p": [-0.643, -1.022, -0.158], "d": 0}, {"e": "C", "p": [0.837, -0.921, 0.149], "d": 0}, {"e": "C", "p": [1.164, -1.302, 1.608], "d": 1}, {"e": "C", "p": [1.076, -2.788, 1.86], "d": 0}, {"e": "C", "p": [2.051, -3.651, 1.341], "d": 0}, {"e": "C", "p": [1.966, -5.026, 1.559], "d": 0}, {"e": "C", "p": [0.91, -5.552, 2.3], "d": 0}, {"e": "C", "p": [-0.061, -4.702, 2.827], "d": 0}, {"e": "C", "p": [0.022, -3.325, 2.61], "d": 0}, {"e": "H", "p": [1.426, -1.532, -0.545], "d": 1}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 2], [2, 4, 1], [4, 5, 1], [5, 6, 2], [5, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 12, 1], [12, 13, 1], [13, 14, 1], [14, 15, 1], [15, 16, 1], [9, 4, 1], [16, 11, 1], [9, 17, 1]], "cycle": [4, 5, 7, 8, 9], "azote": 4, "centre": 9}, "evansSub": {"nom": "imide de propanoyle (R)", "atoms": [{"e": "C", "p": [4.073, -0.002, 0.778], "d": 3}, {"e": "C", "p": [3.514, 0.26, -0.608], "d": 2}, {"e": "C", "p": [2.241, 1.08, -0.549], "d": 1}, {"e": "O", "p": [2.249, 2.252, -0.937], "d": 2}, {"e": "N", "p": [1.088, 0.483, -0.069], "d": 0}, {"e": "C", "p": [0.791, -0.873, -0.025], "d": 0}, {"e": "O", "p": [1.569, -1.812, -0.052], "d": 1}, {"e": "O", "p": [-0.561, -1.052, 0.112], "d": 0}, {"e": "C", "p": [-1.194, 0.201, -0.146], "d": 0}, {"e": "C", "p": [-0.125, 1.241, 0.128], "d": 0}, {"e": "C", "p": [-0.247, 1.864, 1.548], "d": 1}, {"e": "C", "p": [0.743, 3.015, 1.756], "d": 2}, {"e": "C", "p": [-0.107, 0.859, 2.696], "d": 2}, {"e": "H", "p": [-0.205, 2.05, -0.61], "d": 1}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 2], [2, 4, 1], [4, 5, 1], [5, 6, 2], [5, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [10, 12, 1], [9, 4, 1], [9, 13, 1]], "cycle": [4, 5, 7, 8, 9], "azote": 4, "centre": 9}, "evansProd": {"nom": "produit : un ISObutyryle", "atoms": [{"e": "C", "p": [4.817, 1.077, -0.382], "d": 3}, {"e": "C", "p": [3.535, 0.265, -0.584], "d": 2}, {"e": "C", "p": [3.487, -0.271, -2.015], "d": 3}, {"e": "C", "p": [2.301, 1.122, -0.299], "d": 1}, {"e": "O", "p": [2.373, 2.355, -0.291], "d": 2}, {"e": "N", "p": [1.085, 0.482, -0.089], "d": 0}, {"e": "C", "p": [0.793, -0.875, -0.006], "d": 0}, {"e": "O", "p": [1.572, -1.813, 0.003], "d": 1}, {"e": "O", "p": [-0.562, -1.053, 0.101], "d": 0}, {"e": "C", "p": [-1.193, 0.206, -0.147], "d": 0}, {"e": "C", "p": [-0.123, 1.239, 0.141], "d": 0}, {"e": "C", "p": [-0.183, 1.862, 1.564], "d": 1}, {"e": "C", "p": [-1.384, 2.805, 1.698], "d": 2}, {"e": "C", "p": [-0.198, 0.838, 2.704], "d": 2}, {"e": "H", "p": [-0.182, 2.055, -0.591], "d": 1}], "bonds": [[0, 1, 1], [1, 2, 1], [1, 3, 1], [3, 4, 2], [3, 5, 1], [5, 6, 1], [6, 7, 2], [6, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 12, 1], [11, 13, 1], [10, 5, 1], [10, 14, 1]], "cycle": [5, 6, 8, 9, 10], "azote": 5, "centre": 10}, "diphenique": {"nom": "acide biphényl-2,2′-dicarboxylique", "atoms": [{"e": "O", "p": [-1.352, -2.439, -0.096], "d": 2}, {"e": "C", "p": [-1.807, -1.792, 0.988], "d": 1}, {"e": "O", "p": [-2.884, -2.068, 1.485], "d": 2}, {"e": "C", "p": [-0.839, -0.812, 1.533], "d": 0}, {"e": "C", "p": [-0.807, -0.709, 2.936], "d": 0}, {"e": "C", "p": [0.07, 0.172, 3.565], "d": 0}, {"e": "C", "p": [0.917, 0.964, 2.799], "d": 0}, {"e": "C", "p": [0.88, 0.88, 1.404], "d": 0}, {"e": "C", "p": [0.0, -0.0, 0.739], "d": 0}, {"e": "C", "p": [0.0, -0.0, -0.739], "d": 0}, {"e": "C", "p": [1.13, -0.523, -1.404], "d": 0}, {"e": "C", "p": [1.193, -0.589, -2.799], "d": 0}, {"e": "C", "p": [0.125, -0.137, -3.565], "d": 0}, {"e": "C", "p": [-1.002, 0.388, -2.936], "d": 0}, {"e": "C", "p": [-1.067, 0.473, -1.533], "d": 0}, {"e": "C", "p": [-2.314, 1.059, -0.988], "d": 1}, {"e": "O", "p": [-3.42, 0.947, -1.485], "d": 2}, {"e": "O", "p": [-2.11, 1.823, 0.096], "d": 2}], "bonds": [[0, 1, 1], [1, 2, 2], [1, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [6, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 12, 1], [12, 13, 1], [13, 14, 1], [14, 15, 1], [15, 16, 2], [15, 17, 1], [8, 3, 1], [14, 9, 1]], "axe": [8, 9], "rotor": [9, 10, 11, 12, 13, 14, 15, 16, 17]}, "binol": {"nom": "BINOL", "atoms": [{"e": "O", "p": [-1.706, -1.746, 0.828], "d": 1}, {"e": "C", "p": [-0.847, -0.878, 1.448], "d": 0}, {"e": "C", "p": [-0.855, -0.917, 2.836], "d": 0}, {"e": "C", "p": [-0.014, -0.075, 3.556], "d": 0}, {"e": "C", "p": [0.846, 0.815, 2.899], "d": 0}, {"e": "C", "p": [1.689, 1.655, 3.645], "d": 0}, {"e": "C", "p": [2.555, 2.547, 3.016], "d": 0}, {"e": "C", "p": [2.589, 2.611, 1.63], "d": 0}, {"e": "C", "p": [1.756, 1.783, 0.874], "d": 0}, {"e": "C", "p": [0.865, 0.865, 1.48], "d": 0}, {"e": "C", "p": [-0.0, 0.0, 0.742], "d": 0}, {"e": "C", "p": [-0.0, -0.0, -0.742], "d": 0}, {"e": "C", "p": [0.869, -0.856, -1.448], "d": 0}, {"e": "O", "p": [1.75, -1.702, -0.828], "d": 1}, {"e": "C", "p": [0.878, -0.894, -2.836], "d": 0}, {"e": "C", "p": [0.016, -0.074, -3.556], "d": 0}, {"e": "C", "p": [-0.867, 0.793, -2.899], "d": 0}, {"e": "C", "p": [-1.731, 1.611, -3.645], "d": 0}, {"e": "C", "p": [-2.619, 2.481, -3.016], "d": 0}, {"e": "C", "p": [-2.655, 2.544, -1.63], "d": 0}, {"e": "C", "p": [-1.802, 1.737, -0.874], "d": 0}, {"e": "C", "p": [-0.887, 0.843, -1.48], "d": 0}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [6, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 12, 1], [12, 13, 1], [12, 14, 1], [14, 15, 1], [15, 16, 1], [16, 17, 1], [17, 18, 1], [18, 19, 1], [19, 20, 1], [20, 21, 1], [10, 1, 1], [21, 11, 1], [9, 4, 1], [21, 16, 1]], "axe": [10, 11], "rotor": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]}, "binap": {"nom": "BINAP", "atoms": [{"e": "C", "p": [-6.104, 0.07, 1.483], "d": 0}, {"e": "C", "p": [-5.54, 0.096, 0.211], "d": 0}, {"e": "C", "p": [-4.318, -0.54, -0.025], "d": 0}, {"e": "C", "p": [-3.637, -1.212, 1.005], "d": 0}, {"e": "C", "p": [-4.224, -1.227, 2.278], "d": 0}, {"e": "C", "p": [-5.447, -0.593, 2.516], "d": 0}, {"e": "P", "p": [-2.043, -1.996, 0.595], "d": 1}, {"e": "C", "p": [-2.0, -3.559, 1.525], "d": 0}, {"e": "C", "p": [-0.787, -4.08, 2.006], "d": 0}, {"e": "C", "p": [-0.738, -5.303, 2.681], "d": 0}, {"e": "C", "p": [-1.902, -6.042, 2.869], "d": 0}, {"e": "C", "p": [-3.109, -5.565, 2.37], "d": 0}, {"e": "C", "p": [-3.154, -4.342, 1.694], "d": 0}, {"e": "C", "p": [-0.868, -0.872, 1.473], "d": 0}, {"e": "C", "p": [-0.818, -0.851, 2.875], "d": 0}, {"e": "C", "p": [0.049, -0.0, 3.559], "d": 0}, {"e": "C", "p": [0.898, 0.868, 2.869], "d": 0}, {"e": "C", "p": [1.76, 1.718, 3.584], "d": 0}, {"e": "C", "p": [2.616, 2.595, 2.922], "d": 0}, {"e": "C", "p": [2.62, 2.633, 1.536], "d": 0}, {"e": "C", "p": [1.767, 1.794, 0.816], "d": 0}, {"e": "C", "p": [0.886, 0.886, 1.454], "d": 0}, {"e": "C", "p": [0.0, -0.0, 0.749], "d": 0}, {"e": "C", "p": [-0.0, 0.0, -0.749], "d": 0}, {"e": "C", "p": [0.845, -0.895, -1.473], "d": 0}, {"e": "P", "p": [1.99, -2.049, -0.594], "d": 1}, {"e": "C", "p": [1.905, -3.611, -1.526], "d": 0}, {"e": "C", "p": [3.039, -4.424, -1.694], "d": 0}, {"e": "C", "p": [2.961, -5.645, -2.37], "d": 0}, {"e": "C", "p": [1.741, -6.09, -2.87], "d": 0}, {"e": "C", "p": [0.598, -5.321, -2.681], "d": 0}, {"e": "C", "p": [0.679, -4.099, -2.006], "d": 0}, {"e": "C", "p": [3.604, -1.308, -1.004], "d": 0}, {"e": "C", "p": [4.19, -1.338, -2.278], "d": 0}, {"e": "C", "p": [5.429, -0.737, -2.515], "d": 0}, {"e": "C", "p": [6.104, -0.092, -1.482], "d": 0}, {"e": "C", "p": [5.54, -0.05, -0.211], "d": 0}, {"e": "C", "p": [4.302, -0.654, 0.025], "d": 0}, {"e": "C", "p": [0.795, -0.872, -2.875], "d": 0}, {"e": "C", "p": [-0.049, 0.001, -3.559], "d": 0}, {"e": "C", "p": [-0.875, 0.891, -2.869], "d": 0}, {"e": "C", "p": [-1.714, 1.764, -3.584], "d": 0}, {"e": "C", "p": [-2.547, 2.663, -2.922], "d": 0}, {"e": "C", "p": [-2.549, 2.702, -1.536], "d": 0}, {"e": "C", "p": [-1.719, 1.84, -0.816], "d": 0}, {"e": "C", "p": [-0.862, 0.909, -1.454], "d": 0}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [3, 4, 1], [4, 5, 1], [3, 6, 1], [6, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 12, 1], [6, 13, 1], [13, 14, 1], [14, 15, 1], [15, 16, 1], [16, 17, 1], [17, 18, 1], [18, 19, 1], [19, 20, 1], [20, 21, 1], [21, 22, 1], [22, 23, 1], [23, 24, 1], [24, 25, 1], [25, 26, 1], [26, 27, 1], [27, 28, 1], [28, 29, 1], [29, 30, 1], [30, 31, 1], [25, 32, 1], [32, 33, 1], [33, 34, 1], [34, 35, 1], [35, 36, 1], [36, 37, 1], [24, 38, 1], [38, 39, 1], [39, 40, 1], [40, 41, 1], [41, 42, 1], [42, 43, 1], [43, 44, 1], [44, 45, 1], [5, 0, 1], [12, 7, 1], [22, 13, 1], [45, 23, 1], [21, 16, 1], [31, 26, 1], [37, 32, 1], [45, 40, 1]], "axe": [22, 23], "rotor": [23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]}};
 
 /* ==========================================================================
    FIGURES 2D du support « Voir en 3D »
@@ -786,6 +863,33 @@ function figModeles(){
   return svg(W,H,s,{alt:'fabriquer un modèle moléculaire'});
 }
 
+function figAxeNewman(k){
+  /* k=0 : ligand 3 (cycle arrière prioritaire) vers la DROITE ; k=1 : vers la GAUCHE */
+  const W=360,H=296,cx=180,cy=150,R=62; let s='';
+  s+=txt([180,20],'Vue le long de l\'axe',{fs:13,fw:800});
+  s+=txt([180,38],'bleu = cycle AVANT (rangs 1 et 2)',{fs:10.5,c:C.blue,fw:700});
+  s+=txt([180,54],'violet = cycle ARRIÈRE (rangs 3 et 4)',{fs:10.5,c:C.purple,fw:700});
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${C.ink2}" stroke-width="2"/>`;
+  const droite = (k===0);
+  const f3 = droite ? [cx+R,cy] : [cx-R,cy];
+  const f4 = droite ? [cx-R,cy] : [cx+R,cy];
+  s+=seg(f3,[f3[0]+(droite?32:-32),cy],{c:C.purple,w:2.8});
+  s+=seg(f4,[f4[0]+(droite?-32:32),cy],{c:C.purple,w:2.8});
+  s+=lab([f3[0]+(droite?48:-48),cy],'3',{fs:14,fw:800,c:C.purple,r:12});
+  s+=lab([f4[0]+(droite?-48:48),cy],'4',{fs:14,fw:800,c:C.purple,r:12});
+  s+=seg([cx,cy],[cx,cy-R],{c:C.blue,w:3}); s+=seg([cx,cy],[cx,cy+R],{c:C.blue,w:3});
+  s+=lab([cx,cy-R-15],'1',{fs:14,fw:800,c:C.blue,r:12});
+  s+=lab([cx,cy+R+15],'2',{fs:14,fw:800,c:C.blue,r:12});
+  /* le trajet 1 → 2 → 3, en faisant les trois quarts du tour */
+  const r2=R-17, dep=[cx,cy-r2], arr=droite?[cx+r2,cy]:[cx-r2,cy];
+  const sweep = droite ? 0 : 1;      /* 0 = antihoraire à l'écran (y vers le bas) */
+  s+=`<path d="M${E(dep[0])},${E(dep[1])} A${r2},${r2} 0 1 ${sweep} ${E(arr[0])},${E(arr[1])}"`
+   + ` fill="none" stroke="${C.green}" stroke-width="2.4" stroke-linecap="round" marker-end="url(#mkGreen)"/>`;
+  s+=txt([180,250],'1 → 2 → 3 : sens '+(droite?'ANTIhoraire':'HORAIRE'),{fs:12.5,fw:800,c:C.green});
+  s+=txt([180,274],droite?'configuration aS':'configuration aR',{fs:15,fw:800,c:C.green});
+  return svg(W,H,s,{alt:'projection de Newman le long de l\'axe'});
+}
+
 /* ==========================================================================
    GROUPE 1 — D'abord, respirer
    ========================================================================== */
@@ -796,11 +900,11 @@ const D4 = {ul:[-1.249,0.883,0], ur:[1.249,0.883,0], av:[0,-0.883,1.249], ar:[0,
 function tetra(cols){
   cols = cols || ['--blue','--green','--purple','--red'];
   return {nom:'un carbone et ses quatre groupes', atoms:[
-    {e:'C',p:[0,0,0],r:9,l:'C'},
-    {e:'X',p:D4.ul,c:cols[0],r:12,l:'1'},
-    {e:'X',p:D4.ur,c:cols[1],r:12,l:'2'},
-    {e:'X',p:D4.av,c:cols[2],r:12,l:'3'},
-    {e:'X',p:D4.ar,c:cols[3],r:12,l:'4'}
+    {e:'C',p:[0,0,0],rad:9,l:'C'},
+    {e:'X',p:D4.ul,c:cols[0],rad:12,l:'1'},
+    {e:'X',p:D4.ur,c:cols[1],rad:12,l:'2'},
+    {e:'X',p:D4.av,c:cols[2],rad:12,l:'3'},
+    {e:'X',p:D4.ar,c:cols[3],rad:12,l:'4'}
   ], bonds:[[0,1,1],[0,2,1],[0,3,1],[0,4,1]]};
 }
 function tetraMiroir(){
@@ -1189,57 +1293,399 @@ S({
     a:'Que les deux faces sont <b>diastéréotopes</b>, et donc que la molécule contenait <b>déjà</b> un élément stéréogène ailleurs (un centre de chiralité, ou un repère comme un substituant sur un cycle).<br><br>Conséquence pratique très importante : tu obtiendras une sélectivité <b>même avec un réducteur banal et achiral</b> comme NaBH₄. C\'est exactement la situation de la question 3e du TD.'}
 });
 
+/* ==========================================================================
+   GROUPE 6 — Exercice 1 du TD, en volume
+   ========================================================================== */
+const V6='4 — Exercice 1 du TD';
+
+/* bloc « molécule + deux flèches d'attaque + verdict » */
+function facesBloc(host,mol,opt){
+  opt=opt||{};
+  const d=(opt.decor||[]).concat([
+    {k:'disc',p:[0,0,0],n:[0,0,1],r:opt.r||2.4,c:'--ink2',op:.08},
+    {k:'arrow',a:[0,0,(opt.d||3.0)],b:[0,0,1.0],c:'--green'},
+    {k:'arrow',a:[0,0,-(opt.d||3.0)],b:[0,0,-1.0],c:'--red'},
+    {k:'tag',p:[0,0,(opt.d||3.0)+0.6],t:'AVANT',c:'--green',front:true},
+    {k:'tag',p:[0,0,-((opt.d||3.0)+0.6)],t:'ARRIÈRE',c:'--red',front:true}
+  ]);
+  return bloc3D(host,mol,{h:opt.h||300,decor:d,badges:opt.badges,boutons:(opt.boutons||[]).concat([
+    {t:'↻ Voir par la tranche', go:(vv)=>vv.turn([1,0,0],Math.PI/2,900)},
+    {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+      btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+  ])});
+}
+function verdict(host,t,c,d){
+  const b=el('div','statusline');
+  b.innerHTML='<b style="color:var('+c+')">'+t+'</b> — '+d;
+  host.appendChild(b); return b;
+}
+
 S({
-  grp:V3, title:'Le (Z)-hex-3-ène : tourne-le, tu vas comprendre',
-  consigne:'Appuie sur « tourner de 180° autour de l\'axe », puis regarde les deux disques colorés.',
+  grp:V6, title:'Molécule 1 — le (Z)-hex-3-ène',
+  consigne:'Appuie sur le bouton de rotation de 180°, et surveille les étiquettes AVANT / ARRIÈRE.',
   build(host){
-    const m=MOL3D.hexeneZ;
-    const v=bloc3D(host,m,{h:300, decor:[
+    bloc3D(host,MOL3D.hexeneZ,{h:300, decor:[
       {k:'disc',p:[0,0,0],n:[0,0,1],r:2.3,c:'--ink2',op:.08},
       {k:'arrow',a:[0,0,2.9],b:[0,0,1.0],c:'--green'},
       {k:'arrow',a:[0,0,-2.9],b:[0,0,-1.0],c:'--red'},
       {k:'line',a:[0,-3.0,0],b:[0,3.0,0],c:'--purple',dash:true,w:2.4},
       {k:'tag',p:[0,0,3.5],t:'AVANT',c:'--green',front:true},
-      {k:'tag',p:[0,0,-3.5],t:'ARRIÈRE',c:'--red',front:true},
+      {k:'tag',p:[0,0,-3.5],t:'ARRIÈRE',c:'--red',front:true}
     ], boutons:[
-      {t:'⟳ Tourner de 180° autour de l\'axe', go:(vv)=>vv.turn([0,1,0],Math.PI,1500), f:'1 1 100%'}
+      {t:'⟳ Tourner de 180° autour de l\'axe violet', go:(vv)=>vv.turn([0,1,0],Math.PI,1500), f:'1 1 100%'}
     ]});
-    host.appendChild(el('div','statusline','Le trait violet est un <b>axe de symétrie</b> de la molécule. Après la rotation de 180°, la molécule <b>a exactement la même allure qu\'avant</b> — mais le disque vert est passé derrière. Autrement dit : une simple rotation a échangé les deux faces.'));
+    verdict(host,'FACES HOMOTOPES','--green','une rotation réelle les échange. Il n\'y a qu\'un seul produit possible, et il est <i>méso</i>. Rien à nommer, aucune sélectivité à espérer.');
   },
-  une:'Sur cet alcène, une simple rotation échange le devant et le derrière. Les deux faces sont donc <b>homotopes</b> — et aucune sélectivité n\'est possible.',
-  probleme:'<p>C\'est la molécule la plus déroutante du TD, parce que la réponse ne se lit pas du tout sur le dessin. On cherche instinctivement un plan de symétrie ; il faut chercher un <b>axe</b>, et cet axe est couché dans le plan de la feuille — donc invisible.</p><p>Ici, tu peux simplement faire la rotation et constater.</p>',
+  une:'Une rotation de 180° autour de l\'axe violet remet la molécule exactement comme avant — mais elle a retourné la molécule. Les deux faces sont donc interchangeables.',
   etapes:[
-   {q:'Repère l\'axe violet.',
-    t:'Il est <b>perpendiculaire</b> à la double liaison et il est <b>dans le plan</b> de la molécule. Il passe pile au milieu de la double liaison.'},
-   {q:'Fais la rotation de 180°.',
-    t:'La moitié gauche vient à droite, la droite vient à gauche — et surtout, <b>ce qui était devant part derrière</b>. Comme quand tu retournes une crêpe en la faisant pivoter autour d\'un axe horizontal.'},
-   {q:'Regarde le résultat.',
-    t:'La molécule est <b>identique</b> à ce qu\'elle était. Normal : les deux moitiés sont les mêmes (un éthyle de chaque côté, en <i>cis</i>). Mais le disque vert est maintenant au fond. <b>Une rotation a donc échangé les deux faces.</b>'},
-   {q:'La conclusion.',
-    t:'Deux faces qu\'une rotation échange sont <b>homotopes</b>. Il n\'y a qu\'un seul produit possible, quelle que soit la face attaquée. L\'époxydation donne un composé <i>méso</i> — la même molécule des deux côtés.'},
-   {q:'Vérifie par les produits, si tu préfères.',
-    t:'Époxyde la face avant : tu obtiens le <i>cis</i>-3,4-époxyhexane. Époxyde la face arrière : le même composé. Deux produits identiques → faces homotopes. <b>Les deux méthodes donnent la même réponse</b>, ce qui est rassurant.'},
-   {q:'Et si l\'alcène était (E) ?',
-    t:'L\'axe existerait encore, mais il serait <b>perpendiculaire au plan</b> de la molécule — donc il ne retournerait rien du tout. Les faces seraient alors <b>énantiotopes</b>, et l\'époxydation donnerait deux énantiomères. Un seul détail de géométrie change toute la réponse.'}
+   {q:'Ce que tu dois voir.',t:'Avant la rotation, l\'étiquette AVANT est du côté qui te fait face. Après, elle est passée derrière, et pourtant la molécule a repris <b>exactement la même allure</b>.'},
+   {q:'Pourquoi ça marche ici.',t:'Les deux moitiés de l\'alcène sont identiques (un éthyle de chaque côté) et elles sont du <b>même côté</b> (géométrie Z). C\'est cette double condition qui crée l\'axe.'},
+   {q:'La conclusion.',t:'Deux faces échangées par une <b>rotation</b> (et pas seulement par un miroir) sont <b>homotopes</b>. Le produit d\'époxydation est le même des deux côtés.'},
+   {q:'Le piège à éviter.',t:'Si l\'alcène était (E), l\'axe serait perpendiculaire à la feuille et ne retournerait rien. Les faces seraient <b>énantiotopes</b>, et on obtiendrait deux énantiomères. Un seul détail de géométrie, deux réponses opposées.'}
   ],
-  retenir:[
-   'Axe perpendiculaire à C=C <b>et dans le plan</b> → faces homotopes.',
-   'Une rotation qui échange les faces = faces homotopes.',
-   'Un seul produit possible : composé <i>méso</i>, achiral.',
-   'Le même alcène en (E) aurait des faces énantiotopes.'
+  retenir:['Rotation qui échange les faces → <b>homotopes</b>.','Produit unique et <i>méso</i>.','Pas de prochiralité, rien à nommer.','Le (E) aurait des faces énantiotopes.']
+});
+
+S({
+  grp:V6, title:'Molécule 2 — celle qui a déjà un centre',
+  consigne:'Repère la boule rouge (l\'oxygène du méthoxy) : c\'est elle qui casse toute symétrie.',
+  build(host){
+    const m=MOL3D.ex1m2;
+    facesBloc(host,m,{r:2.6,d:3.2,h:310,badges:[{i:m.centre,t:'R',c:'--blue',o:[-22,-18]}]});
+    verdict(host,'FACES DIASTÉRÉOTOPES','--red','la molécule porte déjà un centre (R). Aucune opération de symétrie ne peut échanger les deux faces. Face avant = (3<i>Re</i>, 4<i>Re</i>).');
+  },
+  une:'Dès qu\'une molécule est <b>déjà chirale</b>, ses deux faces sont forcément diastéréotopes. C\'est une règle sans exception.',
+  probleme:'<p>Ici il n\'y a rien à chercher : la présence d\'un centre stéréogène suffit à conclure. Encore faut-il le repérer — et c\'est plus facile sur un modèle que sur un dessin.</p>',
+  etapes:[
+   {q:'Repère le centre.',t:'Le carbone marqué <b>R</b> porte quatre choses différentes : le méthoxy (boule rouge), un méthyle, la chaîne vinylique, et un hydrogène. Quatre groupes différents = un centre de chiralité.'},
+   {q:'Fais le test des deux produits.',t:'Époxyde par l\'avant : tu crées deux nouveaux centres. Époxyde par l\'arrière : tu crées les deux centres opposés — <b>mais le centre R, lui, n\'a pas bougé</b>. Les deux produits ne sont donc pas des images miroir.'},
+   {q:'Donc : diastéréoisomères.',t:'Ni identiques, ni énantiomères : les deux produits sont <b>diastéréoisomères</b>, et les deux faces sont diastéréotopes.'},
+   {q:'La conséquence pratique, énorme.',t:'Deux chemins diastéréoisomères ont des énergies <b>différentes par nature</b>. Tu obtiendras une sélectivité <b>même avec un peracide banal et achiral</b>. C\'est le principe de tous les auxiliaires chiraux : on colle un centre sur le substrat pour obtenir ça gratuitement.'},
+   {q:'Nommer quand même les faces.',t:'Sur C3 (celui côté méthoxy) : le carbone porteur de l\'oxygène (O,C,H) &gt; C4 (C,C,H) &gt; H. Sur C4 (côté phényle) : phényle (C,C,C) &gt; C3 (C,C,H) &gt; H. Dans l\'orientation du dessin de l\'énoncé, les deux se lisent dans le sens horaire : face avant = <b>(3<i>Re</i>, 4<i>Re</i>)</b>.'}
   ],
-  quiz:{q:'Pourquoi cherche-t-on un <b>axe</b> et pas un <b>plan</b> pour conclure « homotopes »&nbsp;?',
-    a:'Parce qu\'un <b>plan</b> de symétrie est un miroir : il échange bien les deux faces, mais il transforme la molécule en son image miroir. Or on veut savoir si on retombe sur <b>la même</b> molécule, pas sur son reflet.<br><br>Un <b>axe</b> de rotation, lui, est une opération « physique » : tu peux vraiment attraper l\'objet et le tourner. Si une rotation réelle suffit à échanger les faces, alors elles sont interchangeables pour de bon → <b>homotopes</b>.<br><br>Si seul un miroir les échange (rotation impossible) → <b>énantiotopes</b>. Si même un miroir n\'y arrive pas → <b>diastéréotopes</b>. Les trois cas, dans l\'ordre.'}
+  retenir:['Substrat déjà chiral → faces <b>toujours</b> diastéréotopes.','Sélectivité possible sans réactif chiral.','Face avant = (3<i>Re</i>, 4<i>Re</i>).','C\'est le principe même des auxiliaires.']
+});
+
+S({
+  grp:V6, title:'Molécule 3 — l\'éther d\'énol silylé',
+  consigne:'Tourne-le pour vérifier qu\'il n\'y a aucun carbone à quatre groupes différents.',
+  build(host){
+    const m=MOL3D.ex1m3;
+    facesBloc(host,m,{r:2.8,d:3.4,h:310,badges:[
+      {i:m.alcene[0],t:'Re',c:'--green',o:[-24,-16]},{i:m.alcene[1],t:'Si',c:'--green',o:[24,-16]}]});
+    verdict(host,'FACES ÉNANTIOTOPES','--blue','molécule achirale, alcène dissymétrique : seul un miroir échange les deux faces. L\'alcène est <b>prochiral</b>. Face avant = (1<i>Re</i>, 2<i>Si</i>).');
+    host.appendChild(el('div','statusline','Ne confonds pas les deux « Si » : la pastille <b style="color:var(--green)">verte</b> est le nom d\'une <b>face</b> (<i>sinister</i>), la boule <b style="color:var(--purple)">violette</b> est l\'atome de <b>silicium</b> du groupe triméthylsilyle. Rien à voir.'));
+  },
+  une:'Cette molécule est plate autour de la double liaison et parfaitement achirale : ses deux faces sont <b>énantiotopes</b>, donc exploitables par un catalyseur chiral.',
+  probleme:'<p>On se demande souvent pourquoi les chimistes prennent la peine de transformer une cétone en éther d\'énol silylé. La réponse est exactement ici.</p>',
+  etapes:[
+   {q:'D\'où vient cette molécule.',t:'De la <b>2-méthylcyclohexanone</b>, qui possède un centre stéréogène en C2. En la transformant en éther d\'énol, on rend ce carbone sp² : <b>le centre disparaît</b>, la molécule devient achirale.'},
+   {q:'Pourquoi c\'est malin.',t:'Une molécule achirale à faces énantiotopes peut être attaquée sélectivement par un <b>catalyseur chiral</b>. On a donc effacé un centre pour pouvoir le recréer où l\'on veut, et dans la configuration qu\'on veut. C\'est la base de l\'aldolisation de Mukaiyama asymétrique.'},
+   {q:'Fais le test.',t:'Attaque la face avant avec un aldéhyde : tu crées un centre quaternaire en C2. Attaque l\'arrière : tu obtiens l\'énantiomère. Deux énantiomères → faces <b>énantiotopes</b>.'},
+   {q:'Nommer la face — C1 (porteur de OSiMe₃).',t:'Classement : <b>O</b> du silyloxy &gt; <b>C2</b> (qui est (C,C,C)) &gt; <b>C6</b> du cycle (C,H,H). Dans l\'orientation de l\'énoncé, c\'est le sens horaire : face <b>Re</b>.'},
+   {q:'Nommer la face — C2 (porteur de CH₃).',t:'Classement : <b>C1</b> (O,C,C) &gt; <b>C3</b> du cycle (C,H,H) &gt; <b>CH₃</b> (H,H,H). Sens antihoraire : face <b>Si</b>. Les deux lettres diffèrent, c\'est normal : deux classements indépendants.'}
+  ],
+  retenir:['Molécule achirale + alcène dissymétrique → <b>énantiotopes</b>.','Alcène <b>prochiral</b> : les faces se nomment.','Face avant = (1<i>Re</i>, 2<i>Si</i>).','Sans catalyseur chiral : racémique exact.'],
+  quiz:{q:'La 2-méthylcyclohexanone de départ a-t-elle, elle aussi, des faces énantiotopes&nbsp;?',
+    a:'<b>Non — diastéréotopes.</b> Elle possède un centre stéréogène en C2, donc elle est déjà chirale, donc ses faces ne peuvent pas être énantiotopes.<br><br>C\'est précisément pour ça qu\'on la silyle : <b>effacer le centre</b> transforme un problème diastéréosélectif (dont le résultat dépendrait du centre existant) en problème énantiosélectif, qu\'un catalyseur chiral peut contrôler entièrement.'}
+});
+
+S({
+  grp:V6, title:'Molécule 4 — la cétone aminée',
+  consigne:'Les deux flèches montrent les deux hydrures possibles. Regarde-les par la tranche.',
+  build(host){
+    const m=MOL3D.aminocetone;
+    facesBloc(host,m,{r:2.2,d:2.8,h:300,badges:[{i:m.sp2,t:'Re',c:'--green',o:[-22,20]}]});
+    verdict(host,'FACES ÉNANTIOTOPES','--blue','molécule achirale, carbonyle dissymétrique. Prochirale : face avant = <b>Re</b>. NaBH₄ seul donnerait exactement 50:50.');
+    const f=el('div','figbox'); f.innerHTML=figDeuxProduits(); host.appendChild(f);
+  },
+  une:'Un carbonyle porté par une molécule achirale a presque toujours des faces énantiotopes : c\'est le substrat type de la réduction asymétrique.',
+  etapes:[
+   {q:'Vérifie qu\'elle est achirale.',t:'Tourne le modèle : aucun carbone ne porte quatre groupes différents. La chaîne CH₃–CO–CH₂–CH₂–NH₂ n\'a aucun centre.'},
+   {q:'Nomme la face.',t:'Sur le carbone du carbonyle : <b>O</b> &gt; <b>CH₂CH₂NH₂</b> (premier atome C avec (C,H,H)) &gt; <b>CH₃</b> (avec (H,H,H)). Attention : on tranche dès la première sphère, inutile d\'aller chercher l\'azote, il est trop loin.'},
+   {q:'Dans l\'orientation de l\'énoncé.',t:'O en haut, la chaîne aminée en bas à droite, le méthyle en bas à gauche : sens horaire → la face qui te fait face est la face <b>Re</b>.'},
+   {q:'Le piège à ne pas rater.',t:'Attaquer la face <i>Re</i> ne donne <b>pas</b> le produit (R). Quand l\'hydrure arrive, les priorités changent : l\'oxygène reste premier, mais le H devient dernier et la chaîne aminée passe deuxième. L\'attaque sur la face <i>Re</i> donne ici l\'alcool <b>(S)</b>.'}
+  ],
+  retenir:['Molécule achirale + carbonyle dissymétrique → <b>énantiotopes</b>.','Prochirale : face avant = <b>Re</b>.','Face <i>Re</i> ≠ produit (R).','Sans catalyseur chiral : racémique exact.']
 });
 
 /* ==========================================================================
-   GROUPE 4 — Le cyclohexane et l'axe des biaryles
+   GROUPE 7 — Exercice 2 du TD, en volume
    ========================================================================== */
-const V4='4 — Les deux cas durs du TD';
+const V7='5 — Exercice 2 du TD';
+
+/* bloc biaryle : vue « comme le dessin », vue dans l'axe, et curseur de torsion */
+function biaryleBloc(host,mol,opt){
+  opt=opt||{};
+  const R0=M3.mul(M3.rot([0,1,0],0.22),M3.rot([1,0,0],Math.PI/2));
+  const v=bloc3D(host,mol,{h:opt.h||320, R0:R0, decor:[
+    {k:'line',a:[0,0,-(opt.L||4.6)],b:[0,0,(opt.L||4.6)],c:'--red',dash:true,w:2.2}
+  ], boutons:[
+    {t:'👁 Regarder DANS l\'axe', go:(vv)=>vv.goto(M3.id(),1400)},
+    {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+      btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+  ]});
+  /* curseur : on fait tourner un cycle par rapport à l'autre */
+  const lab=el('div','statusline'); lab.style.marginBottom='6px';
+  const sl=document.createElement('input');
+  sl.type='range'; sl.min='-90'; sl.max='90'; sl.value='0'; sl.step='1';
+  sl.style.width='100%'; sl.setAttribute('aria-label','faire tourner un cycle par rapport à l\'autre');
+  const maj=()=>{
+    const a=+sl.value; v.torsion(a);
+    const c=v.contact();
+    if(!c){ lab.innerHTML='<b>Torsion '+(a>0?'+':'')+a+'°.</b>'; return; }
+    const serre = c.d<3.0;
+    lab.innerHTML='<b>On force la rotation de '+(a>0?'+':'')+a+'°.</b> '
+      + 'Contact le plus serré : <b style="color:var('+(serre?'--red':'--green')+')">'
+      + c.d.toFixed(2)+' Å</b> entre un <b>'+c.a+'</b> et un <b>'+c.b+'</b>. '
+      + (serre ? (c.prof===0
+          ? 'Ces deux atomes sont <b>dans des cycles</b> : rien ne peut s\'écarter, la gêne est bien réelle.'
+          : (c.prof===1
+             ? 'Ils sont <b>directement accrochés</b> aux cycles : ils ne peuvent guère bouger, la gêne reste réelle.'
+             : 'Attention : au moins un appartient à un <b>groupe latéral souple</b> (à '+c.prof+' liaisons du cycle), qui peut pivoter et s\'écarter. Le curseur <b>exagère</b> donc la gêne ici.'))
+        : 'En dessous de ~3,0 Å, deux atomes non liés se repoussent violemment. Ici, on est au-dessus : ça passe.');
+  };
+  sl.oninput=maj;
+  const w=el('div'); w.style.margin='0 0 8px';
+  const t=el('div','cv3dhint','↔ fais glisser pour <b>forcer</b> la rotation autour de l\'axe');
+  t.style.marginBottom='4px';
+  w.appendChild(t); w.appendChild(sl);
+  host.appendChild(w); host.appendChild(lab); maj();
+  return v;
+}
 
 S({
-  grp:V4, title:'Exercice 3e — la chaise, et pourquoi les faces diffèrent',
-  consigne:'Tourne le cycle pour le voir par la tranche : tu verras la forme de chaise, et le tBu bien d\'un seul côté.',
+  grp:V7, title:'D\'abord : pourquoi les cycles ne sont pas à plat',
+  consigne:'Prends le curseur et essaie d\'aplatir la molécule (torsion 0 = position de repos). Regarde la distance.',
+  build(host){
+    biaryleBloc(host,MOL3D.binol,{h:320});
+    host.appendChild(el('div','statusline','C\'est le <b>BINOL</b>. À sa position de repos (0°), les deux naphtalènes sont presque perpendiculaires et tout va bien. Dès qu\'on force, des atomes des deux moitiés passent sous les 3 Å. <b>Le curseur fait tourner la molécule sans rien laisser se réarranger</b> : c\'est justement ce qui se passe au sommet de la barrière.'));
+  },
+  une:'Deux cycles reliés par une liaison simple devraient pouvoir tourner librement. Ici ils ne peuvent pas : les substituants en <b>ortho</b> se rentrent dedans.',
+  probleme:'<p>Sur le dessin de l\'énoncé, les deux cycles sont côte à côte, dans le plan de la feuille. Ça suggère qu\'ils sont coplanaires — et une molécule coplanaire de ce type aurait un plan de symétrie, donc serait achirale.</p><p>Le dessin ment, et c\'est tout l\'exercice.</p>',
+  etapes:[
+   {q:'Ce que mesure le curseur.',t:'Il fait tourner un cycle par rapport à l\'autre autour de la liaison centrale, et il affiche la <b>plus courte distance</b> entre un atome d\'une moitié et un atome de l\'autre.'},
+   {q:'Le seuil à connaître.',t:'Deux atomes non liés ne peuvent pas s\'approcher à moins d\'environ <b>3 Å</b> sans une répulsion énorme. En dessous, l\'énergie grimpe très vite : c\'est ça, l\'encombrement stérique.'},
+   {q:'Une limite honnête du curseur.',t:'Il fait tourner la molécule <b>en bloc</b>, sans laisser les groupes latéraux se réarranger. Pour un CO₂H, qui peut pivoter, il <b>exagère</b> donc la gêne. C\'est pour ça qu\'on ne peut pas lire une barrière sur ce curseur — seulement comprendre d\'où elle vient.'},
+   {q:'Ce que tu constates — et ce que ça prouve vraiment.',t:'À 0°, tout va bien. Dès qu\'on s\'écarte, la distance tombe sous les 3 Å. C\'est vrai pour <b>tous</b> les biaryles, y compris ceux qui tournent vite : passer d\'une forme tordue à l\'autre oblige toujours à frôler la position coplanaire. Il y a donc <b>toujours une barrière</b>. La vraie question n\'est pas « y a-t-il une gêne ? » mais « <b>quelle est sa hauteur ?</b> ».'},
+   {q:'Ce qui décide de la hauteur, et c\'est le point clé.',t:'<b>La rigidité de ce qui gêne.</b> Un groupe latéral souple (un CO₂H, par exemple) peut pivoter sur lui-même et se glisser de côté : la barrière reste basse. Un <b>cycle soudé</b>, lui, ne peut rien faire : il est dans le plan du naphtalène, point. C\'est pour ça que le message sous le curseur te dit à chaque fois <b>quels atomes</b> se touchent, et s\'ils appartiennent à un cycle ou à un groupe souple.'},
+   {q:'Pourquoi ça crée de la chiralité.',t:'Deux barres croisées forment un début d\'<b>hélice</b>, et une hélice a un sens : droite ou gauche. Si la molécule ne peut pas passer d\'un sens à l\'autre, les deux versions sont deux composés séparables. On les appelle des <b>atropisomères</b>.'},
+   {q:'Le mot juste.',t:'La chiralité n\'est pas portée par un atome mais par la <b>liaison centrale</b> : c\'est un <b>axe de chiralité</b>. Il n\'y a aucun carbone asymétrique dans cette molécule.'}
+  ],
+  retenir:['Les cycles sont <b>croisés</b>, jamais coplanaires.','Deux atomes non liés : pas moins de ~3 Å.','Il y a <b>toujours</b> une barrière — la question est sa hauteur.','Ce qui la fait monter : des gêneurs <b>rigides</b> (cycles soudés), pas seulement gros.','Chiralité <b>axiale</b>, pas de centre.']
+});
+
+[['binap','BINAP','--green'],['biaryle','le difluoro-diacide','--green'],
+ ['diphenique','l\'acide diphénique','--red'],['binol','BINOL','--green']].forEach(([cle,nom,col],k)=>{
+  const t=[
+   {une:'Le BINAP : deux naphtalènes, deux gros PPh₂. Rotation totalement impossible — c\'est le ligand chiral le plus utilisé de la chimie organométallique.',
+    et:[{q:'Les quatre positions ortho.',t:'Sur chaque naphtalène : d\'un côté le <b>PPh₂</b> (énorme), de l\'autre le <b>cycle soudé</b> du naphtalène (rigide). Quatre positions occupées, dont deux par des blocs qui ne peuvent pas s\'écarter.'},
+        {q:'Teste avec le curseur.',t:'Force la rotation et lis le message : les atomes qui se touchent sont des atomes de <b>cycle</b>, et parfois les deux <b>phosphores</b> eux-mêmes. Rien de tout cela ne peut s\'écarter. Le BINAP ne racémise pas, même chauffé.'},
+        {q:'Chaque cycle est-il dissymétrique ?',t:'Oui : PPh₂ d\'un côté, cycle soudé de l\'autre. Condition remplie.'},
+        {q:'La configuration ?',t:'a<i>R</i> ou a<i>S</i> — mais <b>pas lisible</b> sur le dessin plat de l\'énoncé. Sur le modèle 3D, oui : regarde dans l\'axe et applique la procédure.'},
+        {q:'À quoi il sert.',t:'Complexé au ruthénium ou au rhodium, il rend le métal chiral. C\'est lui qui fait l\'hydrogénation asymétrique industrielle (Noyori, prix Nobel 2001).'}],
+    ret:['4 positions ortho occupées, dont 2 blocs rigides.','Atropisomères parfaitement stables.','Priorité ortho : le côté <b>PPh₂</b> (P, Z = 15).','Configuration non lisible sur un dessin plat.']},
+   {une:'Quatre substituants en ortho : CO₂H et F sur chaque cycle. La réponse attendue est « axe de chiralité » — avec une réserve sur la taille du fluor.',
+    et:[{q:'Les quatre positions ortho.',t:'Chaque cycle porte un <b>CO₂H</b> et un <b>F</b>. Les deux sont différents : chaque cycle est bien dissymétrique.'},
+        {q:'Teste avec le curseur.',t:'Regarde qui se touche : souvent un oxygène de carboxyle, c\'est-à-dire un groupe <b>souple</b>. Le fluor, lui, est minuscule et ne bloque presque rien. C\'est exactement la raison de ma réserve ci-dessous.'},
+        {q:'Les priorités, si on doit attribuer.',t:'Sur chaque cycle, on compare les deux ortho : <b>F</b> (Z = 9) bat le carbone du <b>CO₂H</b> (Z = 6). Le fluor est donc prioritaire de chaque côté.'},
+        {q:'La réserve, que je te signale honnêtement.',t:'Le fluor est le substituant le moins encombrant après l\'hydrogène. Les règles empiriques classiques rangent ce composé parmi les cas <b>limites</b>, voire non résolubles. Je n\'ai trouvé aucune barrière mesurée dans tes ouvrages : c\'est noté dans <code>A_VERIFIER.md</code>, à demander en TD.'}],
+    ret:['4 substituants ortho : critère rempli sur le papier.','Priorité ortho : <b>F &gt; CO₂H</b>.','Réponse attendue : axe de chiralité.','Réserve : le fluor est très petit — cas limite possible.']},
+   {une:'Celle-ci est le <b>contre-exemple</b> de l\'exercice : deux substituants ortho seulement. Prends le curseur et regarde — elle tourne presque librement.',
+    et:[{q:'Compte les positions ortho.',t:'Chaque cycle porte un <b>CO₂H</b>… et un simple <b>H</b> de l\'autre côté. Deux substituants encombrants au total, pas quatre.'},
+        {q:'Teste avec le curseur, et lis bien le message.',t:'La distance tombe sous les 3 Å, comme pour le BINOL — mais regarde <b>qui</b> se touche : ce sont les <b>oxygènes des carboxyles</b>. Or un CO₂H peut pivoter sur lui-même et se glisser de côté. Le curseur, qui tourne tout en bloc, <b>exagère</b> donc la gêne réelle.'},
+   {q:'La vraie différence avec le BINOL.',t:'Sur le BINOL, l\'autre position ortho de chaque cycle est occupée par un <b>cycle soudé</b>, qui ne peut absolument pas s\'écarter. Ici, l\'autre position ortho ne porte qu\'un <b>hydrogène</b> — le plus petit substituant qui existe. Il ne bloque rien du tout.'},
+        {q:'Conséquence.',t:'Les deux formes tordues s\'interconvertissent en permanence, bien plus vite qu\'on ne peut les séparer. On ne peut donc pas isoler d\'énantiomère : le <b>composé</b> est achiral et optiquement inactif.'},
+        {q:'La réponse exacte à écrire.',t:'« Chaque molécule est chirale à un instant donné, mais les deux formes s\'échangent trop vite : il n\'y a pas d\'élément de chiralité <b>configurationnel</b>. » Répondre « elle est plane donc achirale » serait faux — elle n\'est pas plane.'},
+        {q:'Le critère chiffré.',t:'Robinson donne le seuil : barrière &gt; ~<b>90 kJ·mol⁻¹</b> pour pouvoir séparer à température ambiante. Il précise qu\'il faut ajouter <b>un brome en ortho sur chaque cycle</b> à ce composé pour y arriver — et encore, seulement vers 0 °C.'}],
+    ret:['2 substituants ortho seulement, et 2 hydrogènes en face.','Les gêneurs sont des CO₂H <b>souples</b> : ils s\'écartent.','Chiralité <b>conformationnelle</b>, pas configurationnelle.','Composé optiquement inactif — c\'est le « certaines » de l\'énoncé.']},
+   {une:'Le BINOL : même squelette que le BINAP, mêmes conclusions. Deux OH, deux cycles soudés, rotation impossible.',
+    et:[{q:'Les quatre positions ortho.',t:'Sur chaque naphtalène : l\'<b>OH</b> d\'un côté, le <b>cycle soudé</b> de l\'autre.'},
+        {q:'Les priorités.',t:'Le carbone porteur de l\'OH est <b>(O,C,C)</b> ; celui de la soudure est <b>(C,C,C)</b>. L\'oxygène l\'emporte dès la première comparaison : le côté OH est prioritaire.'},
+        {q:'Teste avec le curseur.',t:'À 0° le contact le plus serré est entre deux atomes de <b>cycle</b> : la gêne est structurelle, elle ne peut pas se relâcher. Le BINOL s\'achète énantiopur et ne racémise pas.'},
+        {q:'À quoi il sert.',t:'C\'est la source de chiralité la plus courante en catalyse : phosphates chiraux, complexes de titane, d\'aluminium… On le fabrique par couplage oxydant du 2-naphtol, puis on dédouble.'}],
+    ret:['2 OH + 2 cycles soudés : rotation impossible.','Priorité ortho : le carbone porteur de l\'<b>OH</b>.','Atropisomères stables, vendus énantiopurs.','Configuration non lisible sur le dessin plat.']}
+  ][k];
+  S({
+    grp:V7, title:'Molécule '+(k+1)+' — '+nom,
+    consigne:'Regarde dans l\'axe, puis prends le curseur et essaie de faire tourner.',
+    build(host){
+      biaryleBloc(host,MOL3D[cle],{h:cle==='binap'?330:320, L:cle==='binap'?5.6:4.6});
+      verdict(host, col==='--green'?'AXE DE CHIRALITÉ':'AUCUN ÉLÉMENT DE CHIRALITÉ', col,
+        col==='--green'?'la rotation est bloquée : les deux atropisomères sont séparables.'
+                       :'la rotation est trop rapide : les deux formes s\'échangent en permanence.');
+    },
+    une:t.une, etapes:t.et, retenir:t.ret
+  });
+});
+
+S({
+  grp:V7, title:'Nommer l\'axe : la procédure, dans l\'axe',
+  consigne:'Change de panneau pour voir les deux configurations possibles.',
+  build(host){
+    const f=el('div','figbox'), row=el('div','btnrow'); let k=0;
+    const draw=()=>{ f.innerHTML=figAxeNewman(k); [...row.children].forEach((b,i)=>b.classList.toggle('on',i===k)); };
+    ['Un sens','L\'autre sens'].forEach((t,i)=>{ const b=el('button','btn'); b.textContent=t;
+      b.style.flex='1 1 45%'; b.onclick=()=>{k=i;draw();}; row.appendChild(b); });
+    host.appendChild(row); host.appendChild(f); draw();
+    host.appendChild(el('div','statusline','Sur le modèle 3D du BINOL, appuie sur « regarder dans l\'axe » : tu verras exactement ces deux barres croisées. Le cycle le plus <b>net</b> est devant, celui qui est <b>estompé</b> est derrière.'));
+  },
+  une:'On regarde le long de l\'axe : les deux ligands du cycle <b>avant</b> prennent les rangs 1 et 2, ceux du cycle <b>arrière</b> les rangs 3 et 4. Puis on lit 1 → 2 → 3, comme un volant ordinaire.',
+  etapes:[
+   {q:'Étape 1 — se placer dans l\'axe.',t:'Sur le modèle, bouton « regarder dans l\'axe ». Sur le papier, il faut l\'imaginer — d\'où l\'intérêt de l\'avoir vu une fois pour de vrai.'},
+   {q:'Étape 2 — classer le cycle AVANT.',t:'Ses deux substituants ortho, comparés par CIP. Le gagnant prend le rang <b>1</b>, l\'autre le rang <b>2</b>.'},
+   {q:'Étape 3 — classer le cycle ARRIÈRE.',t:'Pareil : rangs <b>3</b> et <b>4</b>. Règle propre aux axes : <b>un ligand proche bat toujours un ligand lointain</b>, quels que soient les numéros atomiques.'},
+   {q:'Étape 4 — lire.',t:'1 → 2 → 3 dans le sens horaire = <b>a<i>R</i></b>, antihoraire = <b>a<i>S</i></b>. Comme 1 et 2 sont à 180° l\'un de l\'autre en projection, c\'est la position de <b>3</b> qui décide.'},
+   {q:'Ça marche depuis les deux bouts.',t:'On peut regarder par l\'une ou l\'autre extrémité de l\'axe : le résultat est le même. Je l\'ai vérifié numériquement dans les deux sens — c\'est une propriété de la règle, pas un hasard.'},
+   {q:'Et pourquoi l\'énoncé ne permet pas de répondre.',t:'Parce que cette procédure demande de savoir <b>quel cycle est devant</b> et de quel côté il est tourné. Un dessin plat ne le dit pas. La bonne réponse identifie l\'axe, donne les priorités, explique la méthode — et signale que le dessin est insuffisant.'}
+  ],
+  retenir:['On regarde <b>le long de l\'axe</b>.','Proche avant lointain : 1–2 devant, 3–4 derrière.','1 → 2 → 3 horaire = a<i>R</i>, antihoraire = a<i>S</i>.','Dessin plat = configuration non déterminable.'],
+  plus:{titre:'et les notations M / P ?',
+    body:'<p>Robinson définit M et P par le <b>signe de l\'angle de torsion</b> entre le ligand prioritaire de l\'avant et celui de l\'arrière : négatif → M, positif → P.</p><p>Je préfère ne pas t\'écrire de correspondance toute faite entre M/P et a<i>R</i>/a<i>S</i> : mes propres calculs donnent l\'inverse de la règle qu\'on lit le plus souvent, et je n\'ai pas de source dans tes ouvrages pour trancher. C\'est noté dans <code>A_VERIFIER.md</code>.</p><p>En pratique, déroule la procédure CIP ci-dessus : elle donne directement a<i>R</i>/a<i>S</i>, qui est ce qu\'on te demande.</p>',
+    src:'<b>Robinson, <i>Organic Stereochemistry</i></b>, §4.6, p. 52.'}
+});
+
+/* ==========================================================================
+   GROUPE 8 — Exercice 3 du TD, en volume
+   ========================================================================== */
+const V8='6 — Exercice 3 du TD';
+
+/* bloc « substrat → produit » : deux modèles empilés */
+function rxBloc(host,a,b,titres,opt){
+  opt=opt||{};
+  const t1=el('div','cv3dhint'); t1.innerHTML='<b>'+titres[0]+'</b>'; t1.style.marginBottom='2px';
+  host.appendChild(t1);
+  const v1=bloc3D(host,a,Object.assign({h:opt.h||260},opt.o1||{}));
+  const fl=el('div','statusline'); fl.style.textAlign='center';
+  fl.innerHTML=titres[1]; host.appendChild(fl);
+  const t2=el('div','cv3dhint'); t2.innerHTML='<b>'+titres[2]+'</b>'; t2.style.marginBottom='2px';
+  host.appendChild(t2);
+  const v2=bloc3D(host,b,Object.assign({h:opt.h||260},opt.o2||{}));
+  return [v1,v2];
+}
+
+S({
+  grp:V8, title:'a) Sharpless — le substrat n\'a aucune chiralité',
+  consigne:'Tourne l\'alcool de départ : cherche un carbone à quatre groupes différents. Il n\'y en a pas.',
+  build(host){
+    rxBloc(host,MOL3D.crotyl,MOL3D.epoxA,
+      ['l\'alcool crotylique (E) — ACHIRAL',
+       '⬇ t-BuOOH, Ti(O<sup>i</sup>Pr)₄ cat., <b>(R,R)-DET</b>',
+       'l\'époxyde (2S,3S)'],
+      {h:272, o1:{decor:[
+        {k:'disc',p:[0,0,0],n:[0,0,1],r:2.2,c:'--ink2',op:.08},
+        {k:'arrow',a:[0,0,2.8],b:[0,0,0.9],c:'--green'},
+        {k:'arrow',a:[0,0,-2.8],b:[0,0,-0.9],c:'--red'},
+        {k:'tag',p:[0,0,3.3],t:'AVANT',c:'--green',front:true},
+        {k:'tag',p:[0,0,-3.3],t:'ARRIÈRE',c:'--red',front:true}
+      ]}});
+    const b=el('div','statusline');
+    b.innerHTML='<b style="color:var(--blue)">ÉNANTIOSÉLECTIVE</b> — le substrat est achiral, ses deux faces sont <b>énantiotopes</b>, donc de même énergie. C\'est le <b>tartrate</b>, extérieur au substrat, qui choisit la face.';
+    host.appendChild(b);
+  },
+  une:'Substrat achiral + catalyseur chiral = <b>énantiosélective</b>. C\'est la définition même.',
+  etapes:[
+   {q:'Vérifie que le substrat est achiral.',t:'Tourne le premier modèle. CH₃–CH=CH–CH₂–OH : aucun carbone ne porte quatre groupes différents. La molécule est plate autour de la double liaison et superposable à son miroir.'},
+   {q:'Donc les deux faces sont énantiotopes.',t:'Attaquer l\'avant donne un époxyde, attaquer l\'arrière donne son <b>image miroir</b>. Deux chemins énantiomères, donc exactement la <b>même énergie</b>. Avec un peracide banal : 50:50, rien à faire.'},
+   {q:'Ce qu\'apporte le titane et le tartrate.',t:'Le titane s\'entoure de deux tartrates chiraux et de l\'hydroperoxyde. Le complexe obtenu est <b>chiral</b> : il ne présente pas la même chose aux deux faces de l\'alcène. Les deux états de transition deviennent diastéréoisomères, donc d\'énergies différentes.'},
+   {q:'Le rôle de l\'alcool, souvent oublié.',t:'L\'alcool allylique se <b>lie au titane</b>. C\'est ce qui amarre le substrat au complexe chiral et fixe sa position. Sans l\'OH, la réaction ne marche pas : un simple alcène n\'est pas touché.'},
+   {q:'Le sens du résultat.',t:'Le tartrate utilisé est le <b>(R,R)</b>, c\'est-à-dire le tartrate naturel, le (+)-DET. Sur un alcool allylique (E), il donne l\'époxyde <b>(2S,3S)</b> — c\'est ce que dessine l\'énoncé, et c\'est cohérent avec l\'exemple de référence, le géraniol.'},
+   {q:'Le test qui prouve que c\'est énantiosélectif.',t:'Remplace le (R,R)-DET par le (S,S)-DET : tu obtiens l\'énantiomère exact du produit. C\'est le <b>réactif</b> qui commande, pas le substrat.'}
+  ],
+  retenir:['Substrat achiral → faces énantiotopes → même énergie.','Le tartrate fait le tri : <b>contrôle par le réactif</b>.','(R,R)-DET sur un alcool allylique (E) → époxyde (2S,3S).','Changer l\'énantiomère du tartrate inverse le produit.']
+});
+
+S({
+  grp:V8, title:'b) VO(acac)₂ — cette fois c\'est le substrat qui décide',
+  consigne:'Tourne le substrat : le carbone marqué (S) porte bien quatre choses différentes.',
+  build(host){
+    const m=MOL3D.subB;
+    rxBloc(host,m,MOL3D.prodB,
+      ['le substrat (2S,3Z) — DÉJÀ CHIRAL',
+       '⬇ t-BuOOH, <b>VO(acac)₂</b> (achiral)',
+       'le produit (2R,3R,4S)'],
+      {h:272, o1:{badges:[{i:m.centre,t:'S',c:'--blue',o:[-22,-18]}], decor:[
+        {k:'disc',p:[0,0,0],n:[0,0,1],r:2.3,c:'--ink2',op:.08},
+        {k:'arrow',a:[0,0,2.9],b:[0,0,1.0],c:'--green'},
+        {k:'arrow',a:[0,0,-2.9],b:[0,0,-1.0],c:'--red'},
+        {k:'tag',p:[0,0,3.4],t:'AVANT',c:'--green',front:true},
+        {k:'tag',p:[0,0,-3.4],t:'ARRIÈRE',c:'--red',front:true}
+      ]}});
+    const b=el('div','statusline');
+    b.innerHTML='<b style="color:var(--red)">DIASTÉRÉOSÉLECTIVE</b> — VO(acac)₂ et t-BuOOH sont tous deux achiraux. Toute l\'information chirale vient du <b>substrat</b>.';
+    host.appendChild(b);
+  },
+  une:'Le catalyseur au vanadium est achiral : il ne peut rien choisir. C\'est le centre (S) déjà présent qui rend les deux faces inégales.',
+  probleme:'<p>Comment une réaction peut-elle être sélective si rien de chiral n\'est ajouté ? Parce que la chiralité était <b>déjà là</b>, dans le substrat.</p>',
+  etapes:[
+   {q:'Repère le centre existant.',t:'Le carbone marqué <b>S</b> porte : un méthyle, un CH₂OH, la chaîne vinylique, et un H. Quatre groupes différents.'},
+   {q:'Donc les faces sont diastéréotopes.',t:'Attaquer l\'avant ou l\'arrière donne deux produits qui <b>partagent le même centre (S) intact</b>. Ils ne sont donc pas images miroir : ce sont des diastéréoisomères. Deux chemins diastéréoisomères → énergies différentes, gratuitement.'},
+   {q:'Comment le vanadium s\'y prend.',t:'L\'hydroxyle se lie au vanadium, et l\'oxygène est livré <b>de l\'intérieur</b>, du côté que l\'alcool peut atteindre. Le méthyle du centre (S) gêne une des deux conformations possibles : c\'est ce déséquilibre qui fait la sélectivité.'},
+   {q:'Le détail le plus intéressant de tout le TD.',t:'Le centre de départ est <b>(S)</b> ; dans le produit, ce <b>même</b> carbone est marqué <b>(R)</b>. Et pourtant <b>aucune de ses liaisons n\'a été touchée</b>.'},
+   {q:'Pourquoi la lettre change.',t:'Dans le substrat, CH₂OH (O,H,H) battait le carbone voisin de la double liaison (C,C,H). Dans le produit, ce voisin est devenu un carbone d\'<b>époxyde</b>, donc (O,C,H) : il passe devant. Les rangs 1 et 2 s\'échangent, et la lettre bascule.'},
+   {q:'Ce qu\'il faut en retenir.',t:'Un descripteur R ou S décrit un <b>classement</b>, pas une position dans l\'espace. Une lettre qui change ne prouve jamais qu\'une liaison a bougé — il faut vérifier.'}
+  ],
+  retenir:['Substrat chiral + catalyseur achiral → <b>diastéréo</b>sélective.','L\'hydroxyle amarre le vanadium : la réaction est « dirigée ».','(S) devient (R) sans qu\'aucune liaison ne bouge.','Un descripteur décrit un classement, pas une position.']
+});
+
+S({
+  grp:V8, title:'c) L\'acylation — le piège de l\'exercice',
+  consigne:'Compare les deux modèles : cherche ce qui a changé <b>en stéréochimie</b>. Réponse : rien.',
+  build(host){
+    rxBloc(host,MOL3D.oxazNH,MOL3D.oxazAc,
+      ['l\'auxiliaire (S), avant',
+       '⬇ Cl–CO–CH₂CH₃ &nbsp;·&nbsp; rendement 100 %',
+       'l\'auxiliaire acylé — toujours (S)'],
+      {h:272,
+       o1:{badges:[{i:MOL3D.oxazNH.centre,t:'S',c:'--blue',o:[22,-18]}]},
+       o2:{badges:[{i:MOL3D.oxazAc.centre,t:'S',c:'--blue',o:[22,-18]}]}});
+    const b=el('div','statusline');
+    b.innerHTML='<b style="color:var(--grey)">NI L\'UNE NI L\'AUTRE</b> — aucun élément stéréogène n\'est créé. Le centre (S) existait avant et n\'a pas bougé. Il n\'y a rien à sélectionner.';
+    host.appendChild(b);
+  },
+  une:'On fabrique une liaison N–C(=O). Le seul centre de la molécule était déjà là. Une réaction qui ne crée rien de stéréogène n\'est <b>ni</b> diastéréosélective <b>ni</b> énantiosélective.',
+  etapes:[
+   {q:'Ce qui se passe chimiquement.',t:'L\'azote de l\'oxazolidinone attaque le chlorure de propanoyle. C\'est une substitution d\'acyle ordinaire, sans aucune stéréochimie.'},
+   {q:'Cherche un nouveau centre.',t:'Le carbone du nouveau carbonyle est <b>sp²</b>, donc plat : pas stéréogène. Le carbone α du propanoyle porte <b>deux hydrogènes</b> : pas stéréogène non plus. Le C4 du cycle est intact.'},
+   {q:'L\'indice du rendement.',t:'100 %. Une réaction vraiment stéréosélective donne rarement 100 % d\'un seul stéréoisomère — parce qu\'il faudrait que l\'autre chemin soit totalement fermé. Un rendement parfait suggère qu\'il n\'y avait pas de choix à faire.'},
+   {q:'Alors pourquoi faire cette étape ?',t:'C\'est l\'étape de <b>fixation de l\'auxiliaire chiral</b>. On vient de rendre chiral un substrat qui ne l\'était pas (l\'acide propanoïque). L\'étape suivante pourra donc bénéficier du contrôle par le substrat.'},
+   {q:'La stratégie complète, en trois temps.',t:'<b>Fixer</b> (non sélective) → <b>réagir</b> (diastéréosélective) → <b>couper</b> (non sélective, et il faut surtout éviter d\'épimériser le centre qu\'on vient de créer). Seule l\'étape du milieu est stéréosélective.'},
+   {q:'Pourquoi c\'est rentable.',t:'Parce qu\'un problème diastéréosélectif est <b>beaucoup</b> plus facile qu\'un problème énantiosélectif : les énergies diffèrent gratuitement, et on peut séparer les diastéréoisomères par chromatographie ordinaire. On paie deux étapes pour éviter d\'avoir à inventer un catalyseur chiral.'}
+  ],
+  retenir:['Aucun élément stéréogène créé → aucune sélectivité.','Le rendement de 100 % est un indice.','C\'est l\'étape « fixer » du cycle auxiliaire.','Fixer → réagir → couper : seule l\'étape du milieu est sélective.']
+});
+
+S({
+  grp:V8, title:'d) L\'alkylation d\'Evans — et le problème du dessin',
+  consigne:'Regarde bien le produit : deux méthyles partent du même carbone.',
+  build(host){
+    rxBloc(host,MOL3D.evansSub,MOL3D.evansProd,
+      ['l\'imide de propanoyle (R)',
+       '⬇ 1. LDA &nbsp;·&nbsp; 2. CH₃–I',
+       'le produit : un <b>ISO</b>butyryle'],
+      {h:272,
+       o1:{badges:[{i:MOL3D.evansSub.centre,t:'R',c:'--blue',o:[22,-18]}]},
+       o2:{badges:[{i:MOL3D.evansProd.centre,t:'R',c:'--blue',o:[22,-18]}]}});
+    const b=el('div','warnbox');
+    b.innerHTML='<b>Le carbone α du produit porte deux méthyles identiques</b> : il n\'est donc pas stéréogène. Tourne le second modèle jusqu\'à voir les deux branches — elles sont interchangeables. Le trait gras du dessin de l\'énoncé n\'a pas de signification.';
+    host.appendChild(b);
+  },
+  une:'Le mécanisme d\'Evans est le cas d\'école de la diastéréosélectivité. Mais tel qu\'il est dessiné, ce produit-là n\'a aucun centre à sélectionner.',
+  probleme:'<p>Un propanoyle, c\'est N–CO–CH₂–CH₃. Si on le méthyle en α, on obtient N–CO–CH(CH₃)₂ : un <b>isobutyryle</b>. Ce carbone porte alors deux méthyles identiques, plus un H et le carbonyle. Trois groupes différents seulement : pas de chiralité possible.</p>',
+  etapes:[
+   {q:'Le mécanisme, d\'abord — il est juste.',t:'LDA arrache le proton α et forme un énolate de géométrie <b>Z(O)</b>, imposée par la tension A(1,3). Le lithium chélate les deux oxygènes : le cycle et l\'énolate sont alors <b>bloqués dans le même plan</b>, comme un seul objet rigide.'},
+   {q:'Comment la face est choisie.',t:'L\'isopropyle du C4 pointe d\'un côté de ce plan et bouche cette face. L\'électrophile n\'a plus qu\'une entrée. Comme le substrat est déjà chiral (grâce à l\'auxiliaire), les deux états de transition sont diastéréoisomères : la réaction <b>est</b> diastéréosélective, et très efficacement.'},
+   {q:'Maintenant, le problème.',t:'Avec CH₃–I comme électrophile, le carbone α se retrouve avec <b>deux méthyles</b>. Il n\'est plus stéréogène. La réaction a beau être parfaitement sélective dans son mécanisme, il n\'y a rien à mesurer.'},
+   {q:'Deux lectures possibles.',t:'Soit c\'est un <b>second piège</b>, juste après celui de la question c). Soit c\'est une <b>coquille</b>. Je ne tranche pas — c\'est exactement le genre de détail à demander en TD, et le signaler dans ta copie ne peut que rapporter.'},
+   {q:'Avec quoi ça redeviendrait le cas d\'école.',t:'N\'importe quel électrophile autre qu\'un méthyle : <b>Br–CH₂Ph</b> (l\'exemple historique d\'Evans, avec des rapports qui dépassent 99:1), I–CH₂CH₃, un bromure allylique… Ou bien : garder CH₃I mais partir d\'un <b>butanoyle</b>.'},
+   {q:'Ce qu\'il faut écrire dans la copie.',t:'« Le mécanisme est diastéréosélectif (contrôle par l\'auxiliaire d\'Evans). Toutefois, tel qu\'il est dessiné, le produit n\'a pas de carbone stéréogène : le carbone α porte deux méthyles. »'}
+  ],
+  retenir:['Énolate Z(O) + chélate au lithium + face bloquée par l\'iPr.','Le principe : <b>diastéréosélective</b>, contrôle par le substrat.','<b>Mais</b> propanoyle + CH₃I = isobutyryle : pas de centre.','À signaler dans la copie plutôt qu\'à ignorer.']
+});
+
+S({
+  grp:V8, title:'e) NaBH₄ — un substrat achiral, et pourtant sélectif',
+  consigne:'Tourne la chaise pour la voir par la tranche, et repère de quel côté part le tert-butyle.',
   build(host){
     const m=MOL3D.cyclohexanone;
     const p=m.atoms[m.sp2].p, n=[0,0.93,0.37];
@@ -1254,81 +1700,55 @@ S({
       {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
         btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
     ]});
-    host.appendChild(el('div','statusline','La 4-<i>tert</i>-butylcyclohexanone. Le gros groupe en bas est le <i>tert</i>-butyle : il est <b>d\'un seul côté</b> du cycle, et c\'est lui qui fait toute la différence entre la flèche verte et la flèche rouge.'));
+    const b=el('div','statusline');
+    b.innerHTML='<b style="color:var(--red)">DIASTÉRÉOSÉLECTIVE</b> — la molécule est pourtant <b>achirale</b>. C\'est le <i>tert</i>-butyle qui sert de repère et rend les deux faces inégales.';
+    host.appendChild(b);
   },
-  une:'Cette molécule est <b>achirale</b>, et pourtant ses deux faces sont différentes : c\'est le <i>tert</i>-butyle qui sert de repère « haut / bas ».',
-  probleme:'<p>Là, l\'intuition trompe : on se dit « la molécule n\'est pas chirale, donc ses deux faces doivent être équivalentes ». C\'est faux, et c\'est la subtilité de la question 3e.</p><p>Être achirale veut dire qu\'on ne peut pas la distinguer de son reflet. Ça ne dit <b>rien</b> sur le fait que son dessus ressemble à son dessous.</p>',
+  une:'Une molécule achirale peut parfaitement avoir des faces <b>diastéréotopes</b>. C\'est la subtilité de cette question, et le seul cas du TD où ça arrive.',
+  probleme:'<p>L\'intuition dit : « molécule achirale, donc faces équivalentes ». C\'est faux. Être achirale veut dire qu\'on ne peut pas distinguer la molécule de son reflet. Ça ne dit rien sur le fait que son dessus ressemble à son dessous.</p>',
   etapes:[
-   {q:'Le repère, d\'abord.',
-    t:'Le <i>tert</i>-butyle est planté d\'un seul côté du cycle. Il définit un « bas » et donc un « haut ». Sans lui (avec une cyclohexanone toute nue), les deux faces seraient parfaitement identiques.'},
-   {q:'Attaque par le vert : où va l\'OH ?',
-    t:'L\'hydrure arrive par le dessus, donc l\'OH se retrouve <b>en dessous</b> — du même côté que le <i>tert</i>-butyle. Les deux groupes sont du même côté : c\'est l\'isomère <b>cis</b>.'},
-   {q:'Attaque par le rouge.',
-    t:'L\'hydrure arrive par le dessous, l\'OH se retrouve au-dessus, <b>à l\'opposé</b> du <i>tert</i>-butyle : c\'est l\'isomère <b>trans</b>.'},
-   {q:'Compare les deux produits.',
-    t:'<i>cis</i> et <i>trans</i> ne sont ni identiques, ni images miroir : ce sont des <b>diastéréoisomères</b>. Donc les deux faces sont <b>diastéréotopes</b>, et la réaction est diastéréosélective — même avec NaBH₄, qui est parfaitement achiral.'},
-   {q:'Lequel gagne, en pratique ?',
-    t:'NaBH₄ est un hydrure <b>petit</b>. Il passe par le chemin « axial », le plus direct, ce qui pose l\'OH en position équatoriale : on obtient majoritairement le <b>trans</b>. Avec un hydrure encombrant (L-Selectride), le chemin axial est bouché et on obtient le <b>cis</b>.'},
-   {q:'Le détail qui rapporte des points.',
-    t:'Les deux produits sont <b>achiraux</b> (ils ont un plan de symétrie qui passe par C1 et C4). C\'est pour ça que l\'énoncé écrit leurs descripteurs en <b>minuscules</b> : (1<i>r</i>,4<i>r</i>). Une minuscule = centre stéréogène mais pas chiral. La mention « (±) » de l\'énoncé, elle, n\'a pas de sens : un composé achiral n\'a pas d\'énantiomère.'}
+   {q:'Le repère.',t:'Le <i>tert</i>-butyle est planté d\'un seul côté du cycle. Il définit un bas, donc un haut. Sans lui, les deux faces seraient <b>homotopes</b> et il n\'y aurait rien à sélectionner.'},
+   {q:'Attaque par le vert.',t:'L\'hydrure arrive par le dessus, l\'OH se retrouve en dessous, du <b>même</b> côté que le tBu : isomère <b>cis</b>.'},
+   {q:'Attaque par le rouge.',t:'L\'OH se retrouve au-dessus, à l\'opposé du tBu : isomère <b>trans</b>.'},
+   {q:'Compare.',t:'<i>cis</i> et <i>trans</i> ne sont ni identiques ni images miroir : ce sont des <b>diastéréoisomères</b>. Les faces sont donc diastéréotopes, et la réaction est diastéréosélective — avec un réducteur parfaitement achiral.'},
+   {q:'Lequel gagne ?',t:'NaBH₄ est un hydrure <b>petit</b>. Il passe par le chemin axial, le plus direct, ce qui pose l\'OH en équatorial : on obtient majoritairement le <b>trans</b>, celui que dessine l\'énoncé. Avec un hydrure encombrant (L-Selectride), le chemin axial est bouché et on obtient le <b>cis</b>.'},
+   {q:'Les minuscules, et la mention « (±) ».',t:'Les descripteurs (1<i>r</i>,4<i>r</i>) sont <b>corrects</b> : une minuscule signale un centre stéréogène mais non chiral. Vérifié par RDKit sur le dessin de l\'énoncé, et la molécule est bien achirale. En revanche « (±) » désigne un racémique — et un composé achiral n\'a pas d\'énantiomère. Cette mention-là est de trop.'}
   ],
-  retenir:[
-   'Molécule achirale, mais faces <b>diastéréotopes</b> : le tBu sert de repère.',
-   'Les deux produits sont <i>cis</i> et <i>trans</i> : des diastéréoisomères.',
-   'Réaction diastéréosélective avec un réducteur achiral.',
-   'Petit hydrure → attaque axiale → OH équatorial → <i>trans</i>.'
-  ],
-  quiz:{q:'Si on enlevait le <i>tert</i>-butyle (cyclohexanone toute simple), que deviendraient les deux faces&nbsp;?',
-    a:'Elles deviendraient <b>homotopes</b>.<br><br>Sans repère sur le cycle, rien ne distingue le dessus du dessous : une rotation de la molécule échange les deux faces. Les deux attaques donneraient le <b>même</b> cyclohexanol, et il n\'y aurait plus rien à sélectionner.<br><br>C\'est la démonstration que le <i>tert</i>-butyle ne sert pas à « gêner » — il sert à <b>distinguer</b>. C\'est un repère, pas un obstacle. (Il aide aussi à bloquer la chaise dans une seule conformation, ce qui rend l\'expérience propre.)'}
+  retenir:['Molécule achirale, mais faces <b>diastéréotopes</b>.','Le tBu sert de <b>repère</b>, pas d\'obstacle.','Petit hydrure → attaque axiale → OH équatorial → <i>trans</i>.','(1<i>r</i>,4<i>r</i>) correct ; « (±) » incorrect.']
 });
 
 S({
-  grp:V4, title:'Exercice 2 — pose le biaryle sur la tranche',
-  consigne:'Appuie sur « regarder dans l\'axe ». C\'est exactement ce qu\'on te demande d\'imaginer — sauf qu\'ici tu le vois.',
+  grp:V8, title:'Les cinq réactions, d\'un coup d\'œil',
+  consigne:'La réponse complète de l\'exercice 3.',
   build(host){
-    const m=MOL3D.biaryle;
-    const v=bloc3D(host,m,{h:310, R0:M3.rot([1,0,0],Math.PI/2), decor:[
-      {k:'line',a:[0,0,-4.6],b:[0,0,4.6],c:'--red',dash:true,w:2.2}
-    ], boutons:[
-      {t:'👁 Regarder DANS l\'axe', go:(vv)=>vv.goto(M3.id(),1400), f:'1 1 100%'},
-      {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
-        btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
-    ]});
-    host.appendChild(el('div','statusline','C\'est l\'acide 6,6′-difluorobiphényl-2,2′-dicarboxylique de l\'exercice 2. Le trait rouge est l\'<b>axe</b>. Quand tu regardes dans l\'axe, les deux cycles apparaissent comme deux barres croisées : c\'est la fameuse « projection de Newman » — et elle n\'a plus rien de mystérieux.'));
+    const f=el('div','figbox'); f.innerHTML=figArbreSel(); host.appendChild(f);
+    host.appendChild(el('div',null,recapHTML([
+      {t:'a) époxydation de Sharpless', c:'var(--blue)', v:'ÉNANTIOSÉLECTIVE',
+       d:'Substrat achiral, faces énantiotopes. C\'est le <b>tartrate</b> qui choisit : contrôle par le réactif.'},
+      {t:'b) époxydation VO(acac)₂', c:'var(--red)', v:'DIASTÉRÉOSÉLECTIVE',
+       d:'Substrat déjà (S), catalyseur achiral : contrôle par le substrat. Le descripteur passe de (S) à (R) sans qu\'aucune liaison ne bouge.'},
+      {t:'c) acylation de l\'oxazolidinone', c:'var(--grey)', v:'NI L\'UNE NI L\'AUTRE',
+       d:'Aucun élément stéréogène créé. C\'est l\'étape « fixer l\'auxiliaire ».'},
+      {t:'d) alkylation d\'Evans', c:'var(--red)', v:'DIASTÉRÉOSÉLECTIVE (dans le principe)',
+       d:'L\'auxiliaire bloque une face. <b style="color:var(--red)">Mais</b> le produit dessiné porte deux méthyles sur le carbone α : il n\'est pas stéréogène.'},
+      {t:'e) réduction par NaBH₄', c:'var(--red)', v:'DIASTÉRÉOSÉLECTIVE',
+       d:'Substrat achiral, mais faces diastéréotopes : le <i>tert</i>-butyle sert de repère. Produit achiral.'}
+    ])));
   },
-  une:'Les deux cycles ne sont pas dans le même plan : ils sont <b>croisés</b>, à peu près à 90°. C\'est cette torsion, et elle seule, qui rend la molécule chirale.',
-  probleme:'<p>Sur le dessin de l\'énoncé, les deux cycles sont dessinés à plat, l\'un au-dessus de l\'autre. Ça donne l\'impression qu\'ils sont dans le même plan — et alors la molécule aurait un plan de symétrie, donc serait achirale.</p><p>Le dessin ment. En vrai, ils ne <b>peuvent pas</b> être coplanaires : les substituants en ortho se rentrent dedans.</p>',
+  une:'Une énantiosélective, trois diastéréosélectives, une qui ne sélectionne rien du tout.',
   etapes:[
-   {q:'Pourquoi les cycles se croisent.',
-    t:'Chaque cycle porte deux groupes en position <b>ortho</b> (juste à côté de la liaison centrale). Si les deux cycles étaient à plat l\'un dans l\'autre, ces quatre groupes se toucheraient. La molécule se tord donc pour les écarter, jusqu\'à environ 90°.'},
-   {q:'Pourquoi la torsion crée de la chiralité.',
-    t:'Deux barres croisées, ça ressemble à un début d\'hélice — et une hélice a un sens. Un tire-bouchon existe en version droite et en version gauche. C\'est exactement ce qui se passe ici : la torsion peut se faire dans un sens ou dans l\'autre, et les deux versions sont images miroir.'},
-   {q:'Ce qu\'on appelle un « axe de chiralité ».',
-    t:'Il n\'y a <b>aucun carbone asymétrique</b> dans cette molécule. La chiralité n\'est pas à un point, elle est répartie <b>le long de la liaison centrale</b>. On parle donc d\'un axe, et non d\'un centre.'},
-   {q:'Pourquoi certaines de ces molécules ne comptent pas.',
-    t:'Parce que la torsion peut basculer d\'un sens à l\'autre en tournant autour de la liaison centrale. Si cette rotation est <b>rapide</b>, les deux formes s\'échangent en permanence et on ne peut pas les séparer. C\'est le cas de l\'acide biphényl-2,2′-dicarboxylique du TD, qui n\'a que <b>deux</b> groupes en ortho au lieu de quatre.'},
-   {q:'Le critère, chiffré.',
-    t:'Robinson donne le seuil : il faut une barrière de rotation supérieure à environ <b>90 kJ·mol⁻¹</b> pour pouvoir séparer les deux formes à température ambiante. En pratique, ça demande <b>trois ou quatre</b> substituants en ortho, ou deux très gros.'},
-   {q:'Et pour nommer, une fois dans l\'axe ?',
-    t:'Tu vois deux barres : celle du <b>cycle avant</b> et celle du <b>cycle arrière</b>. Sur chacune, tu repères le substituant prioritaire. Règle spéciale des axes : <b>tout ce qui est devant passe avant tout ce qui est derrière</b>. Tu obtiens donc 1 et 2 sur la barre avant, 3 et 4 sur la barre arrière, et tu lis 1 → 2 → 3 comme un volant ordinaire.'}
+   {q:'Ce que la série veut faire comprendre.',t:'Les cinq réactions balaient les cinq situations possibles : chiralité apportée par le réactif (a), par le substrat naturel (b), par un auxiliaire posé exprès (c puis d), et par une simple différence géométrique sur un substrat achiral (e).'},
+   {q:'La question qui départage, à retenir.',t:'« Si je remplace mon réactif chiral par son énantiomère, le produit change-t-il ? » Si oui : énantiosélective. Si tu n\'as aucun réactif chiral : c\'est forcément diastéréosélectif, ou bien il n\'y a rien à sélectionner.'},
+   {q:'Le cas e) est le plus subtil.',t:'C\'est le seul où le substrat est <b>achiral</b> et où la réaction est pourtant diastéréosélective. Il montre que « diastéréotope » ne demande pas la chiralité : il suffit que les deux faces mènent à deux diastéréoisomères.'},
+   {q:'Le couple c) + d) raconte une histoire.',t:'On paie une étape non sélective pour transformer un problème énantiosélectif, difficile, en problème diastéréosélectif, facile. Puis on coupe l\'auxiliaire et on le recycle. C\'est toute la stratégie d\'Evans, et c\'est le cœur du chapitre 1.'}
   ],
-  retenir:[
-   'Les deux cycles sont <b>croisés</b>, pas coplanaires.',
-   'La torsion = une hélice = deux sens possibles = chiralité.',
-   'Chiralité <b>axiale</b> : aucun carbone asymétrique.',
-   'Il faut que la rotation soit lente (~90 kJ·mol⁻¹) pour que ça compte.'
-  ],
-  plus:{titre:'pourquoi on ne peut pas répondre sur le dessin de l\'énoncé',
-    body:'<p>Les quatre biaryles de l\'exercice 2 sont dessinés <b>à plat</b> : aucune liaison en gras, aucune liaison rompue, aucune perspective. Or le descripteur a<i>R</i>/a<i>S</i> se lit sur le <b>sens de la torsion</b>, qui n\'est pas représenté.</p><p>La réponse rigoureuse consiste donc à : identifier l\'élément (un axe), donner les priorités des substituants en ortho, expliquer la procédure — et signaler que le dessin ne permet pas de conclure. C\'est peut-être exactement ce que l\'exercice cherche à faire dire.</p><p>Pour information, le modèle ci-dessus a été construit et optimisé numériquement ; son angle de torsion mesuré est d\'environ 98°, ce qui confirme que les deux cycles sont bien quasi perpendiculaires.</p>',
-    src:'<b>Robinson, <i>Organic Stereochemistry</i></b>, §4.5, p. 44 (atropisomères, substituants ortho) et p. 46 (seuil de séparabilité).'},
-  quiz:{q:'Le BINOL et le BINAP ont des naphtalènes au lieu de simples benzènes. En quoi ça aide&nbsp;?',
-    a:'Le naphtalène est fait de <b>deux cycles soudés</b>. Le second cycle occupe donc de façon permanente une des deux positions ortho — et il est bien plus encombrant qu\'un simple substituant, parce qu\'il est rigide et qu\'il ne peut pas s\'écarter.<br><br>Résultat : avec un OH (ou un PPh₂) sur l\'autre position ortho, on a les quatre positions ortho occupées, dont deux par des blocs rigides. La rotation est totalement impossible, et le BINOL comme le BINAP s\'achètent sous forme énantiopure, stables indéfiniment.<br><br>C\'est précisément pour ça qu\'on les utilise comme source de chiralité en catalyse : ils ne racémisent jamais.'}
+  retenir:['Une seule énantiosélective : la a).','Trois diastéréosélectives : b), d) et e).','Une qui ne sélectionne rien : la c) — le piège.','Auxiliaire = transformer un problème énantio en problème diastéréo.']
 });
 
 /* ==========================================================================
    GROUPE 5 — Réviser quand on ne visualise pas
    ========================================================================== */
-const V5='5 — Réviser autrement';
+const V5='7 — Réviser autrement';
 
 S({
   grp:V5, title:'Fabrique-toi un modèle, vraiment',

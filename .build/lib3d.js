@@ -3,7 +3,8 @@
    Petit moteur 3D (canvas, aucune dépendance).
    Projection orthographique — ce qu'on voit est exactement ce qu'on mesure.
    ========================================================================== */
-const COL3D = {C:'--ink', O:'--red', N:'--blue', F:'--green', S:'--purple', H:'--grey', X:'--ink2'};
+const COL3D = {C:'--ink', O:'--red', N:'--blue', F:'--green', S:'--purple',
+               P:'--purple', Si:'--purple', Cl:'--green', Br:'--green', H:'--grey', X:'--ink2'};
 function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888'; }
 
 /* --- algèbre 3×3 minimale ------------------------------------------------- */
@@ -43,7 +44,19 @@ function Viewer3D(host,mol,opt){
   cv.className='cv3d'; cv.style.touchAction='none';
   host.appendChild(cv);
   const ctx=cv.getContext('2d');
+  /* positions de travail : la torsion les modifie, les originales restent intactes */
+  /* centre de la boîte englobante (et non centroïde) : une chaîne latérale
+     ne décentre alors pas la molécule dans le cadre */
+  const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9];
+  mol.atoms.forEach(a=>{ for(let k=0;k<3;k++){
+    if(a.p[k]<lo[k]) lo[k]=a.p[k]; if(a.p[k]>hi[k]) hi[k]=a.p[k]; } });
+  const CEN=[(lo[0]+hi[0])/2,(lo[1]+hi[1])/2,(lo[2]+hi[2])/2];
+  const P0 = mol.atoms.map(a=>[a.p[0]-CEN[0],a.p[1]-CEN[1],a.p[2]-CEN[2]]);
+  const POS = P0.map(p=>p.slice());
+  const DEC = (v)=>[v[0]-CEN[0],v[1]-CEN[1],v[2]-CEN[2]];   /* décor : même repère */
+  const GROS = mol.atoms.length>28;
   let R = opt.R0 ? opt.R0.slice() : TILT.slice();
+  let tors = 0;
   let spin = !!opt.spin, anim=null, W=0,H=0,S=1;
   const decor = opt.decor||[];
   const badges = opt.badges||[];
@@ -53,7 +66,7 @@ function Viewer3D(host,mol,opt){
     W=Math.max(220,Math.round(r.width)); H=opt.h||260;
     cv.width=W*d; cv.height=H*d; cv.style.width=W+'px'; cv.style.height=H+'px';
     ctx.setTransform(d,0,0,d,0,0);
-    let m=0; mol.atoms.forEach(a=>{ m=Math.max(m,Math.hypot(a.p[0],a.p[1],a.p[2])); });
+    let m=0; P0.forEach(p=>{ m=Math.max(m,Math.hypot(p[0],p[1],p[2])); });
     S=(Math.min(W,H)/2-22)/(m||1);   /* -22 px : place pour les boules et les étiquettes */
     draw();
   }
@@ -102,7 +115,7 @@ function Viewer3D(host,mol,opt){
     /* décor arrière */
     decor.forEach(d=>{ if(d.front) return; paintDecor(d); });
     /* liaisons puis atomes, triés par profondeur */
-    const pts=mol.atoms.map(a=>proj(a.p));
+    const pts=POS.map(p=>proj(p));
     const items=[];
     mol.bonds.forEach(([i,j,o])=>{
       items.push({z:(pts[i][2]+pts[j][2])/2, k:'b', i:i, j:j, o:o});
@@ -116,21 +129,21 @@ function Viewer3D(host,mol,opt){
         ctx.save(); ctx.globalAlpha=fade; ctx.strokeStyle=ink; ctx.lineCap='round';
         if(it.o>=2){
           const dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy)||1, nx=-dy/L*3.2, ny=dx/L*3.2;
-          ctx.lineWidth=3;
+          ctx.lineWidth=GROS?2.2:3;
           ctx.beginPath(); ctx.moveTo(p[0]+nx,p[1]+ny); ctx.lineTo(q[0]+nx,q[1]+ny); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(p[0]-nx,p[1]-ny); ctx.lineTo(q[0]-nx,q[1]-ny); ctx.stroke();
-        } else { ctx.lineWidth=4.2; ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); }
+        } else { ctx.lineWidth=GROS?3:4.2; ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); }
         ctx.restore();
       } else {
         const a=mol.atoms[it.i], p=pts[it.i];
         const fade=0.6+0.4*Math.max(0,Math.min(1,(it.z+3)/6));
         const col=cssv(a.c||COL3D[a.e]||COL3D.X);
-        const r=a.r||(a.e==='H'?5.2:(a.e==='C'?6.4:8));
+        const r=(a.rad||(a.e==='H'?5.2:(a.e==='C'?6.4:8)))*(GROS?0.72:1);
         ctx.save(); ctx.globalAlpha=fade;
         ctx.fillStyle=col; ctx.beginPath(); ctx.arc(p[0],p[1],r,0,Math.PI*2); ctx.fill();
         ctx.lineWidth=1.6; ctx.strokeStyle=panel; ctx.stroke();
         const txt=(a.l!==undefined)?a.l:(a.e!=='C'?a.e:'');
-        if(txt){ ctx.globalAlpha=1; ctx.fillStyle=panel; ctx.font='800 '+(a.r?12:10)+'px system-ui,sans-serif';
+        if(txt){ ctx.globalAlpha=1; ctx.fillStyle=panel; ctx.font='800 '+(a.rad?12:10)+'px system-ui,sans-serif';
           ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(txt,p[0],p[1]+0.5); }
         ctx.restore();
       }
@@ -152,10 +165,10 @@ function Viewer3D(host,mol,opt){
   }
   function paintDecor(d){
     const col=cssv(d.c||'--purple');
-    if(d.k==='disc') ellipse(d.p,d.n,d.r||1.6,col,d.op||0.2);
-    else if(d.k==='line') line3(d.a,d.b,col,d.dash,d.w);
-    else if(d.k==='arrow') arrow3(d.a,d.b,col);
-    else if(d.k==='tag') tag3(d.p,d.t,col,d.fs);
+    if(d.k==='disc') ellipse(DEC(d.p),d.n,d.r||1.6,col,d.op||0.2);
+    else if(d.k==='line') line3(DEC(d.a),DEC(d.b),col,d.dash,d.w);
+    else if(d.k==='arrow') arrow3(DEC(d.a),DEC(d.b),col);
+    else if(d.k==='tag') tag3(DEC(d.p),d.t,col,d.fs);
   }
 
   /* --- interaction --------------------------------------------------------- */
@@ -183,8 +196,43 @@ function Viewer3D(host,mol,opt){
   }
   function kick(){ if(!raf) raf=requestAnimationFrame(tick); }
 
+  /* --- torsion autour de l'axe aryle-aryle -------------------------------- */
+  function applyTorsion(deg){
+    tors=deg;
+    if(!mol.axe||!mol.rotor){ return; }
+    const a=P0[mol.axe[0]], b=P0[mol.axe[1]];
+    const ax=[b[0]-a[0],b[1]-a[1],b[2]-a[2]];
+    const Rt=M3.rot(ax,deg*Math.PI/180);
+    for(let i=0;i<P0.length;i++){
+      if(mol.rotor.indexOf(i)<0){ POS[i]=P0[i].slice(); continue; }
+      const v=[P0[i][0]-a[0],P0[i][1]-a[1],P0[i][2]-a[2]];
+      const w=M3.app(Rt,v);
+      POS[i]=[w[0]+a[0],w[1]+a[1],w[2]+a[2]];
+    }
+  }
+  /* plus courte distance entre un atome de la partie fixe et un de la partie
+     qui tourne, en excluant les deux carbones de l'axe eux-mêmes */
+  function contact(){
+    if(!mol.axe||!mol.rotor) return null;
+    const rot=new Set(mol.rotor), ax=new Set(mol.axe);
+    let best=1e9, bi=-1, bj=-1;
+    for(let i=0;i<POS.length;i++){
+      if(rot.has(i)||ax.has(i)) continue;
+      for(const j of mol.rotor){
+        if(ax.has(j)) continue;
+        const d=Math.hypot(POS[i][0]-POS[j][0],POS[i][1]-POS[j][1],POS[i][2]-POS[j][2]);
+        if(d<best){ best=d; bi=i; bj=j; }
+      }
+    }
+    if(best===1e9) return null;
+    const A=mol.atoms[bi], B=mol.atoms[bj];
+    return {d:best, i:bi, j:bj, a:A.e, b:B.e, prof:Math.max(A.d||0, B.d||0)};
+  }
+
   const api={
-    draw, resize,
+    draw, resize, contact,
+    torsion(deg){ applyTorsion(deg); draw(); },
+    getTorsion(){ return tors; },
     reset(){ anim={a:R.slice(),b:(opt.R0?opt.R0.slice():TILT.slice()),t0:performance.now(),ms:700}; kick(); },
     goto(Rt,ms){ anim={a:R.slice(),b:Rt.slice(),t0:performance.now(),ms:ms||900}; kick(); },
     turn(ax,ang,ms){ api.goto(M3.mul(M3.rot(ax,ang),R),ms); },

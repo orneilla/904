@@ -9,11 +9,11 @@ const D4 = {ul:[-1.249,0.883,0], ur:[1.249,0.883,0], av:[0,-0.883,1.249], ar:[0,
 function tetra(cols){
   cols = cols || ['--blue','--green','--purple','--red'];
   return {nom:'un carbone et ses quatre groupes', atoms:[
-    {e:'C',p:[0,0,0],r:9,l:'C'},
-    {e:'X',p:D4.ul,c:cols[0],r:12,l:'1'},
-    {e:'X',p:D4.ur,c:cols[1],r:12,l:'2'},
-    {e:'X',p:D4.av,c:cols[2],r:12,l:'3'},
-    {e:'X',p:D4.ar,c:cols[3],r:12,l:'4'}
+    {e:'C',p:[0,0,0],rad:9,l:'C'},
+    {e:'X',p:D4.ul,c:cols[0],rad:12,l:'1'},
+    {e:'X',p:D4.ur,c:cols[1],rad:12,l:'2'},
+    {e:'X',p:D4.av,c:cols[2],rad:12,l:'3'},
+    {e:'X',p:D4.ar,c:cols[3],rad:12,l:'4'}
   ], bonds:[[0,1,1],[0,2,1],[0,3,1],[0,4,1]]};
 }
 function tetraMiroir(){

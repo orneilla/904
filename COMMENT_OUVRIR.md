@@ -4,7 +4,7 @@ Il y a **quatre fichiers**. Si tu bloques, commence par le premier :
 
 | Fichier | Contenu |
 |---|---|
-| `voir_en_3d.html` | **Voir en 3D** — 15 sections. Des molécules que tu **fais tourner avec ton doigt**. À ouvrir en premier si tu as du mal à visualiser dans l'espace : R/S, les faces, la chaise, l'axe des biaryles, tout y est en volume. |
+| `voir_en_3d.html` | **Voir en 3D** — 28 sections. Des molécules que tu **fais tourner avec ton doigt**. À ouvrir en premier si tu as du mal à visualiser dans l'espace. Les **trois exercices du TD y sont repris en entier**, molécule par molécule, en volume. |
 | `bases_stereochimie.html` | **Les bases** — 19 sections, d'après le chapitre 4 de Robinson. Classer, nommer, représenter, mesurer, topicité. |
 | `chap1_synthese_asymetrique.html` | **CH0904 chapitre 1** — 28 sections. Les trois stratégies, Evans, Ellman, Hoppe, TADDOL, Sharpless. |
 | `td_revision_corrige.html` | **Le TD de révision, corrigé** — 21 sections. Les trois exercices repris un par un, avec la méthode avant la réponse. |

@@ -320,6 +320,43 @@ Résultats du contrôle :
 | 4-tert-butylcyclohexanone | chaise | conformation chaise obtenue |
 | acide 6,6′-difluorobiphényl-2,2′-dicarboxylique | cycles non coplanaires | torsion F–C–C–F = **98,1°** |
 
+### Les molécules du TD, ajoutées ensuite
+
+| Molécule | Attendu | Lu par RDKit |
+|---|---|---|
+| (R,E)-PhCH=CH–CH(OMe)CH₃ (ex. 1, molécule 2) | R, E | **R**, **E** |
+| éther d'énol silylé (ex. 1, molécule 3) | aucun centre | **aucun** |
+| (E)-but-2-én-1-ol (ex. 3a, substrat) | E | **E** |
+| 2,3-époxybutan-1-ol (ex. 3a, produit) | 2S,3S | **S, S** |
+| (2S,3Z)-2-méthylpent-3-én-1-ol (ex. 3b) | 2S, 3Z | **S**, **Z** |
+| 3,4-époxy-2-méthylpentan-1-ol (ex. 3b, produit) | 2R,3R,4S | **R, R, S** |
+| 4-benzyloxazolidin-2-one (ex. 3c) | S | **S** |
+| l'auxiliaire acylé (ex. 3c, produit) | S | **S** |
+| imide de propanoyle (ex. 3d) | R | **R** |
+| produit isobutyryle (ex. 3d) | R sur l'auxiliaire | **R** — et aucun centre en α |
+| acide diphénique, BINOL, BINAP | cycles non coplanaires | construits, axe et rotor repérés |
+
+### Le curseur de torsion de l'exercice 2
+
+Le curseur fait tourner une moitié du biaryle autour de l'axe **sans rien laisser se
+réarranger**, et affiche la plus courte distance entre les deux moitiés. Un balayage
+préalable a montré que cette mesure, prise seule, **ne distingue pas** l'acide diphénique
+du BINOL : dans les deux cas la distance tombe sous 3 Å dès qu'on s'écarte de la position
+de repos. C'est normal — tout biaryle a une barrière de rotation.
+
+Ce qui les distingue est la **rigidité du gêneur**. Le support affiche donc aussi, pour
+chaque contact, la distance en liaisons qui sépare l'atome du cycle le plus proche :
+
+- profondeur 0 (atome de cycle) → rien ne peut s'écarter, la gêne est réelle ;
+- profondeur 1 (accroché au cycle, comme l'O d'un OH) → il ne peut guère bouger ;
+- profondeur 2 ou plus (l'O d'un carboxyle) → le groupe pivote et s'écarte, donc le
+  curseur **exagère** la gêne.
+
+Sur l'acide diphénique, les contacts serrés impliquent des oxygènes de carboxyle à deux
+liaisons du cycle ; sur le BINOL, des atomes de cycle ou directement accrochés. Le texte
+du support a été corrigé pour dire exactement cela, une première rédaction ayant affirmé
+à tort que l'acide diphénique « tournait librement » sur le curseur.
+
 Le tétraèdre générique (les quatre boules numérotées) est placé à la main sur les quatre
 directions exactes du dessin en « Y ». La correspondance a été contrôlée séparément :
 **1 en haut à gauche, 2 en haut à droite, 3 vers l'observateur, 4 vers le fond → RDKit lit

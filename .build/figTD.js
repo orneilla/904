@@ -303,26 +303,6 @@ function figRx(k){
 }
 
 /* --- l'arbre de décision de l'exercice 3 ----------------------------------- */
-function figArbreSel(){
-  const W=360,H=300; let s='';
-  const q=(y,t)=>`<rect x="16" y="${y}" width="328" height="30" rx="8" fill="var(--panel2)" stroke="${C.line}"/>`
-    +txt([180,y+15],t,{fs:12,fw:700});
-  const rep=(y,t,col)=>`<rect x="40" y="${y}" width="280" height="28" rx="14" fill="${col}" opacity=".13"/>`
-    +txt([180,y+14],t,{fs:12,fw:800,c:col});
-  s+=q(14,'1. La réaction crée-t-elle un élément stéréogène ?');
-  s+=arrow([180,44],[180,56],{w:2});
-  s+=rep(58,'NON → ni diastéréo- ni énantiosélective',C.grey);
-  s+=q(96,'2. Le substrat est-il DÉJÀ chiral ?');
-  s+=arrow([180,126],[180,138],{w:2});
-  s+=rep(140,'OUI → DIASTÉRÉOsélective',C.red);
-  s+=txt([180,176],'(les deux états de transition sont diastéréoisomères :',{fs:10.5,c:C.ink2});
-  s+=txt([180,190],'ils ont des énergies différentes « gratuitement »)',{fs:10.5,c:C.ink2});
-  s+=q(204,'3. Sinon : le réactif ou le catalyseur est-il chiral ?');
-  s+=arrow([180,234],[180,246],{w:2});
-  s+=rep(248,'OUI → ÉNANTIOsélective',C.blue);
-  s+=txt([180,286],'NON → produit racémique, aucune sélectivité',{fs:11,fw:700,c:C.grey});
-  return svg(W,H,s,{alt:'arbre de décision diastéréo / énantio'});
-}
 
 /* --- faces diastéréotopes de la 4-tBu-cyclohexanone ------------------------ */
 function figCyclohex(){
@@ -343,10 +323,3 @@ function figCyclohex(){
   return svg(W,H,s,{alt:'faces de la 4-tert-butylcyclohexanone'});
 }
 
-/* --- récapitulatifs : blocs empilés (jamais de tableau large sur mobile) --- */
-function recapHTML(rows){
-  return rows.map(r=>`<div style="border-left:4px solid ${r.c};padding:10px 12px;margin:9px 0;background:var(--panel2);border-radius:0 10px 10px 0">`
-   +`<div style="font-weight:800;font-size:14px">${r.t}</div>`
-   +`<div style="font-weight:800;color:${r.c};font-size:13px;margin-top:3px">${r.v}</div>`
-   +`<div style="color:var(--ink2);font-size:12.5px;margin-top:4px;line-height:1.45">${r.d}</div></div>`).join('');
-}

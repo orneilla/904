@@ -2,7 +2,7 @@
 /* ==========================================================================
    GROUPE 5 — Réviser quand on ne visualise pas
    ========================================================================== */
-const V5='5 — Réviser autrement';
+const V5='7 — Réviser autrement';
 
 S({
   grp:V5, title:'Fabrique-toi un modèle, vraiment',
