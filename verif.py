@@ -382,6 +382,69 @@ check(build(A,B,"mye"), "mon dessin e) — alcool trans (doit être 1r,4r)", "C1
 check(build(A,B,"mye"), "mon dessin e) — second descripteur", "C4=r")
 print(f"       achirale ? {achirale(build(A,B,'mye'))}")
 
+# ---------------------------------------------------------------------------
+titre("18. LE DESSIN DE L'INTERMÉDIAIRE (TD catalyse) — le ligand box est-il (S,S) ?")
+print("""On ne vérifie pas une idée, on vérifie LE DESSIN : les coordonnées ci-dessous
+sont celles que la fonction oxaBox() de .build/figW.js envoie réellement dans le
+SVG (pentagone de rayon 30 ; O1 à 90°, C2 à 18°, N3 à −54°, C4 à −126°, C5 à 162° ;
+substituants à 150° en liaison GRASSE et à 235° en liaison POINTILLÉE).
+Cycle de gauche : t-Bu en gras, H en pointillé. Cycle de droite : l'inverse.
+C'est exactement la disposition de Cours_904.pdf p. 9.""")
+
+OXR = 30.0
+def _oxa(cen, cote, hautH, A, B):
+    """réplique exacte de oxaBox() ; renvoie l'indice (1-based) de C2 et de C4"""
+    def P(a, r=OXR):
+        return (cen[0] + cote * r * math.cos(math.radians(a)),
+                cen[1] - r * math.sin(math.radians(a)))
+    def sub(a, d):
+        c4 = P(-126)
+        return (c4[0] + cote * d * math.cos(math.radians(a)),
+                c4[1] - d * math.sin(math.radians(a)))
+    st = len(A) + 1
+    for s_, pt in (('O', P(90)), ('C', P(18)), ('N', P(-54)), ('C', P(-126)), ('C', P(162))):
+        A.append((s_, pt[0], pt[1]))
+    O1, C2, N3, C4, C5 = st, st+1, st+2, st+3, st+4
+    B += [(O1, C2, 1, 0), (C2, N3, 2, 0), (N3, C4, 1, 0), (C4, C5, 1, 0), (C5, O1, 1, 0)]
+    # créneau 150° = liaison GRASSE ; créneau 235° = liaison POINTILLÉE
+    gras, poin = sub(150, 48), sub(235, 48)
+    tbu, hyd = (poin, gras) if hautH else (gras, poin)
+    # le carbone quaternaire du t-Bu + ses trois méthyles
+    A.append(('C', tbu[0], tbu[1])); Cq = len(A)
+    for dx, dy in ((-18, -10), (-18, 10), (0, -20)):
+        A.append(('C', tbu[0] + cote*dx, tbu[1] + dy)); B.append((Cq, len(A), 1, 0))
+    A.append(('H', hyd[0], hyd[1])); Hy = len(A)
+    B.append((C4, Cq, 1, 6 if hautH else 1))     # t-Bu : pointillé à droite, gras à gauche
+    B.append((C4, Hy, 1, 1 if hautH else 6))     # H    : gras à droite,       pointillé à gauche
+    return C2, C4
+
+A, B = [], []
+C2g, C4g = _oxa((118.2, 93.9),  1, False, A, B)
+C2d, C4d = _oxa((241.8, 93.9), -1, True,  A, B)
+A.append(('C', 180.0, 74.0)); Qb = len(A)            # le pont C(Me)2
+B += [(C2g, Qb, 1, 0), (C2d, Qb, 1, 0)]
+A.append(('C', 162.0, 51.0)); B.append((Qb, len(A), 1, 0))
+A.append(('C', 198.0, 51.0)); B.append((Qb, len(A), 1, 0))
+mb = build(A, B, "box", svg_y_down=True)
+# RDKit retire les H explicites et renumérote : on vérifie donc les descripteurs
+# eux-mêmes, pas des indices. Il doit y avoir exactement DEUX centres, tous deux S.
+lu = check(mb, "ligand box dessiné : lecture des centres stéréogènes", None)
+labels = [t.split('=')[1] for t in lu.split('; ') if '=' in t]
+ok = (labels == ['S', 'S'])
+print(("  OK " if ok else "  !! ") + "ligand box dessiné : deux centres, tous deux (S)")
+print(f"       lu       : {labels}")
+print("       attendu  : ['S', 'S']")
+if not ok: ERREURS.append("ligand box dessiné : (S,S) attendu")
+smi_ref = "CC(C)(C1=N[C@@H](C(C)(C)C)CO1)C1=N[C@@H](C(C)(C)C)CO1"
+_, _, smi = lire(mb)
+ok2 = (smi == smi_ref)
+print(("  OK " if ok2 else "  !! ") + "ligand box dessiné : identique au (S,S)-t-Bu-box de l'énoncé")
+print(f"       lu       : {smi}")
+print(f"       attendu  : {smi_ref}")
+if not ok2: ERREURS.append("ligand box dessiné : SMILES inattendu")
+print("       → le ligand dessiné est bien (S,S)-t-Bu-box, celui de l'énoncé.")
+
+
 print("\n" + "=" * 74)
 if ERREURS:
     print(f"BILAN : {len(ERREURS)} VÉRIFICATION(S) EN ÉCHEC")

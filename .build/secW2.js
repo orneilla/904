@@ -246,8 +246,8 @@ S({
   },
   une:'Le dessin complet de l\'intermédiaire, dans le style du cours, avec les positions équatoriales et axiale annotées et la flèche d\'attaque.',
   etapes:[
-   {q:'Dans quel ordre le dessiner.',t:'<b>1)</b> Cu au centre. <b>2)</b> Les deux oxazolines au-dessus, reliées par le C(Me)₂ : chacune porte son <i>t</i>-Bu, un en gras et l\'autre en pointillé (ligand C₂-symétrique). <b>3)</b> Les deux N vers le Cu. <b>4)</b> Le cétoester en bas à gauche, le nitronate en bas à droite. <b>5)</b> La liaison axiale Cu···O de l\'ester, en pointillé.'},
-   {q:'Ce qu\'il ne faut pas oublier d\'annoter.',t:'Les mots <b>équatorial</b> (×3 : les N comptent, plus la cétone et le nitronate) et <b>axial</b> (l\'ester). Et la charge ⊕ sur l\'azote du nitronate, ⊖ sur son carbone.'},
+   {q:'Dans quel ordre le dessiner.',t:'<b>1)</b> Les deux cycles oxazoline en haut, O en haut de chaque cycle, reliés par le C(Me)₂. <b>2)</b> Sur chaque C4 : le <i>t</i>-Bu <b>et</b> le H, l\'un en gras et l\'autre en pointillé — et le <b><i>S</i></b> écrit à côté. À gauche <i>t</i>-Bu en gras, à droite H en gras : c\'est l\'axe C₂. <b>3)</b> Cu sous les deux N. <b>4)</b> Le cétoester en bas à gauche, le nitronate en bas à droite. <b>5)</b> La liaison axiale Cu···O de l\'ester, en pointillé. <b>6)</b> Le crochet [ ]²⁺ à droite.'},
+   {q:'Ce qu\'il ne faut pas oublier d\'annoter.',t:'Les quatre positions <b>équatoriales</b> (les 2 N du box + l\'O de la cétone + l\'O du nitronate) et la position <b>axiale</b> (l\'O de l\'ester). C\'est mot pour mot ce que demande l\'énoncé. Et les charges : ⊕ sur l\'azote du nitronate, ⊖ sur son carbone.'},
    {q:'La flèche.',t:'Une seule flèche courbe, du <b>carbone</b> du nitronate vers le <b>carbone</b> de la cétone. C\'est la liaison C–C qui se forme. Ne la pars pas de l\'oxygène : le nucléophile, c\'est le carbone.'},
    {q:'La phrase à écrire sous le dessin.',t:'« Les deux <i>t</i>-Bu du ligand (S,S) bouchent l\'accès à la face <i>Re</i> ; le nitronate attaque donc la face <b><i>Si</i></b> de la cétone, ce qui conduit au produit <b>(S)</b>. »'}
   ],
@@ -263,8 +263,12 @@ S({
   grp:'À recopier', title:'Exercice 4 — l\'intermédiaire, à recopier',
   consigne:'Le boronate cyclique, dessiné comme dans l\'encadré de l\'énoncé.',
   build(host){
-    const f=el('div','figbox'); f.innerHTML=figInterm4(); host.appendChild(f);
-    host.appendChild(el('div','statusline','Les deux traits qui se croisent à gauche sont les deux naphtalènes vus <b>par la tranche</b> : le trait plein est devant, le pointillé derrière. C\'est la seule façon de montrer la torsion sur une feuille.'));
+    const f=el('div','figbox'), row=el('div','btnrow'); let k=1;
+    const draw=()=>{ f.innerHTML=figInterm4(k); [...row.children].forEach((b,i)=>b.classList.toggle('on',i===k)); };
+    ['TS1 — défavorisé','TS2 — favorisé'].forEach((t,i)=>{ const b=el('button','btn'); b.textContent=t;
+      b.style.flex='1 1 46%'; b.onclick=()=>{k=i;draw();}; row.appendChild(b); });
+    host.appendChild(row); host.appendChild(f); draw();
+    host.appendChild(el('div','statusline','Les deux traits qui se croisent à gauche sont les deux naphtalènes vus <b>par la tranche</b> : le trait plein est devant, le pointillé derrière. C\'est la seule façon de montrer la torsion sur une feuille. Les deux boutons te donnent les <b>deux</b> états de transition, exactement comme dans l\'encadré de l\'énoncé.'));
   },
   une:'Le binaphtol a remplacé les deux OiPr sur le bore ; le bore tient l\'oxygène de la cétone ; l\'allyle attaque par son carbone terminal, dans une chaise à six centres.',
   etapes:[

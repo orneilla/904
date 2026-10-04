@@ -363,10 +363,42 @@ directions exactes du dessin en « Y ». La correspondance a été contrôlée s
 R**, et l'image miroir donne S. C'est cette orientation qui sert de référence dans tout
 le support.
 
+## L. TD catalyse — les dessins « à recopier » refaits d'après le cours
+
+**Pourquoi.** La première version de ces deux dessins ne ressemblait pas à ce que
+la prof écrit au tableau : je les avais composés de mémoire au lieu de relever sa
+géométrie. Je les ai refaits en lisant les sources, au pixel.
+
+**Sources relevées**
+
+| Dessin | Source | Ce qui en a été repris |
+|---|---|---|
+| Exercice 3, le ligand box | `Cours_904.pdf` p. 9, « Proposed stereochemical model » | orientation du pentagone (O en haut, C2 vers l'intérieur, N en bas, C4 en bas extérieur), t-Bu en **gras** à gauche et H en gras à droite, pont C(Me)₂ en haut, Cu sous les deux N, crochet `[ ]²⁺ ‡` à droite |
+| Exercice 3, les partenaires | `TD_904.pdf`, encadré « modèle stéréochimique proposé » | cétone **équatoriale** en bas à gauche, nitronate **équatorial** en bas à droite, ester **axial** en pointillé, charges ⊕/⊖, flèche partant du **carbone** du nitronate |
+| Exercice 3, les descripteurs *S* | `Cours_904.pdf` p. 10 | le *S* écrit directement sur chaque carbone du cycle |
+| Exercice 4 | `TD_904.pdf`, encadré TS1/TS2 | binaphtyle vu **par la tranche** (bâton plein devant, bâton pointillé derrière, Ar d'un côté, Br de l'autre), les deux O vers le bore, chaise à six centres, liaison C–C en formation en pointillé |
+
+**Ce qui a été vérifié par calcul.** Les coordonnées que la fonction `oxaBox()`
+envoie réellement dans le SVG ont été retranscrites telles quelles en molfile
+(section 18 de `verif.py`), puis lues par RDKit :
+
+- exactement **deux** centres stéréogènes, tous deux **(S)** ;
+- SMILES canonique identique à celui du (S,S)-t-Bu-box de l'énoncé :
+  `CC(C)(C1=N[C@@H](C(C)(C)C)CO1)C1=N[C@@H](C(C)(C)C)CO1`.
+
+Autrement dit, le ligand **dessiné** — et non le ligand que je crois avoir dessiné —
+est bien celui de l'énoncé. C'est le seul point du dessin qui se prête à une
+vérification automatique : la face attaquée, elle, reste celle du cours (voir
+`A_VERIFIER.md`, point 16).
+
+**Ce qui n'a PAS été vérifié par calcul.** La position relative du cuivre, des deux
+partenaires et de la place axiale : c'est un **modèle d'état de transition**, pas une
+molécule ; il n'a pas de descripteur CIP à contrôler. Il est repris tel quel de
+l'énoncé et du cours.
+
 ## Annexe — sortie complète de `verif.py`
 
 ```
-
 ==========================================================================
 0. TÉMOIN — convention d'axe (le molfile est en y VERS LE HAUT)
 ==========================================================================
@@ -671,6 +703,26 @@ le support.
        attendu  : C4=r
        SMILES   : CC(C)(C)[C@H]1CC[C@H](O)CC1
        achirale ? True
+
+==========================================================================
+18. LE DESSIN DE L'INTERMÉDIAIRE (TD catalyse) — le ligand box est-il (S,S) ?
+==========================================================================
+On ne vérifie pas une idée, on vérifie LE DESSIN : les coordonnées ci-dessous
+sont celles que la fonction oxaBox() de .build/figW.js envoie réellement dans le
+SVG (pentagone de rayon 30 ; O1 à 90°, C2 à 18°, N3 à −54°, C4 à −126°, C5 à 162° ;
+substituants à 150° en liaison GRASSE et à 235° en liaison POINTILLÉE).
+Cycle de gauche : t-Bu en gras, H en pointillé. Cycle de droite : l'inverse.
+C'est exactement la disposition de Cours_904.pdf p. 9.
+  OK ligand box dessiné : lecture des centres stéréogènes
+       lu       : C4=S; C13=S
+       SMILES   : CC(C)(C1=N[C@@H](C(C)(C)C)CO1)C1=N[C@@H](C(C)(C)C)CO1
+  OK ligand box dessiné : deux centres, tous deux (S)
+       lu       : ['S', 'S']
+       attendu  : ['S', 'S']
+  OK ligand box dessiné : identique au (S,S)-t-Bu-box de l'énoncé
+       lu       : CC(C)(C1=N[C@@H](C(C)(C)C)CO1)C1=N[C@@H](C(C)(C)C)CO1
+       attendu  : CC(C)(C1=N[C@@H](C(C)(C)C)CO1)C1=N[C@@H](C(C)(C)C)CO1
+       → le ligand dessiné est bien (S,S)-t-Bu-box, celui de l'énoncé.
 
 ==========================================================================
 BILAN : toutes les vérifications passent.

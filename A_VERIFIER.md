@@ -369,6 +369,14 @@ Le substrat y est exactement le pyruvate de l'exercice 3, et le ligand est le m�
 
 **Conclusion : A = (S)-2-hydroxy-2-méthyl-3-nitropropanoate d'éthyle.** Confiance élevée.
 
+*Mise à jour.* Le dessin « à recopier » a été refait d'après deux sources, relevées
+au pixel : le ligand box vient de **`Cours_904.pdf` p. 9** (« Proposed stereochemical
+model »), les deux partenaires et les positions équatoriale/axiale viennent de
+l'**encadré « modèle stéréochimique proposé » de l'énoncé**. Les coordonnées
+réellement envoyées dans le SVG ont été relues par RDKit : le ligand dessiné est
+bien **(S,S)** (section 18 de `verif.py`). Ce qui reste non vérifiable par calcul,
+c'est la face attaquée — elle vient du cours, comme expliqué ci-dessus.
+
 ## 17. Exercice 4 — la configuration du produit dépend d'une lecture que je ne peux pas garantir
 
 Ce qui est **certain** et ne dépend d'aucune interprétation :

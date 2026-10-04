@@ -1049,117 +1049,207 @@ function figAllyl(){
 }
 
 /* ==========================================================================
-   L'INTERMÉDIAIRE DESSINÉ COMME DANS LE COURS (2D, à recopier)
+   L'INTERMÉDIAIRE DESSINÉ COMME DANS LE COURS — 2D, à recopier à la main
+   --------------------------------------------------------------------------
+   Géométrie relevée au pixel sur deux sources :
+     • Cours_904.pdf p. 9, « Proposed stereochemical model » : le ligand box
+       bleu, le Cu, le cétoester chélaté, la flèche « attack on si face » ;
+     • TD_904.pdf, exercice 3, encadré « modèle stéréochimique proposé » :
+       le nitronate coordiné en équatorial et l'ester en axial.
+   Mêmes orientations, mêmes liaisons grasses / pointillées, même ordre.
    ========================================================================== */
 
-/* une oxazoline : O1–C2=N3–C4–C5–O1 ; C4 porte le t-Bu */
-function oxazoline(p, miroir, gras){
-  const m = miroir ? -1 : 1, X = (dx)=>p[0] + m*dx;
-  const C2=[X(0),p[1]], O1=[X(-30),p[1]-24], C5=[X(-62),p[1]-4],
-        C4=[X(-50),p[1]+32], N3=[X(-10),p[1]+36];
-  const tBu=[X(-78),p[1]+60];
+/* --- une oxazoline du ligand box -----------------------------------------
+   Pentagone régulier, orienté comme dans le cours :
+     O1 en haut (90°), C2 vers l'intérieur (18°), N3 en bas intérieur (−54°),
+     C4 en bas extérieur (−126°)  ← c'est lui qui porte le t-Bu,
+     C5 en haut extérieur (162°).
+   cote = +1 cycle de gauche, −1 cycle de droite (image miroir sur la page).
+   Le substituant du « créneau haut » (150°) est toujours en GRAS,
+   celui du « créneau bas » (235°) toujours en POINTILLÉ.
+   Gauche : t-Bu en haut (gras), H en bas (pointillé)   → C4 est (S)
+   Droite : H en haut (gras), t-Bu en bas (pointillé)   → C4 est (S) aussi
+   (c'est exactement ce que la prof dessine : le ligand est C₂-symétrique). */
+const OXR = 30;
+function oxaBox(cen, cote, hautH){
+  const P=(a,r)=>[cen[0]+cote*(r||OXR)*Math.cos(a*Math.PI/180),
+                  cen[1]-(r||OXR)*Math.sin(a*Math.PI/180)];
+  const O1=P(90), C2=P(18), N3=P(-54), C4=P(-126), C5=P(162);
+  const sub=(a,d)=>[C4[0]+cote*d*Math.cos(a*Math.PI/180), C4[1]-d*Math.sin(a*Math.PI/180)];
+  const B={c:C.blue};
   let s='';
-  s+=bond(O1,C2,{s:9,c:C.blue});
-  s+=dbond(C2,N3,{e:9,c:C.blue});
+  s+=bond(O1,C2,{s:9,e:1,c:C.blue});
+  s+=dbond(C2,N3,{s:1,e:9,c:C.blue});
   s+=bond(N3,C4,{s:9,c:C.blue});
-  s+=bond(C4,C5,{c:C.blue});
+  s+=bond(C4,C5,B);
   s+=bond(C5,O1,{e:9,c:C.blue});
-  s+= gras ? wedge(C4,tBu,{e:15,c:C.blue}) : hashb(C4,tBu,{e:15,c:C.blue});
+  const hB=sub(150,42), hL=sub(150,58), bB=sub(235,36), bL=sub(235,50);
+  s+=wedge(C4,hB,{c:C.blue,e:hautH?7:12});
+  s+=hashb(C4,bB,{c:C.blue,e:hautH?12:7});
+  s+=lab(hL, hautH?'H':'t-Bu', {fs:12,fw:700,c:C.blue,r:hautH?9:16});
+  s+=lab(bL, hautH?'t-Bu':'H', {fs:12,fw:700,c:C.blue,r:hautH?16:9});
   s+=lab(O1,'O',{fs:13,c:C.blue});
   s+=lab(N3,'N',{fs:13,c:C.blue});
-  s+=lab(tBu,'t-Bu',{fs:12,c:C.blue,r:18});
-  return {s:s, C2:C2, N3:N3};
+  /* le descripteur écrit sur le carbone, comme dans le cours */
+  s+=txt([C4[0]+cote*14, C4[1]+14],'S',{fs:11,fw:800,c:C.blue,style:'font-style:italic'});
+  return {s:s, C2:C2, N3:N3, C4:C4};
+}
+
+/* --- le ligand box complet + le cuivre ------------------------------------ */
+function boxCu(){
+  const Qb=[180,74], Lc=[118.2,93.9], Rc=[241.8,93.9], Cu=[180,154];
+  const G=oxaBox(Lc,1,false), D=oxaBox(Rc,-1,true);
+  let s=G.s+D.s;
+  /* le pont C(Me)₂ */
+  s+=bond(G.C2,Qb,{s:1,c:C.blue}); s+=bond(D.C2,Qb,{s:1,c:C.blue});
+  s+=seg(Qb,[162,51],{c:C.blue,w:2.2}); s+=lab([154,42],'Me',{fs:12,fw:700,c:C.blue,r:13});
+  s+=seg(Qb,[198,51],{c:C.blue,w:2.2}); s+=lab([206,42],'Me',{fs:12,fw:700,c:C.blue,r:13});
+  /* les deux liaisons de coordination N → Cu */
+  s+=bond(G.N3,Cu,{s:10,e:17,c:C.purple,w:2.2});
+  s+=bond(D.N3,Cu,{s:10,e:17,c:C.purple,w:2.2});
+  s+=lab(Cu,'Cu',{fs:15,fw:800,c:C.purple,r:16});
+  return {s:s, Cu:Cu, NG:G.N3, ND:D.N3};
+}
+
+/* le crochet [ ]²⁺ ‡ du cours, à droite */
+function crochetTS(y0,y1,dague){
+  let s=`<path d="M324,${y0} L336,${y0} L336,${y1}" fill="none" stroke="${C.ink}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  s+=txt([340,y0-4],'2+',{fs:10,fw:700,anchor:'start'});
+  if(dague) s+=txt([341,y0-18],'‡',{fs:14,fw:800,anchor:'start'});
+  return s;
 }
 
 /* k = 0 : l'intermédiaire nu et annoté — k = 1 : l'attaque et le produit */
 function figInterm3(k){
-  const W=360,H=470; let s='';
-  const Cu=[180,188];
-  /* --- le ligand box ---------------------------------------------------- */
-  const G=oxazoline([136,104],false,true), D=oxazoline([224,104],true,false);
-  s+=G.s+D.s;
-  const Q=[180,78];
-  s+=bond(G.C2,Q); s+=bond(D.C2,Q);
-  s+=hashb(Q,[158,48],{e:12,c:C.blue}); s+=wedge(Q,[202,48],{e:12,c:C.blue});
-  s+=lab([156,44],'Me',{fs:12,c:C.blue,r:14}); s+=lab([204,44],'Me',{fs:12,c:C.blue,r:14});
-  /* --- le cuivre --------------------------------------------------------- */
-  s+=bond(G.N3,Cu,{s:9,e:16,c:C.purple}); s+=bond(D.N3,Cu,{s:9,e:16,c:C.purple});
-  s+=lab(Cu,'Cu',{fs:15,fw:800,c:C.purple,r:17});
-  /* --- le cétoester chélaté ---------------------------------------------- */
-  const Oket=[108,232], Cket=[104,286], Me=[66,312], Cest=[150,312], Oest=[166,254], OEt=[118,352];
-  s+=bond(Cu,Oket,{s:17,e:10,c:C.purple});
-  s+=dbond(Oket,Cket,{s:10}); s+=lab(Oket,'O',{fs:13});
-  s+=bond(Cket,Me,{e:14}); s+=lab(Me,'CH₃',{fs:11.5,r:15});
-  s+=bond(Cket,Cest);
-  s+=seg(Cu,Oest,{c:C.red,dash:'5 4',w:1.8});
-  s+=dbond(Cest,Oest,{e:10}); s+=lab(Oest,'O',{fs:13,c:C.red});
-  s+=bond(Cest,OEt,{e:16}); s+=lab(OEt,'OEt',{fs:12,r:17});
-  /* --- le nitronate ------------------------------------------------------ */
-  const Onit=[250,232], Nnit=[278,280], O2=[322,292], Cnit=[238,304];
-  s+=bond(Cu,Onit,{s:17,e:10,c:C.purple});
-  s+=bond(Onit,Nnit,{s:10,e:11,c:C.green}); s+=lab(Onit,'O',{fs:13,c:C.green});
-  s+=dbond(Nnit,O2,{s:11,e:10,c:C.green}); s+=lab(O2,'O',{fs:13,c:C.green});
-  s+=bond(Nnit,Cnit,{s:11,e:14,c:C.green});
-  s+=lab(Nnit,'N',{fs:13,c:C.green}); s+=txt([292,266],'⊕',{fs:11,c:C.green});
-  s+=lab(Cnit,'CH₂',{fs:12,c:C.green,r:16}); s+=txt([216,318],'⊖',{fs:12,c:C.green,fw:700});
+  const W=360, H=(k===0?462:500); let s='';
+  s+=txt([180,17], k===0 ? 'L’intermédiaire — comme dans le cours'
+                         : 'Où ça attaque — comme dans le cours',{fs:13,fw:800});
+  /* --- repères du bas ---------------------------------------------------- */
+  const Cu=[180,154], Oket=[128,198], Onit=[234,196], Oax=[181,224],
+        Cket=[112,260], Cest=[170,284], Nnit=[268,232], O2=[312,246], Cnit=[248,278];
+  /* le plan équatorial, en transparence, AVANT tout le reste */
   if(k===0){
-    s+=txt([180,22],'L\'intermédiaire — exercice 3',{fs:13,fw:800});
-    s+=txt([74,214],'équatorial',{fs:10.5,fw:700,c:C.purple});
-    s+=txt([286,212],'équatorial',{fs:10.5,fw:700,c:C.purple});
-    s+=txt([198,250],'axial',{fs:10.5,fw:700,c:C.red,anchor:'start'});
-    s+=`<rect x="16" y="392" width="328" height="66" rx="12" fill="${C.purple}" opacity=".10"/>`;
-    s+=txtLines([180,412],['ÉQUATORIAL : 2 N du box + O cétone + O nitronate',
-      'AXIAL : O de l\'ester — il verrouille l\'orientation',
-      'géométrie : pyramide à base carrée'],{fs:10.5,lh:16,fw:600});
-  } else {
-    s+=txt([180,22],'L\'attaque — exercice 3',{fs:13,fw:800});
-    s+=curve([224,310],[124,296],24,{c:C.red,w:2.6});
-    s+=txt([252,346],'liaison C–C en formation',{fs:10.5,fw:700,c:C.red});
-    s+=`<rect x="16" y="364" width="328" height="44" rx="12" fill="${C.green}" opacity=".12"/>`;
-    s+=txt([180,381],'le nitronate attaque la face Si de la cétone',{fs:11.5,fw:800,c:C.green});
-    s+=txt([180,399],'(les deux t-Bu bouchent l\'accès à la face Re)',{fs:10.5,c:C.ink2});
-    s+=txt([180,426],'A = (S)-2-hydroxy-2-méthyl-3-nitropropanoate d\'éthyle',{fs:10.5,fw:800});
-    s+=txt([180,446],'CH₃–C(OH)(CO₂Et)–CH₂NO₂    95 %, e.e. = 92 %',{fs:10.5,c:C.ink2});
+    s+=`<path d="M135.8,118.2 L224.2,118.2 L${Onit[0]},${Onit[1]} L${Oket[0]},${Oket[1]} Z"`
+      +` fill="${C.purple}" opacity=".10" stroke="${C.purple}" stroke-width="1.2" stroke-dasharray="5 4"/>`;
   }
-  return svg(W,H,s,{alt:'intermédiaire au cuivre'});
+  /* --- le ligand box + Cu ------------------------------------------------- */
+  const B=boxCu(); s+=B.s;
+  /* --- le cétoester chélaté (noir) ---------------------------------------- */
+  s+=bond(Cu,Oket,{s:17,e:10,c:C.purple,w:2.2});
+  s+=dbond(Oket,Cket,{s:10,e:2});
+  s+=lab(Oket,'O',{fs:13});
+  s+=bond(Cket,Cest,{s:2,e:2});
+  s+=wedge(Cket,[76,290],{s:2,e:14});
+  s+=lab([70,296],'CH₃',{fs:11.5,r:17});
+  s+=dbond(Cest,Oax,{s:2,e:10});
+  s+=seg(Cu,[Oax[0],Oax[1]-10],{c:C.red,dash:'5 4',w:2});
+  s+=lab(Oax,'O',{fs:13,c:C.red});
+  s+=bond(Cest,[172,300],{s:2,e:0});
+  s+=lab([172,314],'OEt',{fs:12,r:16});
+  /* --- le nitronate (vert) ------------------------------------------------ */
+  s+=bond(Cu,Onit,{s:17,e:10,c:C.purple,w:2.2});
+  s+=bond(Onit,Nnit,{s:10,e:11,c:C.green});
+  s+=lab(Onit,'O',{fs:13,c:C.green});
+  s+=dbond(Nnit,O2,{s:11,e:10,c:C.green});
+  s+=lab(O2,'O',{fs:13,c:C.green});
+  s+=bond(Nnit,Cnit,{s:11,e:16,c:C.green});
+  s+=lab(Nnit,'N',{fs:13,c:C.green});
+  s+=txt([283,218],'⊕',{fs:11,fw:700,c:C.green});
+  s+=lab(Cnit,'CH₂',{fs:11.5,fw:700,c:C.green,r:16});
+  s+=txt([268,292],'⊖',{fs:12,fw:700,c:C.green});
+  s+=crochetTS(46,252,k===1);
+  if(k===0){
+    s+=txt([196,214],'axiale',{fs:10,fw:700,c:C.red,anchor:'start'});
+    s+=txt([180,127],'plan équatorial',{fs:9,fw:700,c:C.purple,op:'.9'});
+    s+=`<rect x="14" y="348" width="332" height="100" rx="12" fill="${C.purple}" opacity=".10"/>`;
+    s+=txtLines([180,366],
+      ['Quatre places ÉQUATORIALES : les 2 N du box,',
+       'l’O de la cétone, l’O du nitronate.',
+       'Une place AXIALE : l’O de l’ester (en rouge).',
+       'Pyramide à base carrée → cétone et nitronate',
+       'sont VOISINS, prêts à réagir.'],{fs:11,lh:17,fw:600});
+  } else {
+    /* la flèche courbe : du CARBONE du nitronate vers le CARBONE de la cétone */
+    s+=curve([238,296],[114,270],-132,{c:C.red,w:2.5});
+    s+=txt([180,378],'la liaison C–C qui se forme',{fs:10.5,fw:700,c:C.red});
+    s+=`<rect x="14" y="392" width="332" height="86" rx="12" fill="${C.green}" opacity=".12"/>`;
+    s+=txtLines([180,410],
+      ['Les deux t-Bu du ligand (S,S) bouchent la face Re :',
+       'le nitronate attaque la face Si de la cétone.',
+       'A = 2-hydroxy-2-méthyl-3-nitropropanoate d’éthyle,',
+       'de configuration (S) — 95 %, e.e. = 92 %.'],{fs:11,lh:17,fw:600});
+  }
+  return svg(W,H,s,{alt:'intermédiaire au cuivre, exercice 3'});
 }
 
-/* --- exercice 4 : l'intermédiaire boronate, façon cours ------------------- */
-function figInterm4(){
-  const W=360,H=430; let s='';
-  s+=txt([180,22],'L\'intermédiaire : le boronate cyclique chiral (TS2)',{fs:11.5,fw:800});
-  /* le binaphtyle en perspective : un trait plein devant, un pointillé derrière */
-  s+=seg([44,210],[150,118],{c:C.ink,w:4});                    /* cycle AVANT */
-  s+=seg([56,120],[142,214],{c:C.ink,w:2.4,dash:'3 5'});       /* cycle ARRIÈRE */
-  s+=lab([36,222],'Ar',{fs:12,r:14}); s+=lab([158,110],'Br',{fs:12,r:14});
-  s+=lab([48,112],'Ar',{fs:12,r:14,c:C.ink2}); s+=lab([150,222],'Br',{fs:12,r:14,c:C.ink2});
-  const B=[196,176], Oh=[160,146], Ob=[160,196];
-  s+=wedge([128,138],Oh,{e:11,c:C.ink}); s+=lab(Oh,'O',{fs:12.5});
-  s+=hashb([120,196],Ob,{e:11,c:C.ink2}); s+=lab(Ob,'O',{fs:12.5,c:C.ink2});
-  s+=bond(Oh,B,{s:11,e:12}); s+=bond(Ob,B,{s:11,e:12});
-  s+=lab(B,'B',{fs:14,fw:800,c:C.blue,r:13});
-  s+=txt([196,152],'⊖',{fs:11,c:C.blue});
-  /* la chaise à six centres */
-  const Ok=[252,166], Cc=[300,186], Cg=[286,246], Cb=[228,262], Ca=[198,218];
-  s+=bond(B,Ok,{s:12,e:10,c:C.blue}); s+=lab(Ok,'O',{fs:12.5});
-  s+=dbond(Ok,Cc,{s:10,e:4});
-  s+=bond(Cc,Cg,{s:4,e:4,dash:'5 4',w:2.4,c:C.red});
-  s+=dbondIn(Cg,Cb,-1,{});
-  s+=bond(Cb,Ca); s+=bond(Ca,B,{e:12});
-  /* substituants du carbonyle : Ph équatorial, CH3 axial */
-  s+=bond(Cc,[300,138],{s:4,e:14}); s+=lab([300,134],'CH₃',{fs:11.5,r:16});
-  s+=bond(Cc,[336,212],{s:4,e:12}); s+=lab([336,212],'Ph',{fs:12.5,fw:800,c:C.green,r:13});
-  s+=txt([326,162],'axial',{fs:9.5,c:C.ink2});
-  s+=txt([310,240],'équatorial',{fs:9.5,fw:700,c:C.green,anchor:'middle'});
-  s+=txt([244,296],'chaise à 6 centres',{fs:10.5,c:C.ink2});
-  s+=txt([98,250],'(aS)-3,3′-Br₂-BINOL',{fs:10.5,fw:700,c:C.blue});
-  s+=`<rect x="16" y="312" width="328" height="58" rx="12" fill="${C.green}" opacity=".12"/>`;
-  s+=txtLines([180,330],['Le binaphtol a chassé les deux OiPr du bore : le bore est',
-    'devenu chiral ET plus acide de Lewis. Il attrape l\'O de la',
-    'cétone, et l\'allyle attaque par son carbone terminal.'],{fs:10.5,lh:15});
-  s+=txt([180,388],'Ph en pseudo-ÉQUATORIAL → TS2 favorisé',{fs:11.5,fw:800,c:C.green});
-  s+=txt([180,410],'→ (S)-2-phényl-pent-4-én-2-ol, 83 %, e.e. = 94 %',{fs:11,fw:700});
-  return svg(W,H,s,{alt:'intermédiaire boronate'});
+/* --- exercice 4 : le boronate cyclique, comme dans l'encadré de l'énoncé ---
+   Le binaphtyle est vu PAR LA TRANCHE : deux bâtons croisés, le plein devant,
+   le pointillé derrière ; Ar à un bout, Br à l'autre — exactement le dessin
+   TS1/TS2 de l'énoncé. Le bore porte les deux O du binaphtol, et la chaise à
+   six centres part de lui vers la droite.
+   k = 0 : TS1 (Ph pseudo-axial, défavorisé) — k = 1 : TS2 (Ph pseudo-éq.). */
+function figInterm4(k){
+  const W=360, H=444; let s=''; const ts2=(k===1);
+  s+=txt([180,18], ts2 ? 'TS2 — le favorisé (à recopier)' : 'TS1 — le défavorisé',
+          {fs:13,fw:800,c:ts2?C.green:C.red});
+  /* --- le binaphtol vu par la tranche : deux bâtons croisés -------------- */
+  s+=seg([44,70],[112,164],{c:C.grey,w:2.6,dash:'3 5'});        /* ARRIÈRE */
+  s+=lab([36,60],'Ar',{fs:12,fw:700,c:C.grey,r:13});
+  s+=lab([120,176],'Br',{fs:12,fw:700,c:C.grey,r:13});
+  s+=seg([44,158],[154,72],{c:C.ink,w:4.6});                     /* AVANT   */
+  s+=lab([34,168],'Ar',{fs:12,fw:700,r:13});
+  s+=lab([166,56],'Br',{fs:12,fw:700,r:13});
+  s+=txt([86,226],'binaphtol vu par la tranche',{fs:9.5,c:C.ink2});
+  /* --- les deux oxygènes vers le bore ------------------------------------ */
+  const Bo=[186,160], Oh=[179,107], Ob=[136,142];
+  s+=wedge([144,80],Oh,{e:11});                       /* O du cycle AVANT   */
+  s+=hashb([100,150],Ob,{e:11,c:C.grey});             /* O du cycle ARRIÈRE */
+  s+=bond(Oh,Bo,{s:11,e:12}); s+=bond(Ob,Bo,{s:11,e:12});
+  s+=lab(Oh,'O',{fs:13}); s+=lab(Ob,'O',{fs:13,c:C.grey});
+  s+=lab(Bo,'B',{fs:14,fw:800,c:C.blue,r:12});
+  s+=txt([199,149],'⊖',{fs:11,fw:700,c:C.blue});
+  /* --- la chaise à six centres : B–O–C(cétone)···Cγ–Cβ=Cα–B -------------- */
+  const g=(dx,dy)=>[Bo[0]+dx*0.7, Bo[1]+dy*0.7];
+  const Ok=g(84.6,27.6), Cc=g(127,22.7), Cg=g(84.6,73), Cb=g(0,45.4), Ca=g(-42.4,50.3),
+        AX=g(127,-21.5), EQ=g(179.3,46.5);
+  s+=bond(Bo,Ok,{s:12,e:10,c:C.blue}); s+=lab(Ok,'O',{fs:13});
+  s+=dbond(Ok,Cc,{s:10,e:3});
+  s+=bond(Cc,Cg,{s:3,e:3,dash:'5 4',w:2.6,c:C.red});
+  s+=dbondIn(Cg,Cb,1,{s:3,e:3});
+  s+=bond(Cb,Ca,{s:3,e:3});
+  s+=bond(Ca,Bo,{s:3,e:12});
+  s+=txt([268,240],'C–C qui se forme',{fs:9.5,fw:700,c:C.red});
+  /* --- les deux substituants de la cétone -------------------------------- */
+  const pPh = ts2 ? EQ : AX, pMe = ts2 ? AX : EQ;
+  s+=bond(Cc,pMe,{s:3,e:15}); s+=lab(pMe,'CH₃',{fs:11,r:15});
+  s+=bond(Cc,pPh,{s:3,e:12});
+  s+=lab(pPh,'Ph',{fs:12.5,fw:800,c:ts2?C.green:C.red,r:13});
+  s+=txt([AX[0],AX[1]-22],'pseudo-ax.',{fs:8.5,fw:ts2?500:800,c:ts2?C.ink2:C.red});
+  s+=txt([EQ[0]-6,EQ[1]+20],'pseudo-éq.',{fs:8.5,fw:ts2?800:500,c:ts2?C.green:C.ink2});
+  if(!ts2){
+    s+=stericZone(268,112,38,21,{});
+    s+=txt([230,66],'gêne avec le Br',{fs:10.5,fw:800,c:C.red});
+  }
+  s+=txt([180,272],'chaise de Zimmerman–Traxler à 6 centres',{fs:10.5,c:C.ink2});
+  s+=`<rect x="14" y="286" width="332" height="${ts2?96:66}" rx="12"`
+    +` fill="${ts2?C.green:C.red}" opacity=".12"/>`;
+  if(ts2){
+    s+=txtLines([180,304],
+      ['Le phényle, le plus gros, est en pseudo-ÉQUATORIAL :',
+       'il s’étale vers l’extérieur, loin du bore et loin',
+       'des brome en 3,3′. C’est le TS FAVORISÉ.',
+       '→ (S)-2-phényl-pent-4-én-2-ol, 83 %, e.e. = 94 %.'],{fs:11,lh:17,fw:600});
+    s+=txt([180,404],'Transposition allylique : c’est le carbone TERMINAL',{fs:10.5,fw:700});
+    s+=txt([180,422],'de l’allyle qui attaque, pas celui lié au bore.',{fs:10.5,fw:700});
+  } else {
+    s+=txtLines([180,304],
+      ['Le phényle est en pseudo-AXIAL : interactions',
+       '1,3-diaxiales avec le bore ET gêne avec le brome',
+       'en 3,3′ du binaphtol. Double pénalité → minoritaire.'],{fs:11,lh:17,fw:600});
+    s+=txt([180,380],'Les deux TS présentent les deux FACES de la cétone :',{fs:10.5,fw:700});
+    s+=txt([180,398],'ils conduisent donc à deux ÉNANTIOMÈRES.',{fs:10.5,fw:700});
+  }
+  return svg(W,H,s,{alt:'boronate cyclique, exercice 4, '+(ts2?'TS2':'TS1')});
 }
 
 /* ==========================================================================
@@ -1622,8 +1712,8 @@ S({
   },
   une:'Le dessin complet de l\'intermédiaire, dans le style du cours, avec les positions équatoriales et axiale annotées et la flèche d\'attaque.',
   etapes:[
-   {q:'Dans quel ordre le dessiner.',t:'<b>1)</b> Cu au centre. <b>2)</b> Les deux oxazolines au-dessus, reliées par le C(Me)₂ : chacune porte son <i>t</i>-Bu, un en gras et l\'autre en pointillé (ligand C₂-symétrique). <b>3)</b> Les deux N vers le Cu. <b>4)</b> Le cétoester en bas à gauche, le nitronate en bas à droite. <b>5)</b> La liaison axiale Cu···O de l\'ester, en pointillé.'},
-   {q:'Ce qu\'il ne faut pas oublier d\'annoter.',t:'Les mots <b>équatorial</b> (×3 : les N comptent, plus la cétone et le nitronate) et <b>axial</b> (l\'ester). Et la charge ⊕ sur l\'azote du nitronate, ⊖ sur son carbone.'},
+   {q:'Dans quel ordre le dessiner.',t:'<b>1)</b> Les deux cycles oxazoline en haut, O en haut de chaque cycle, reliés par le C(Me)₂. <b>2)</b> Sur chaque C4 : le <i>t</i>-Bu <b>et</b> le H, l\'un en gras et l\'autre en pointillé — et le <b><i>S</i></b> écrit à côté. À gauche <i>t</i>-Bu en gras, à droite H en gras : c\'est l\'axe C₂. <b>3)</b> Cu sous les deux N. <b>4)</b> Le cétoester en bas à gauche, le nitronate en bas à droite. <b>5)</b> La liaison axiale Cu···O de l\'ester, en pointillé. <b>6)</b> Le crochet [ ]²⁺ à droite.'},
+   {q:'Ce qu\'il ne faut pas oublier d\'annoter.',t:'Les quatre positions <b>équatoriales</b> (les 2 N du box + l\'O de la cétone + l\'O du nitronate) et la position <b>axiale</b> (l\'O de l\'ester). C\'est mot pour mot ce que demande l\'énoncé. Et les charges : ⊕ sur l\'azote du nitronate, ⊖ sur son carbone.'},
    {q:'La flèche.',t:'Une seule flèche courbe, du <b>carbone</b> du nitronate vers le <b>carbone</b> de la cétone. C\'est la liaison C–C qui se forme. Ne la pars pas de l\'oxygène : le nucléophile, c\'est le carbone.'},
    {q:'La phrase à écrire sous le dessin.',t:'« Les deux <i>t</i>-Bu du ligand (S,S) bouchent l\'accès à la face <i>Re</i> ; le nitronate attaque donc la face <b><i>Si</i></b> de la cétone, ce qui conduit au produit <b>(S)</b>. »'}
   ],
@@ -1639,8 +1729,12 @@ S({
   grp:'À recopier', title:'Exercice 4 — l\'intermédiaire, à recopier',
   consigne:'Le boronate cyclique, dessiné comme dans l\'encadré de l\'énoncé.',
   build(host){
-    const f=el('div','figbox'); f.innerHTML=figInterm4(); host.appendChild(f);
-    host.appendChild(el('div','statusline','Les deux traits qui se croisent à gauche sont les deux naphtalènes vus <b>par la tranche</b> : le trait plein est devant, le pointillé derrière. C\'est la seule façon de montrer la torsion sur une feuille.'));
+    const f=el('div','figbox'), row=el('div','btnrow'); let k=1;
+    const draw=()=>{ f.innerHTML=figInterm4(k); [...row.children].forEach((b,i)=>b.classList.toggle('on',i===k)); };
+    ['TS1 — défavorisé','TS2 — favorisé'].forEach((t,i)=>{ const b=el('button','btn'); b.textContent=t;
+      b.style.flex='1 1 46%'; b.onclick=()=>{k=i;draw();}; row.appendChild(b); });
+    host.appendChild(row); host.appendChild(f); draw();
+    host.appendChild(el('div','statusline','Les deux traits qui se croisent à gauche sont les deux naphtalènes vus <b>par la tranche</b> : le trait plein est devant, le pointillé derrière. C\'est la seule façon de montrer la torsion sur une feuille. Les deux boutons te donnent les <b>deux</b> états de transition, exactement comme dans l\'encadré de l\'énoncé.'));
   },
   une:'Le binaphtol a remplacé les deux OiPr sur le bore ; le bore tient l\'oxygène de la cétone ; l\'allyle attaque par son carbone terminal, dans une chaise à six centres.',
   etapes:[
