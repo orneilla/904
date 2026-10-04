@@ -156,3 +156,117 @@ function figAllyl(){
   s+=txt([180,246],'OH, CH₃, Ph, CH₂–CH=CH₂',{fs:11,fw:700});
   return svg(W,H,s,{alt:'allylboration d\'une cétone'});
 }
+
+/* ==========================================================================
+   L'INTERMÉDIAIRE DESSINÉ COMME DANS LE COURS (2D, à recopier)
+   ========================================================================== */
+
+/* une oxazoline : O1–C2=N3–C4–C5–O1 ; C4 porte le t-Bu */
+function oxazoline(p, miroir, gras){
+  const m = miroir ? -1 : 1, X = (dx)=>p[0] + m*dx;
+  const C2=[X(0),p[1]], O1=[X(-30),p[1]-24], C5=[X(-62),p[1]-4],
+        C4=[X(-50),p[1]+32], N3=[X(-10),p[1]+36];
+  const tBu=[X(-78),p[1]+60];
+  let s='';
+  s+=bond(O1,C2,{s:9,c:C.blue});
+  s+=dbond(C2,N3,{e:9,c:C.blue});
+  s+=bond(N3,C4,{s:9,c:C.blue});
+  s+=bond(C4,C5,{c:C.blue});
+  s+=bond(C5,O1,{e:9,c:C.blue});
+  s+= gras ? wedge(C4,tBu,{e:15,c:C.blue}) : hashb(C4,tBu,{e:15,c:C.blue});
+  s+=lab(O1,'O',{fs:13,c:C.blue});
+  s+=lab(N3,'N',{fs:13,c:C.blue});
+  s+=lab(tBu,'t-Bu',{fs:12,c:C.blue,r:18});
+  return {s:s, C2:C2, N3:N3};
+}
+
+/* k = 0 : l'intermédiaire nu et annoté — k = 1 : l'attaque et le produit */
+function figInterm3(k){
+  const W=360,H=470; let s='';
+  const Cu=[180,188];
+  /* --- le ligand box ---------------------------------------------------- */
+  const G=oxazoline([136,104],false,true), D=oxazoline([224,104],true,false);
+  s+=G.s+D.s;
+  const Q=[180,78];
+  s+=bond(G.C2,Q); s+=bond(D.C2,Q);
+  s+=hashb(Q,[158,48],{e:12,c:C.blue}); s+=wedge(Q,[202,48],{e:12,c:C.blue});
+  s+=lab([156,44],'Me',{fs:12,c:C.blue,r:14}); s+=lab([204,44],'Me',{fs:12,c:C.blue,r:14});
+  /* --- le cuivre --------------------------------------------------------- */
+  s+=bond(G.N3,Cu,{s:9,e:16,c:C.purple}); s+=bond(D.N3,Cu,{s:9,e:16,c:C.purple});
+  s+=lab(Cu,'Cu',{fs:15,fw:800,c:C.purple,r:17});
+  /* --- le cétoester chélaté ---------------------------------------------- */
+  const Oket=[108,232], Cket=[104,286], Me=[66,312], Cest=[150,312], Oest=[166,254], OEt=[118,352];
+  s+=bond(Cu,Oket,{s:17,e:10,c:C.purple});
+  s+=dbond(Oket,Cket,{s:10}); s+=lab(Oket,'O',{fs:13});
+  s+=bond(Cket,Me,{e:14}); s+=lab(Me,'CH₃',{fs:11.5,r:15});
+  s+=bond(Cket,Cest);
+  s+=seg(Cu,Oest,{c:C.red,dash:'5 4',w:1.8});
+  s+=dbond(Cest,Oest,{e:10}); s+=lab(Oest,'O',{fs:13,c:C.red});
+  s+=bond(Cest,OEt,{e:16}); s+=lab(OEt,'OEt',{fs:12,r:17});
+  /* --- le nitronate ------------------------------------------------------ */
+  const Onit=[250,232], Nnit=[278,280], O2=[322,292], Cnit=[238,304];
+  s+=bond(Cu,Onit,{s:17,e:10,c:C.purple});
+  s+=bond(Onit,Nnit,{s:10,e:11,c:C.green}); s+=lab(Onit,'O',{fs:13,c:C.green});
+  s+=dbond(Nnit,O2,{s:11,e:10,c:C.green}); s+=lab(O2,'O',{fs:13,c:C.green});
+  s+=bond(Nnit,Cnit,{s:11,e:14,c:C.green});
+  s+=lab(Nnit,'N',{fs:13,c:C.green}); s+=txt([292,266],'⊕',{fs:11,c:C.green});
+  s+=lab(Cnit,'CH₂',{fs:12,c:C.green,r:16}); s+=txt([216,318],'⊖',{fs:12,c:C.green,fw:700});
+  if(k===0){
+    s+=txt([180,22],'L\'intermédiaire — exercice 3',{fs:13,fw:800});
+    s+=txt([74,214],'équatorial',{fs:10.5,fw:700,c:C.purple});
+    s+=txt([286,212],'équatorial',{fs:10.5,fw:700,c:C.purple});
+    s+=txt([198,250],'axial',{fs:10.5,fw:700,c:C.red,anchor:'start'});
+    s+=`<rect x="16" y="392" width="328" height="66" rx="12" fill="${C.purple}" opacity=".10"/>`;
+    s+=txtLines([180,412],['ÉQUATORIAL : 2 N du box + O cétone + O nitronate',
+      'AXIAL : O de l\'ester — il verrouille l\'orientation',
+      'géométrie : pyramide à base carrée'],{fs:10.5,lh:16,fw:600});
+  } else {
+    s+=txt([180,22],'L\'attaque — exercice 3',{fs:13,fw:800});
+    s+=curve([224,310],[124,296],24,{c:C.red,w:2.6});
+    s+=txt([252,346],'liaison C–C en formation',{fs:10.5,fw:700,c:C.red});
+    s+=`<rect x="16" y="364" width="328" height="44" rx="12" fill="${C.green}" opacity=".12"/>`;
+    s+=txt([180,381],'le nitronate attaque la face Si de la cétone',{fs:11.5,fw:800,c:C.green});
+    s+=txt([180,399],'(les deux t-Bu bouchent l\'accès à la face Re)',{fs:10.5,c:C.ink2});
+    s+=txt([180,426],'A = (S)-2-hydroxy-2-méthyl-3-nitropropanoate d\'éthyle',{fs:10.5,fw:800});
+    s+=txt([180,446],'CH₃–C(OH)(CO₂Et)–CH₂NO₂    95 %, e.e. = 92 %',{fs:10.5,c:C.ink2});
+  }
+  return svg(W,H,s,{alt:'intermédiaire au cuivre'});
+}
+
+/* --- exercice 4 : l'intermédiaire boronate, façon cours ------------------- */
+function figInterm4(){
+  const W=360,H=430; let s='';
+  s+=txt([180,22],'L\'intermédiaire : le boronate cyclique chiral (TS2)',{fs:11.5,fw:800});
+  /* le binaphtyle en perspective : un trait plein devant, un pointillé derrière */
+  s+=seg([44,210],[150,118],{c:C.ink,w:4});                    /* cycle AVANT */
+  s+=seg([56,120],[142,214],{c:C.ink,w:2.4,dash:'3 5'});       /* cycle ARRIÈRE */
+  s+=lab([36,222],'Ar',{fs:12,r:14}); s+=lab([158,110],'Br',{fs:12,r:14});
+  s+=lab([48,112],'Ar',{fs:12,r:14,c:C.ink2}); s+=lab([150,222],'Br',{fs:12,r:14,c:C.ink2});
+  const B=[196,176], Oh=[160,146], Ob=[160,196];
+  s+=wedge([128,138],Oh,{e:11,c:C.ink}); s+=lab(Oh,'O',{fs:12.5});
+  s+=hashb([120,196],Ob,{e:11,c:C.ink2}); s+=lab(Ob,'O',{fs:12.5,c:C.ink2});
+  s+=bond(Oh,B,{s:11,e:12}); s+=bond(Ob,B,{s:11,e:12});
+  s+=lab(B,'B',{fs:14,fw:800,c:C.blue,r:13});
+  s+=txt([196,152],'⊖',{fs:11,c:C.blue});
+  /* la chaise à six centres */
+  const Ok=[252,166], Cc=[300,186], Cg=[286,246], Cb=[228,262], Ca=[198,218];
+  s+=bond(B,Ok,{s:12,e:10,c:C.blue}); s+=lab(Ok,'O',{fs:12.5});
+  s+=dbond(Ok,Cc,{s:10,e:4});
+  s+=bond(Cc,Cg,{s:4,e:4,dash:'5 4',w:2.4,c:C.red});
+  s+=dbondIn(Cg,Cb,-1,{});
+  s+=bond(Cb,Ca); s+=bond(Ca,B,{e:12});
+  /* substituants du carbonyle : Ph équatorial, CH3 axial */
+  s+=bond(Cc,[300,138],{s:4,e:14}); s+=lab([300,134],'CH₃',{fs:11.5,r:16});
+  s+=bond(Cc,[336,212],{s:4,e:12}); s+=lab([336,212],'Ph',{fs:12.5,fw:800,c:C.green,r:13});
+  s+=txt([326,162],'axial',{fs:9.5,c:C.ink2});
+  s+=txt([310,240],'équatorial',{fs:9.5,fw:700,c:C.green,anchor:'middle'});
+  s+=txt([244,296],'chaise à 6 centres',{fs:10.5,c:C.ink2});
+  s+=txt([98,250],'(aS)-3,3′-Br₂-BINOL',{fs:10.5,fw:700,c:C.blue});
+  s+=`<rect x="16" y="312" width="328" height="58" rx="12" fill="${C.green}" opacity=".12"/>`;
+  s+=txtLines([180,330],['Le binaphtol a chassé les deux OiPr du bore : le bore est',
+    'devenu chiral ET plus acide de Lewis. Il attrape l\'O de la',
+    'cétone, et l\'allyle attaque par son carbone terminal.'],{fs:10.5,lh:15});
+  s+=txt([180,388],'Ph en pseudo-ÉQUATORIAL → TS2 favorisé',{fs:11.5,fw:800,c:C.green});
+  s+=txt([180,410],'→ (S)-2-phényl-pent-4-én-2-ol, 83 %, e.e. = 94 %',{fs:11,fw:700});
+  return svg(W,H,s,{alt:'intermédiaire boronate'});
+}

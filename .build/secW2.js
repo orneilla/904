@@ -231,3 +231,52 @@ S({
    'Finir par le descripteur et le lien e.e. → ΔΔG‡.'
   ]
 });
+
+/* --- les deux dessins d'intermédiaire, à recopier -------------------------- */
+S({
+  grp:'À recopier', title:'Exercice 3 — l\'intermédiaire, à recopier',
+  consigne:'C\'est ce dessin que ta prof attend. Panneau 1 : la structure. Panneau 2 : l\'attaque.',
+  build(host){
+    const f=el('div','figbox'), row=el('div','btnrow'); let k=0;
+    const draw=()=>{ f.innerHTML=figInterm3(k); [...row.children].forEach((b,i)=>b.classList.toggle('on',i===k)); };
+    ['1. La structure','2. L\'attaque'].forEach((t,i)=>{ const b=el('button','btn'); b.textContent=t;
+      b.style.flex='1 1 46%'; b.onclick=()=>{k=i;draw();}; row.appendChild(b); });
+    host.appendChild(row); host.appendChild(f); draw();
+    host.appendChild(el('div','statusline','Pour le recopier vite : commence par le <b>cuivre</b> au milieu, puis les deux oxazolines au-dessus (un <i>t</i>-Bu en gras, l\'autre en pointillé), puis les deux partenaires en dessous. Les quatre liaisons violettes sont équatoriales, la rouge en pointillé est axiale.'));
+  },
+  une:'Le dessin complet de l\'intermédiaire, dans le style du cours, avec les positions équatoriales et axiale annotées et la flèche d\'attaque.',
+  etapes:[
+   {q:'Dans quel ordre le dessiner.',t:'<b>1)</b> Cu au centre. <b>2)</b> Les deux oxazolines au-dessus, reliées par le C(Me)₂ : chacune porte son <i>t</i>-Bu, un en gras et l\'autre en pointillé (ligand C₂-symétrique). <b>3)</b> Les deux N vers le Cu. <b>4)</b> Le cétoester en bas à gauche, le nitronate en bas à droite. <b>5)</b> La liaison axiale Cu···O de l\'ester, en pointillé.'},
+   {q:'Ce qu\'il ne faut pas oublier d\'annoter.',t:'Les mots <b>équatorial</b> (×3 : les N comptent, plus la cétone et le nitronate) et <b>axial</b> (l\'ester). Et la charge ⊕ sur l\'azote du nitronate, ⊖ sur son carbone.'},
+   {q:'La flèche.',t:'Une seule flèche courbe, du <b>carbone</b> du nitronate vers le <b>carbone</b> de la cétone. C\'est la liaison C–C qui se forme. Ne la pars pas de l\'oxygène : le nucléophile, c\'est le carbone.'},
+   {q:'La phrase à écrire sous le dessin.',t:'« Les deux <i>t</i>-Bu du ligand (S,S) bouchent l\'accès à la face <i>Re</i> ; le nitronate attaque donc la face <b><i>Si</i></b> de la cétone, ce qui conduit au produit <b>(S)</b>. »'}
+  ],
+  retenir:[
+   'Cu d\'abord, puis le ligand, puis les deux partenaires.',
+   'Annoter <b>équatorial</b> et <b>axial</b> : c\'est la question.',
+   'La flèche part du <b>carbone</b> du nitronate.',
+   'Conclure : face <i>Si</i> → produit (S).'
+  ]
+});
+
+S({
+  grp:'À recopier', title:'Exercice 4 — l\'intermédiaire, à recopier',
+  consigne:'Le boronate cyclique, dessiné comme dans l\'encadré de l\'énoncé.',
+  build(host){
+    const f=el('div','figbox'); f.innerHTML=figInterm4(); host.appendChild(f);
+    host.appendChild(el('div','statusline','Les deux traits qui se croisent à gauche sont les deux naphtalènes vus <b>par la tranche</b> : le trait plein est devant, le pointillé derrière. C\'est la seule façon de montrer la torsion sur une feuille.'));
+  },
+  une:'Le binaphtol a remplacé les deux OiPr sur le bore ; le bore tient l\'oxygène de la cétone ; l\'allyle attaque par son carbone terminal, dans une chaise à six centres.',
+  etapes:[
+   {q:'Dans quel ordre le dessiner.',t:'<b>1)</b> Les deux traits croisés du binaphtyle (plein devant, pointillé derrière), avec Ar d\'un bout et Br de l\'autre. <b>2)</b> Les deux O, l\'un en gras vers le trait plein, l\'autre en pointillé vers le trait pointillé. <b>3)</b> Le bore, avec sa charge ⊖. <b>4)</b> La chaise à six : B–O–C(cétone)···C–C=C–B.'},
+   {q:'Ce qu\'il faut annoter.',t:'<b>Ph en pseudo-équatorial</b> et <b>CH₃ en pseudo-axial</b> : c\'est toute la réponse à la question « lequel des deux TS est favorisé ». Plus la liaison C–C en formation, en pointillé.'},
+   {q:'La phrase à écrire.',t:'« TS2 est favorisé car il place le phényle, le plus gros substituant, en position pseudo-équatoriale. Dans TS1 le phényle est pseudo-axial : il subit les interactions 1,3-diaxiales <b>et</b> pointe vers le brome en 3,3′ du binaphtol. »'},
+   {q:'Et si tu n\'as le temps que d\'une chose.',t:'Dessine la <b>chaise</b> avec Ph équatorial et écris les deux mots « pseudo-équatorial » et « 1,3-diaxial ». C\'est là que sont les points.'}
+  ],
+  retenir:[
+   'Les deux traits croisés = les naphtalènes vus par la tranche.',
+   'Bore tétraédrique, chargé ⊖ : c\'est un ate-complexe.',
+   'Chaise à six centres, Ph pseudo-équatorial.',
+   'Liaison C–C en formation : en pointillé.'
+  ]
+});
