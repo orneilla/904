@@ -347,3 +347,65 @@ directement a*R*/a*S* — ce que l'énoncé demande — et mentionne M/P avec sa
 l'angle de torsion, sans proposer de correspondance. Si ton cours donne une règle
 « M = … », utilise la sienne.
 
+---
+
+# TD « Catalyse énantiosélective » — exercices 3 et 4
+
+## 16. Exercice 3 — la face attaquée vient de ton cours, pas de mon intuition
+
+Déterminer une face à partir d'un modèle d'état de transition dessiné à plat n'est pas
+faisable de façon fiable. Je ne l'ai donc **pas** fait : la réponse vient de **ton propre
+cours**, page « Proposed Stereochemical model » du chapitre 2, où la structure calculée
+(PM3) de **[Cu((S)-t-Bu-Box)(pyruvate)]²⁺** porte une flèche annotée **« Nu (si face) »**.
+
+Le substrat y est exactement le pyruvate de l'exercice 3, et le ligand est le même.
+À partir de là, le reste est du calcul :
+
+- j'ai construit explicitement les deux produits possibles (attaque sur la face *Si* et
+  sur la face *Re*) à partir de leurs géométries 3D ;
+- RDKit attribue **(S)** pour l'attaque sur la face *Si* et **(R)** pour la face *Re* ;
+- j'ai aussi vérifié, sur les coordonnées du dessin de l'énoncé, que le ligand box
+  représenté est bien **(S,S)**.
+
+**Conclusion : A = (S)-2-hydroxy-2-méthyl-3-nitropropanoate d'éthyle.** Confiance élevée.
+
+## 17. Exercice 4 — la configuration du produit dépend d'une lecture que je ne peux pas garantir
+
+Ce qui est **certain** et ne dépend d'aucune interprétation :
+
+- le catalyseur n'a **aucun centre de chiralité** : c'est une **chiralité axiale**
+  (atropisomérie) ;
+- **TS1 et TS2 présentent les deux faces de la cétone** et conduisent donc à des produits
+  **énantiomères** ;
+- **TS2 est le favorisé** : il place le phényle en pseudo-équatorial, alors que TS1 le
+  met en pseudo-axial, où il subit une interaction 1,3-diaxiale avec le binaphtolate
+  porté par le bore. Les deux arguments (chaise + encombrement du catalyseur) vont dans
+  le même sens.
+
+Ce qui **dépend d'une lecture du dessin** :
+
+- **La configuration du catalyseur.** Elle se lit sur l'encadré TS1/TS2, seul endroit où
+  le binaphtyle est dessiné en perspective (un trait plein devant, un pointillé
+  derrière). Ma lecture donne **a*S***, vérifiée numériquement par la méthode du
+  tétraèdre étiré. Si on lit la perspective dans l'autre sens, on obtient a*R*.
+- **La configuration du nouveau centre.** Elle découle de l'hélicité de la chaise à six
+  centres, que le dessin plat de l'énoncé ne fixe pas. J'ai fait le calcul de deux
+  façons :
+  - en lisant littéralement le dessin de TS2 (O à gauche, C–C qui se forme en bas à
+    gauche, Ph à droite dans le plan, CH₃ vers l'observateur) → **(S)** ;
+  - sur une chaise idéale construite par moi, avec le phényle équatorial → **(R)**.
+
+  Les deux calculs sont justes : ils portent simplement sur **deux hélicités de chaise
+  différentes**. Autrement dit, le descripteur bascule avec l'hélicité, et l'hélicité
+  est fixée par le catalyseur — un lien que je ne peux pas établir de façon fiable à
+  partir d'un scan.
+
+**Ce que je retiens, et ce que je te conseille d'écrire :** le raisonnement (chiralité
+axiale, a*S*, activation par boronate cyclique, TS2 favorisé pour deux raisons) est la
+partie notée, et elle est solide. Pour le descripteur final, annonce **(S)** en montrant
+d'où il vient, et vérifie avec ta prof : si elle lit la perspective dans l'autre sens,
+**tout s'inverse de façon cohérente** (a*R* et produit (R)).
+
+Référence d'origine de la réaction : **Lou, Moquist & Schaus, *J. Am. Chem. Soc.* 2006,
+128, 12660**. Je n'ai pas pu la consulter depuis cette session.
+

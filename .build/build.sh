@@ -33,3 +33,8 @@ mk voir_en_3d.html \
    "Voir en 3D — la méthode quand on ne visualise pas" "Voir en 3D" "Tout le TD en volume, sans rien imaginer" "voir3d" \
    lib3d.js mol3d.js figV.js \
    secV1.js secV2.js secV3.js secV6.js secV7.js secV8.js secV5.js
+
+mk td_catalyse_corrige.html \
+   "CH0904 — TD catalyse, exercices 3 et 4" "TD catalyse" "Exercices 3 et 4, en volume" "tdcat" \
+   lib3d.js mol_td2.js figV.js figW.js \
+   secW1.js secW2.js

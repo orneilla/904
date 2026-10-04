@@ -1,0 +1,1580 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CH0904 — TD catalyse, exercices 3 et 4</title>
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#ffffff; --panel2:#f2f2ef; --ink:#1a1a18; --ink2:#55554e;
+  --line:#d8d8d2; --accent:#1f2937;
+  --blue:#1d4ed8;      /* source de chiralité */
+  --green:#0f7a34;     /* électrophile / nucléophile entrant */
+  --purple:#7326cc;    /* métal & chélate */
+  --red:#cf2222;       /* gêne stérique */
+  --redzone:rgba(207,34,34,.20);
+  --grey:#9a9a93;      /* face bloquée */
+  --greyface:rgba(120,120,115,.32);
+  --ok:#0f7a34; --warn:#b45309;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);
+}
+:root:not([data-theme="light"]) { }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15161a; --panel:#1e2027; --panel2:#282b33; --ink:#eceef2; --ink2:#a9aeba;
+    --line:#3a3e48; --accent:#e5e7eb;
+    --blue:#7aa8ff; --green:#5fd48a; --purple:#c79cff; --red:#ff8f8f;
+    --redzone:rgba(255,120,120,.22);
+    --grey:#7c8290; --greyface:rgba(170,175,190,.28);
+    --ok:#5fd48a; --warn:#fbbf24;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15161a; --panel:#1e2027; --panel2:#282b33; --ink:#eceef2; --ink2:#a9aeba;
+  --line:#3a3e48; --accent:#e5e7eb;
+  --blue:#7aa8ff; --green:#5fd48a; --purple:#c79cff; --red:#ff8f8f;
+  --redzone:rgba(255,120,120,.22);
+  --grey:#7c8290; --greyface:rgba(170,175,190,.28);
+  --ok:#5fd48a; --warn:#fbbf24;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:400 17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  padding:0 0 92px;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:40;background:var(--bg);
+  border-bottom:1px solid var(--line);
+}
+.hbar{display:flex;align-items:center;gap:8px;min-height:56px}
+.htitle{font-size:15px;font-weight:600;letter-spacing:.01em;flex:1;line-height:1.2}
+.htitle small{display:block;font-weight:400;font-size:12.5px;color:var(--ink2)}
+.iconbtn{
+  min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;color:var(--ink);
+  font-size:18px;cursor:pointer;padding:0 10px;
+}
+.iconbtn:active{background:var(--panel2)}
+
+/* ---------- légende ---------- */
+#legendbar{border-bottom:1px solid var(--line);background:var(--panel2)}
+#legendtoggle{
+  width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;
+  background:none;border:0;color:var(--ink);font:inherit;font-size:15px;font-weight:600;
+  padding:10px 16px;cursor:pointer;
+}
+#legendtoggle .chev{transition:transform .18s;font-size:13px;color:var(--ink2)}
+#legendbar.open #legendtoggle .chev{transform:rotate(180deg)}
+#legendbody{display:none;padding:0 16px 14px}
+#legendbar.open #legendbody{display:block}
+.leg{display:flex;align-items:flex-start;gap:10px;font-size:14.5px;line-height:1.4;padding:5px 0;color:var(--ink2)}
+.leg b{color:var(--ink);font-weight:600}
+.swatch{flex:0 0 26px;height:20px;margin-top:1px;border-radius:5px;display:block}
+
+/* ---------- sommaire ---------- */
+#toc{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;display:none;padding-bottom:40px}
+#toc.open{display:block}
+.tocitem{
+  display:flex;gap:12px;align-items:baseline;width:100%;text-align:left;
+  min-height:52px;padding:12px 16px;background:none;border:0;border-bottom:1px solid var(--line);
+  color:var(--ink);font:inherit;font-size:16px;cursor:pointer;
+}
+.tocitem .n{color:var(--ink2);font-variant-numeric:tabular-nums;font-size:14px;flex:0 0 34px}
+.tocitem.cur{background:var(--panel2);font-weight:600}
+.tocgroup{padding:16px 16px 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);font-weight:700}
+
+/* ---------- section ---------- */
+section.sec{padding-top:18px;padding-bottom:104px}
+h2.sectitle{font-size:20px;line-height:1.25;margin:0 0 4px;font-weight:700}
+.kicker{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);font-weight:700;margin-bottom:6px}
+.consigne{
+  display:flex;gap:9px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:12px;padding:11px 13px;margin:12px 0 14px;font-size:15.5px;line-height:1.45;
+}
+.consigne .ic{flex:0 0 auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px;margin:0 0 14px}
+.figbox{width:100%;overflow:hidden;border-radius:10px;background:var(--panel)}
+.cv3dwrap{width:100%;border-radius:12px;background:var(--panel);border:1px solid var(--line);
+  overflow:hidden;position:relative;margin:0 0 6px}
+.cv3dwrap canvas{display:block;cursor:grab}
+.cv3dwrap canvas:active{cursor:grabbing}
+.cv3dhint{font-size:12.5px;color:var(--ink2);text-align:center;margin:0 0 10px}
+.etape3d{counter-reset:none;margin:0 0 12px}
+.etape3d li{margin:0 0 9px;line-height:1.55}
+.gros{font-size:17px;line-height:1.62}
+.gros b{font-weight:700}
+.dico{border-left:4px solid var(--blue);background:var(--panel2);border-radius:0 10px 10px 0;
+  padding:11px 13px;margin:10px 0;font-size:15px;line-height:1.55}
+.dico .m{font-weight:800;color:var(--blue);display:block;margin-bottom:3px}
+.rassure{border-left:4px solid var(--green);background:var(--panel2);border-radius:0 10px 10px 0;
+  padding:11px 13px;margin:10px 0;font-size:15px;line-height:1.55}
+.figbox svg{display:block;width:100%;height:auto}
+.expl{font-size:16.5px;line-height:1.6;margin:0 0 14px}
+.expl p{margin:0 0 10px}
+.note{font-size:14.5px;line-height:1.5;color:var(--ink2);border-left:3px solid var(--line);padding-left:11px;margin:12px 0}
+.warnbox{font-size:14.5px;line-height:1.5;border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin:12px 0;background:color-mix(in srgb,var(--warn) 9%,transparent)}
+.warnbox b{color:var(--warn)}
+
+/* ---------- boutons ---------- */
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.btn{
+  min-height:44px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);font:inherit;font-size:15.5px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;
+}
+.btn:active{transform:translateY(1px)}
+.btn.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.btn.blue.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.green.on{background:var(--green);border-color:var(--green);color:#fff}
+.btn.wide{flex:1 1 100%}
+.statusline{
+  font-size:15.5px;line-height:1.5;padding:11px 13px;border-radius:12px;
+  background:var(--panel2);border:1px solid var(--line);margin:0 0 12px;
+}
+.statusline b{font-weight:700}
+
+/* ---------- quiz ---------- */
+.quiz{border:1px solid var(--line);border-radius:14px;padding:13px;background:var(--panel);margin:6px 0 4px}
+.quiz .q{font-size:16px;font-weight:600;line-height:1.45;margin:0 0 11px}
+.quiz .a{display:none;font-size:15.5px;line-height:1.55;color:var(--ink);border-top:1px dashed var(--line);padding-top:11px;margin-top:2px}
+.quiz.show .a{display:block}
+.quiz button{min-height:44px;width:100%;border-radius:11px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:inherit;font-size:15.5px;cursor:pointer}
+
+/* ---------- tableau ---------- */
+table.dat{width:100%;border-collapse:collapse;font-size:15px}
+table.dat th,table.dat td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--line)}
+table.dat th{font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink2)}
+table.dat tr.sel td{background:var(--panel2);font-weight:600}
+table.dat tbody tr{cursor:pointer}
+table.dat td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+
+/* ---------- sliders ---------- */
+.slab{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;margin:10px 0 2px}
+.slab b{font-variant-numeric:tabular-nums;font-size:16px}
+input[type=range]{width:100%;height:44px;background:transparent;-webkit-appearance:none;appearance:none;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:5px;background:var(--panel2);border:1px solid var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:var(--blue);border:3px solid var(--panel);margin-top:-12px;box-shadow:var(--shadow)}
+input[type=range]::-moz-range-track{height:8px;border-radius:5px;background:var(--panel2);border:1px solid var(--line)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--blue);border:3px solid var(--panel)}
+
+.bars{margin:10px 0 2px}
+.barrow{display:flex;align-items:center;gap:8px;font-size:14.5px;margin:6px 0}
+.barrow .k{flex:0 0 74px;color:var(--ink2)}
+.bartrack{flex:1 1 auto;height:22px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);overflow:hidden;display:flex}
+.barfill{height:100%;background:var(--blue)}
+.barfill.b2{background:var(--grey)}
+.barrow .v{flex:0 0 auto;font-variant-numeric:tabular-nums;font-weight:600}
+
+/* ---------- footer nav ---------- */
+#nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--bg);
+  border-top:1px solid var(--line);padding:8px 0 max(8px,env(safe-area-inset-bottom));
+}
+.navin{display:flex;gap:8px;align-items:center}
+.navbtn{
+  flex:1 1 0;min-height:48px;border-radius:13px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);font:inherit;font-size:15.5px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.navbtn[disabled]{opacity:.38}
+.navpos{flex:0 0 auto;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums;min-width:52px;text-align:center}
+
+
+/* ---------- blocs pédagogiques ---------- */
+.une{
+  border:2px solid var(--blue);border-radius:14px;padding:12px 14px;margin:0 0 14px;
+  font-size:17px;line-height:1.5;background:color-mix(in srgb,var(--blue) 7%,transparent);
+}
+.une .t{display:block;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:800;color:var(--blue);margin-bottom:5px}
+.blk{margin:0 0 16px}
+.blk>h3{
+  font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);
+  font-weight:800;margin:0 0 8px;display:flex;align-items:center;gap:8px;
+}
+.blk>h3::after{content:"";flex:1;height:1px;background:var(--line)}
+.blk p{margin:0 0 10px;font-size:16.5px;line-height:1.6}
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:st}
+ol.steps li{
+  counter-increment:st;position:relative;padding:0 0 14px 42px;font-size:16.5px;line-height:1.55;
+}
+ol.steps li::before{
+  content:counter(st);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;
+  background:var(--blue);color:#fff;font-size:14px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+ol.steps li::after{
+  content:"";position:absolute;left:13px;top:32px;bottom:2px;width:2px;background:var(--line);
+}
+ol.steps li:last-child{padding-bottom:0}
+ol.steps li:last-child::after{display:none}
+ol.steps li b{font-weight:700}
+ol.steps li .q{display:block;font-size:14px;color:var(--ink2);font-style:italic;margin-bottom:3px}
+ul.keys{list-style:none;margin:0;padding:0}
+ul.keys li{position:relative;padding:0 0 9px 26px;font-size:16px;line-height:1.5}
+ul.keys li::before{content:"◆";position:absolute;left:2px;top:0;color:var(--green);font-size:13px}
+details.plus{border:1px solid var(--line);border-radius:13px;background:var(--panel2);margin:0 0 16px;overflow:hidden}
+details.plus>summary{
+  list-style:none;cursor:pointer;min-height:48px;display:flex;align-items:center;gap:8px;
+  padding:12px 14px;font-size:15.5px;font-weight:600;
+}
+details.plus>summary::-webkit-details-marker{display:none}
+details.plus>summary::before{content:"▸";color:var(--ink2);font-size:13px;transition:transform .18s}
+details.plus[open]>summary::before{transform:rotate(90deg)}
+details.plus .body{padding:0 14px 14px;font-size:15.5px;line-height:1.6}
+details.plus .body p{margin:0 0 10px}
+.src{font-size:13.5px;line-height:1.45;color:var(--ink2);border-top:1px dashed var(--line);padding-top:9px;margin-top:10px}
+.src b{color:var(--ink);font-weight:600}
+.vocab{border-bottom:2px dotted var(--blue);cursor:help}
+.inlinebtn{background:none;border:0;color:var(--blue);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:0}
+
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid currentColor}
+.c-blue{color:var(--blue)} .c-green{color:var(--green)} .c-purple{color:var(--purple)} .c-red{color:var(--red)} .c-grey{color:var(--grey)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hbar">
+    <button class="iconbtn" id="tocbtn" aria-label="Ouvrir le sommaire">☰</button>
+    <div class="htitle">TD catalyse<small id="hsub">Exercices 3 et 4, en volume</small></div>
+    <button class="iconbtn" id="themebtn" aria-label="Changer de thème">◐</button>
+  </div>
+</header>
+
+<div id="legendbar">
+  <button id="legendtoggle" aria-expanded="false">
+    <span>Légende des couleurs</span><span class="chev">▼</span>
+  </button>
+  <div id="legendbody">
+    <div class="leg"><span class="swatch" style="background:var(--blue)"></span><span><b>Bleu — source de chiralité.</b> Auxiliaire, ligand, réactif chiral, groupe directeur (iPr, tBu, Ph/Me).</span></div>
+    <div class="leg"><span class="swatch" style="background:var(--green)"></span><span><b>Vert — partenaire entrant.</b> Électrophile ou nucléophile qui arrive : E, R, CO₂, O.</span></div>
+    <div class="leg"><span class="swatch" style="background:var(--purple)"></span><span><b>Violet — métal et chélate.</b> Li, Mg, Ti.</span></div>
+    <div class="leg"><span class="swatch" style="background:linear-gradient(90deg,var(--ink) 0 5px,transparent 5px 9px,var(--ink) 9px 14px,transparent 14px 18px,var(--ink) 18px 23px)"></span><span><b>Pointillés — liaison en formation ou en rupture.</b></span></div>
+    <div class="leg"><span class="swatch" style="background:var(--redzone);border:1px solid var(--red)"></span><span><b>Zone rouge — gêne stérique.</b></span></div>
+    <div class="leg"><span class="swatch" style="background:var(--greyface)"></span><span><b>Gris — face bloquée.</b> La face libre porte la flèche d'attaque verte.</span></div>
+  </div>
+</div>
+
+<nav id="toc" aria-label="Sommaire"></nav>
+
+<main id="stage" class="wrap"></main>
+
+<div id="nav">
+  <div class="wrap navin">
+    <button class="navbtn" id="prevbtn">‹ Précédent</button>
+    <span class="navpos" id="navpos"></span>
+    <button class="navbtn" id="nextbtn">Suivant ›</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   1. Petite bibliothèque de dessin SVG (aucune dépendance externe)
+   ========================================================================== */
+const C = {
+  ink:'var(--ink)', ink2:'var(--ink2)',
+  blue:'var(--blue)', green:'var(--green)', purple:'var(--purple)',
+  red:'var(--red)', grey:'var(--grey)', line:'var(--line)'
+};
+const MK = {ink:'mkInk', blue:'mkBlue', green:'mkGreen', purple:'mkPurple', red:'mkRed', grey:'mkGrey'};
+function mkName(c){
+  if(c===C.blue) return MK.blue; if(c===C.green) return MK.green;
+  if(c===C.purple) return MK.purple; if(c===C.red) return MK.red;
+  if(c===C.grey) return MK.grey; return MK.ink;
+}
+/* définitions (marqueurs de flèche + hachures) injectées dans chaque <svg> */
+const DEFS = `<defs>
+ ${['Ink','Blue','Green','Purple','Red','Grey'].map((n,i)=>{
+   const col=[C.ink,C.blue,C.green,C.purple,C.red,C.grey][i];
+   return `<marker id="mk${n}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto-start-reverse">
+     <path d="M0,1 L9.5,5 L0,9 L2.6,5 Z" fill="${col}"/></marker>
+   <marker id="hk${n}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+     <path d="M0,1.2 L9.5,5" stroke="${col}" stroke-width="1.4" fill="none" stroke-linecap="round"/></marker>`;
+ }).join('')}
+ <pattern id="hatchRed" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+   <line x1="0" y1="0" x2="0" y2="7" stroke="${C.red}" stroke-width="2" opacity=".5"/>
+ </pattern>
+</defs>`;
+
+const E = (n)=>Math.round(n*100)/100;
+const Rgas=8.314;                       /* J·mol⁻¹·K⁻¹ */
+function erFromDdG(ddG_kJ,T_K){ return Math.exp((ddG_kJ*1000)/(Rgas*T_K)); }
+
+/* --- liaisons ------------------------------------------------------------ */
+function seg(a,b,o){ o=o||{};
+  return `<line x1="${E(a[0])}" y1="${E(a[1])}" x2="${E(b[0])}" y2="${E(b[1])}"`
+       + ` stroke="${o.c||C.ink}" stroke-width="${o.w||2.1}" stroke-linecap="round"`
+       + (o.dash?` stroke-dasharray="${o.dash}"`:'')
+       + (o.op?` opacity="${o.op}"`:'') + `/>`;
+}
+function unit(a,b){ const dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy)||1; return [dx/L,dy/L,L]; }
+function norm(a,b,d){ const [ux,uy]=unit(a,b); return [-uy*d, ux*d]; }
+/* raccourcit une liaison aux deux bouts (pour laisser la place aux étiquettes) */
+function trim(a,b,s,e){ const [ux,uy]=unit(a,b); return [[a[0]+ux*(s||0),a[1]+uy*(s||0)],[b[0]-ux*(e||0),b[1]-uy*(e||0)]]; }
+function bond(a,b,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); return seg(p,q,o); }
+function dbond(a,b,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); const n=norm(p,q,o.gap||3.1);
+  return seg([p[0]+n[0],p[1]+n[1]],[q[0]+n[0],q[1]+n[1]],o)+seg([p[0]-n[0],p[1]-n[1]],[q[0]-n[0],q[1]-n[1]],o); }
+/* double liaison "intérieure" : deuxième trait raccourci, décalé d'un seul côté */
+function dbondIn(a,b,side,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); const n=norm(p,q,(o.gap||3.4)*(side||1));
+  const [ux,uy]=unit(p,q);
+  return seg(p,q,o)+seg([p[0]+n[0]+ux*3,p[1]+n[1]+uy*3],[q[0]+n[0]-ux*3,q[1]+n[1]-uy*3],o); }
+function wedge(a,b,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); const n=norm(p,q,o.wide||4.6);
+  return `<polygon points="${E(p[0])},${E(p[1])} ${E(q[0]+n[0])},${E(q[1]+n[1])} ${E(q[0]-n[0])},${E(q[1]-n[1])}" fill="${o.c||C.ink}"/>`; }
+function hashb(a,b,o){ o=o||{}; const [p,q]=trim(a,b,o.s,o.e); const [ux,uy,L]=unit(p,q);
+  const n=6, out=[];
+  for(let i=1;i<=n;i++){ const t=i/n, w=1.1+ (o.wide||4.6)*t;
+    const cx=p[0]+ux*L*t, cy=p[1]+uy*L*t, nx=-uy*w, ny=ux*w;
+    out.push(seg([cx+nx,cy+ny],[cx-nx,cy-ny],{c:o.c||C.ink,w:1.9}));
+  } return out.join(''); }
+
+/* --- étiquettes d'atome -------------------------------------------------- */
+function lab(p,t,o){ o=o||{};
+  const fs=o.fs||15, r=o.r||(fs*0.72);
+  const bgc = o.nobg?'none':(o.bg||'var(--panel)');
+  return `<circle cx="${E(p[0])}" cy="${E(p[1])}" r="${E(r)}" fill="${bgc}"/>`
+   + `<text x="${E(p[0])}" y="${E(p[1])}" text-anchor="middle" dominant-baseline="central"`
+   + ` font-size="${fs}" font-weight="${o.fw||600}" fill="${o.c||C.ink}"`
+   + ` font-family="system-ui,-apple-system,sans-serif">${t}</text>`;
+}
+function txt(p,t,o){ o=o||{};
+  return `<text x="${E(p[0])}" y="${E(p[1])}" text-anchor="${o.anchor||'middle'}" dominant-baseline="${o.base||'central'}"`
+   + ` font-size="${o.fs||13}" font-weight="${o.fw||500}" fill="${o.c||C.ink}" ${o.op?`opacity="${o.op}"`:''}`
+   + ` font-family="system-ui,-apple-system,sans-serif"${o.style?` style="${o.style}"`:''}>${t}</text>`;
+}
+function txtLines(p,lines,o){ o=o||{}; const lh=o.lh||14;
+  return lines.map((t,i)=>txt([p[0],p[1]+i*lh],t,o)).join(''); }
+/* --- flèches ------------------------------------------------------------- */
+function arrow(a,b,o){ o=o||{}; const c=o.c||C.ink;
+  return `<line x1="${E(a[0])}" y1="${E(a[1])}" x2="${E(b[0])}" y2="${E(b[1])}" stroke="${c}"`
+   + ` stroke-width="${o.w||2.4}" stroke-linecap="round" ${o.dash?`stroke-dasharray="${o.dash}"`:''}`
+   + ` marker-end="url(#${mkName(c)})"/>`;
+}
+/* flèche courbe : bow = flèche (bombement) perpendiculaire */
+function curve(a,b,bow,o){ o=o||{}; const c=o.c||C.ink;
+  const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2; const n=norm(a,b,bow);
+  const cx=mx+n[0], cy=my+n[1];
+  const head = o.half ? `url(#${mkName(c).replace('mk','hk')})` : `url(#${mkName(c)})`;
+  return `<path d="M${E(a[0])},${E(a[1])} Q${E(cx)},${E(cy)} ${E(b[0])},${E(b[1])}" fill="none"`
+   + ` stroke="${c}" stroke-width="${o.w||2.1}" stroke-linecap="round" marker-end="${head}"/>`;
+}
+/* liaison de coordination courbe (pointillés, sans tête) */
+function arcSeg(a,b,bow,o){ o=o||{};
+  const [p,q]=trim(a,b,o.s,o.e);
+  const mx=(p[0]+q[0])/2, my=(p[1]+q[1])/2, n=norm(p,q,bow);
+  return `<path d="M${E(p[0])},${E(p[1])} Q${E(mx+n[0])},${E(my+n[1])} ${E(q[0])},${E(q[1])}" fill="none"`
+   + ` stroke="${o.c||C.ink}" stroke-width="${o.w||2.2}" stroke-dasharray="${o.dash||'4 3'}"/>`;
+}
+/* flèche de réaction horizontale avec légende */
+function rxnArrow(x1,x2,y,top,bot,o){ o=o||{};
+  let s = arrow([x1,y],[x2,y],{c:o.c||C.ink,w:2.2});
+  const mx=(x1+x2)/2;
+  (top||[]).forEach((t,i)=> s+=txt([mx,y-13-i*13],t,{fs:o.fs||11.5,c:o.tc||C.ink}));
+  (bot||[]).forEach((t,i)=> s+=txt([mx,y+13+i*13],t,{fs:o.fs||11.5,c:o.bc||C.ink2}));
+  return s;
+}
+function polar(cx,cy,r,adeg){const a=(adeg-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+function sectorPath(cx,cy,r0,r1,a0,a1){
+  const p1=polar(cx,cy,r1,a0),p2=polar(cx,cy,r1,a1),p3=polar(cx,cy,r0,a1),p4=polar(cx,cy,r0,a0);
+  const big=(a1-a0)>180?1:0;
+  return `M${E(p1[0])},${E(p1[1])} A${r1},${r1} 0 ${big} 1 ${E(p2[0])},${E(p2[1])} L${E(p3[0])},${E(p3[1])} A${r0},${r0} 0 ${big} 0 ${E(p4[0])},${E(p4[1])} Z`;
+}
+
+/* --- zones --------------------------------------------------------------- */
+function stericZone(cx,cy,rx,ry,o){ o=o||{};
+  return `<ellipse cx="${E(cx)}" cy="${E(cy)}" rx="${E(rx)}" ry="${E(ry)}" fill="var(--redzone)"`
+   + ` stroke="${C.red}" stroke-width="1.4" stroke-dasharray="4 3"${o.rot?` transform="rotate(${o.rot} ${E(cx)} ${E(cy)})"`:''}/>`;
+}
+function blockedFace(pathD){ return `<path d="${pathD}" fill="var(--greyface)" stroke="${C.grey}" stroke-width="1.2" stroke-dasharray="5 4"/>`; }
+
+function svg(w,h,body,o){ o=o||{};
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${o.alt||'schéma'}" xmlns="http://www.w3.org/2000/svg">`
+   + DEFS + body + `</svg>`;
+}
+
+/* ==========================================================================
+   2. Briques chimiques réutilisables
+   ========================================================================== */
+const add=(p,d)=>[p[0]+d[0],p[1]+d[1]];
+
+/* Carbone stéréogène « cartoon » : 2 liaisons dans le plan (haut-gauche et
+   haut-droite) + 1 liaison gras/pointillé vers le bas ; H implicite.
+   Cette disposition est non dégénérée, contrairement à la « croix ». */
+function stereoC(p,o){
+  o=o||{};
+  const L=add(p,[-34,-16]), R=add(p,[34,-16]), D=add(p,[0,34]);
+  let s='';
+  s+=bond(p,L,{e:o.l?13:0}); s+=bond(p,R,{e:o.r?13:0});
+  s+= o.hash ? hashb(p,D,{e:12,c:o.dC||C.ink}) : wedge(p,D,{e:12,c:o.dC||C.ink});
+  if(o.l) s+=lab(L,o.l,{fs:12.5,c:o.lC,r:o.lr||16});
+  if(o.r) s+=lab(R,o.r,{fs:12.5,c:o.rC,r:o.rr||16});
+  s+=lab(D,o.d,{fs:12.5,c:o.dC||C.ink,fw:700,r:o.dr||19});
+  if(o.tag) s+=txt(add(p,[0,62]),o.tag,{fs:13,fw:700,c:o.tagC||C.ink});
+  return s;
+}
+/* Cycle oxazolidin-2-one. P = position de l'oxygène du cycle (O1).
+   opt.aux : 'ipr' (valinol) | 'noreph' (noréphédrine)
+   opt.wedge : true -> substituants en gras (vers nous) ; false -> pointillés
+   opt.co : direction du C2=O : 'up' | 'upright'                                */
+const RING = {O1:[0,28], C2:[8,0], N:[37,0], C4:[46,28], C5:[23,46]};
+function oxaz(P,opt){
+  opt=opt||{}; const g=(k)=>add(P,RING[k]); let s='';
+  const O1=g('O1'),C2=g('C2'),N=g('N'),C4=g('C4'),C5=g('C5');
+  const B={c:C.blue};
+  s+=bond(O1,C2,Object.assign({s:9,e:2},B));
+  s+=bond(C2,N,Object.assign({s:2,e:9},B));
+  s+=bond(N,C4,Object.assign({s:9,e:2},B));
+  s+=bond(C4,C5,B); s+=bond(C5,O1,Object.assign({e:9},B));
+  const Od = opt.co==='upright' ? add(C2,[16,-21]) : add(C2,[-10,-24]);
+  s+=dbond(C2,Od,Object.assign({e:9},B));
+  s+=lab(Od,'O',{fs:13.5,c:C.blue});
+  s+=lab(O1,'O',{fs:13.5,c:C.blue});
+  s+=lab(N,'N',{fs:13.5,c:C.blue});
+  if(opt.aux==='bn'){
+    const CH=add(C4,[12,26]), Ph=add(CH,[-4,28]);
+    s+= opt.wedge ? wedge(C4,CH,B) : hashb(C4,CH,B);
+    s+=bond(CH,Ph,Object.assign({e:11},B));
+    s+=lab(Ph,'Ph',{fs:12.5,c:C.blue,r:11});
+  } else if(opt.aux==='noreph'){
+    const Me=add(C4,[20,20]), Ph=add(C5,[-14,25]);
+    s+= opt.wedge ? wedge(C4,Me,Object.assign({e:10},B)) : hashb(C4,Me,Object.assign({e:10},B));
+    s+= opt.wedge ? wedge(C5,Ph,Object.assign({e:11},B)) : hashb(C5,Ph,Object.assign({e:11},B));
+    s+=lab(Me,'Me',{fs:12.5,c:C.blue,r:11});
+    s+=lab(Ph,'Ph',{fs:12.5,c:C.blue,r:11});
+  } else {
+    const CH=add(C4,[12,26]), m1=add(CH,[-14,22]), m2=add(CH,[22,8]);
+    s+= opt.wedge ? wedge(C4,CH,B) : hashb(C4,CH,B);
+    s+=bond(CH,m1,B); s+=bond(CH,m2,B);
+  }
+  if(opt.tag) s+=txt(add(P,[18,74]),opt.tag,{fs:12.5,fw:700,c:C.blue});
+  return s;
+}
+/* points d'ancrage du cycle */
+const oxN=(P)=>add(P,RING.N);
+const oxC2O=(P)=>add(add(P,RING.C2),[16,-21]);
+
+/* --- récapitulatif en blocs empilés (jamais de tableau large sur mobile) --- */
+function recapHTML(rows){
+  return rows.map(r=>`<div style="border-left:4px solid ${r.c};padding:10px 12px;margin:9px 0;background:var(--panel2);border-radius:0 10px 10px 0">`
+   +`<div style="font-weight:800;font-size:14px">${r.t}</div>`
+   +`<div style="font-weight:800;color:${r.c};font-size:13px;margin-top:3px">${r.v}</div>`
+   +`<div style="color:var(--ink2);font-size:12.5px;margin-top:4px;line-height:1.45">${r.d}</div></div>`).join('');
+}
+
+function figArbreSel(){
+  const W=360,H=300; let s='';
+  const q=(y,t)=>`<rect x="16" y="${y}" width="328" height="30" rx="8" fill="var(--panel2)" stroke="${C.line}"/>`
+    +txt([180,y+15],t,{fs:12,fw:700});
+  const rep=(y,t,col)=>`<rect x="40" y="${y}" width="280" height="28" rx="14" fill="${col}" opacity=".13"/>`
+    +txt([180,y+14],t,{fs:12,fw:800,c:col});
+  s+=q(14,'1. La réaction crée-t-elle un élément stéréogène ?');
+  s+=arrow([180,44],[180,56],{w:2});
+  s+=rep(58,'NON → ni diastéréo- ni énantiosélective',C.grey);
+  s+=q(96,'2. Le substrat est-il DÉJÀ chiral ?');
+  s+=arrow([180,126],[180,138],{w:2});
+  s+=rep(140,'OUI → DIASTÉRÉOsélective',C.red);
+  s+=txt([180,176],'(les deux états de transition sont diastéréoisomères :',{fs:10.5,c:C.ink2});
+  s+=txt([180,190],'ils ont des énergies différentes « gratuitement »)',{fs:10.5,c:C.ink2});
+  s+=q(204,'3. Sinon : le réactif ou le catalyseur est-il chiral ?');
+  s+=arrow([180,234],[180,246],{w:2});
+  s+=rep(248,'OUI → ÉNANTIOsélective',C.blue);
+  s+=txt([180,286],'NON → produit racémique, aucune sélectivité',{fs:11,fw:700,c:C.grey});
+  return svg(W,H,s,{alt:'arbre de décision diastéréo / énantio'});
+}
+
+/* ==========================================================================
+   3. Moteur : liste des sections + rendu
+   ========================================================================== */
+const SECTIONS=[];
+const S=(d)=>SECTIONS.push(d);
+function el(tag,cls,html){const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e;}
+
+/* ==========================================================================
+   Petit moteur 3D (canvas, aucune dépendance).
+   Projection orthographique — ce qu'on voit est exactement ce qu'on mesure.
+   ========================================================================== */
+const COL3D = {C:'--ink', O:'--red', N:'--blue', F:'--green', S:'--purple',
+               P:'--purple', Si:'--purple', Cl:'--green', Br:'--green', H:'--grey', X:'--ink2'};
+function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888'; }
+
+/* --- algèbre 3×3 minimale ------------------------------------------------- */
+const M3 = {
+  id:()=>[1,0,0, 0,1,0, 0,0,1],
+  mul:(a,b)=>{ const r=new Array(9);
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++){ let s=0;
+      for(let k=0;k<3;k++) s+=a[i*3+k]*b[k*3+j]; r[i*3+j]=s; } return r; },
+  app:(m,v)=>[m[0]*v[0]+m[1]*v[1]+m[2]*v[2], m[3]*v[0]+m[4]*v[1]+m[5]*v[2], m[6]*v[0]+m[7]*v[1]+m[8]*v[2]],
+  tr:(m)=>[m[0],m[3],m[6], m[1],m[4],m[7], m[2],m[5],m[8]],
+  rot:(ax,ang)=>{ const n=Math.hypot(ax[0],ax[1],ax[2])||1, x=ax[0]/n,y=ax[1]/n,z=ax[2]/n;
+    const c=Math.cos(ang), s=Math.sin(ang), t=1-c;
+    return [t*x*x+c, t*x*y-s*z, t*x*z+s*y,
+            t*x*y+s*z, t*y*y+c, t*y*z-s*x,
+            t*x*z-s*y, t*y*z+s*x, t*z*z+c]; }
+};
+/* interpolation entre deux orientations : axe + angle de la rotation relative */
+function slerp3(R0,R1,t){
+  const M=M3.mul(R1,M3.tr(R0));
+  let c=(M[0]+M[4]+M[8]-1)/2; c=Math.max(-1,Math.min(1,c));
+  const a=Math.acos(c);
+  if(a<1e-6) return R1.slice();
+  const s=2*Math.sin(a);
+  const ax=[(M[7]-M[5])/s,(M[2]-M[6])/s,(M[3]-M[1])/s];
+  return M3.mul(M3.rot(ax,a*t),R0);
+}
+
+/* Vue de trois quarts par défaut : légèrement inclinée pour qu'AUCUN groupe
+   ne soit caché derrière un autre (en vue strictement de face, la liaison qui
+   vient vers toi masque exactement celle qui part vers le fond). */
+const TILT = M3.mul(M3.rot([0,1,0],0.46), M3.rot([1,0,0],-0.26));
+
+/* --- le visualiseur ------------------------------------------------------- */
+function Viewer3D(host,mol,opt){
+  opt=opt||{};
+  const cv=document.createElement('canvas');
+  cv.className='cv3d'; cv.style.touchAction='none';
+  host.appendChild(cv);
+  const ctx=cv.getContext('2d');
+  /* positions de travail : la torsion les modifie, les originales restent intactes */
+  /* centre de la boîte englobante (et non centroïde) : une chaîne latérale
+     ne décentre alors pas la molécule dans le cadre */
+  const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9];
+  mol.atoms.forEach(a=>{ for(let k=0;k<3;k++){
+    if(a.p[k]<lo[k]) lo[k]=a.p[k]; if(a.p[k]>hi[k]) hi[k]=a.p[k]; } });
+  const CEN=[(lo[0]+hi[0])/2,(lo[1]+hi[1])/2,(lo[2]+hi[2])/2];
+  const P0 = mol.atoms.map(a=>[a.p[0]-CEN[0],a.p[1]-CEN[1],a.p[2]-CEN[2]]);
+  const POS = P0.map(p=>p.slice());
+  const DEC = (v)=>[v[0]-CEN[0],v[1]-CEN[1],v[2]-CEN[2]];   /* décor : même repère */
+  const GROS = mol.atoms.length>28;
+  let R = opt.R0 ? opt.R0.slice() : TILT.slice();
+  let tors = 0;
+  let spin = !!opt.spin, anim=null, W=0,H=0,S=1;
+  const decor = opt.decor||[];
+  const badges = opt.badges||[];
+
+  function resize(){
+    const r=host.getBoundingClientRect(), d=Math.min(window.devicePixelRatio||1,2.5);
+    W=Math.max(220,Math.round(r.width)); H=opt.h||260;
+    cv.width=W*d; cv.height=H*d; cv.style.width=W+'px'; cv.style.height=H+'px';
+    ctx.setTransform(d,0,0,d,0,0);
+    let m=0; P0.forEach(p=>{ m=Math.max(m,Math.hypot(p[0],p[1],p[2])); });
+    S=(Math.min(W,H)/2-22)/(m||1);   /* -22 px : place pour les boules et les étiquettes */
+    draw();
+  }
+  const proj=(p)=>{ const v=M3.app(R,p); return [W/2+v[0]*S, H/2-v[1]*S, v[2]]; };
+
+  function ellipse(P,n,r,col,op,txt){
+    const c=proj(P), nv=M3.app(R,n);
+    const len=Math.hypot(nv[0],nv[1]);
+    const ang=Math.atan2(-nv[1],nv[0]);
+    const rb=r*S, ra=rb*Math.abs(nv[2]);
+    ctx.save(); ctx.globalAlpha=op; ctx.fillStyle=col;
+    ctx.beginPath(); ctx.ellipse(c[0],c[1],rb,Math.max(ra,0.5),ang+Math.PI/2,0,Math.PI*2);
+    ctx.fill(); ctx.globalAlpha=Math.min(1,op*3.2); ctx.strokeStyle=col; ctx.lineWidth=1.6; ctx.stroke();
+    ctx.restore();
+  }
+  function tag3(P,txt,col,fs){
+    const c=proj(P); ctx.save();
+    ctx.font='800 '+(fs||12)+'px system-ui,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const w=ctx.measureText(txt).width+12;
+    ctx.globalAlpha=.88; ctx.fillStyle=cssv('--panel');
+    ctx.beginPath(); ctx.roundRect(c[0]-w/2,c[1]-10,w,20,10); ctx.fill();
+    ctx.globalAlpha=1; ctx.fillStyle=col; ctx.fillText(txt,c[0],c[1]+0.5);
+    ctx.restore();
+  }
+  function line3(a,b,col,dash,w){
+    const p=proj(a),q=proj(b);
+    ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=w||2; ctx.lineCap='round';
+    if(dash) ctx.setLineDash([6,5]);
+    ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); ctx.restore();
+  }
+  function arrow3(a,b,col){
+    const p=proj(a),q=proj(b);
+    const dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L;
+    ctx.save(); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=2.6; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0]-ux*8,q[1]-uy*8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(q[0],q[1]);
+    ctx.lineTo(q[0]-ux*11-uy*5.5, q[1]-uy*11+ux*5.5);
+    ctx.lineTo(q[0]-ux*11+uy*5.5, q[1]-uy*11-ux*5.5);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+
+  function draw(){
+    const ink=cssv('--ink'), panel=cssv('--panel'), line=cssv('--line');
+    ctx.clearRect(0,0,W,H);
+    /* décor arrière */
+    decor.forEach(d=>{ if(d.front) return; paintDecor(d); });
+    /* liaisons puis atomes, triés par profondeur */
+    const pts=POS.map(p=>proj(p));
+    const items=[];
+    mol.bonds.forEach(([i,j,o])=>{
+      items.push({z:(pts[i][2]+pts[j][2])/2, k:'b', i:i, j:j, o:o});
+    });
+    mol.atoms.forEach((a,i)=>{ items.push({z:pts[i][2], k:'a', i:i}); });
+    items.sort((u,v)=>u.z-v.z);
+    items.forEach(it=>{
+      if(it.k==='b'){
+        const p=pts[it.i], q=pts[it.j];
+        const fade=0.55+0.45*Math.max(0,Math.min(1,(it.z+3)/6));
+        ctx.save(); ctx.globalAlpha=fade; ctx.strokeStyle=ink; ctx.lineCap='round';
+        if(it.o>=2){
+          const dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy)||1, nx=-dy/L*3.2, ny=dx/L*3.2;
+          ctx.lineWidth=GROS?2.2:3;
+          ctx.beginPath(); ctx.moveTo(p[0]+nx,p[1]+ny); ctx.lineTo(q[0]+nx,q[1]+ny); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(p[0]-nx,p[1]-ny); ctx.lineTo(q[0]-nx,q[1]-ny); ctx.stroke();
+        } else { ctx.lineWidth=GROS?3:4.2; ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); }
+        ctx.restore();
+      } else {
+        const a=mol.atoms[it.i], p=pts[it.i];
+        const fade=0.6+0.4*Math.max(0,Math.min(1,(it.z+3)/6));
+        const col=cssv(a.c||COL3D[a.e]||COL3D.X);
+        const r=(a.rad||(a.e==='H'?5.2:(a.e==='C'?6.4:8)))*(GROS?0.72:1);
+        ctx.save(); ctx.globalAlpha=fade;
+        ctx.fillStyle=col; ctx.beginPath(); ctx.arc(p[0],p[1],r,0,Math.PI*2); ctx.fill();
+        ctx.lineWidth=1.6; ctx.strokeStyle=panel; ctx.stroke();
+        const txt=(a.l!==undefined)?a.l:(a.e!=='C'?a.e:'');
+        if(txt){ ctx.globalAlpha=1; ctx.fillStyle=panel; ctx.font='800 '+(a.rad?12:10)+'px system-ui,sans-serif';
+          ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(txt,p[0],p[1]+0.5); }
+        ctx.restore();
+      }
+    });
+    /* badges de priorité */
+    badges.forEach(b=>{
+      const p=pts[b.i], col=cssv(b.c||'--blue');
+      const off=b.o||[16,-16];
+      ctx.save(); ctx.globalAlpha=.95;
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(p[0]+off[0],p[1]+off[1],11,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=cssv('--panel'); ctx.lineWidth=2; ctx.stroke();
+      ctx.fillStyle=cssv('--panel'); ctx.font='800 13px system-ui,sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.t,p[0]+off[0],p[1]+off[1]+0.5);
+      ctx.strokeStyle=col; ctx.globalAlpha=.6; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(p[0]+off[0]*.55,p[1]+off[1]*.55); ctx.stroke();
+      ctx.restore();
+    });
+    decor.forEach(d=>{ if(d.front) paintDecor(d); });
+  }
+  function paintDecor(d){
+    const col=cssv(d.c||'--purple');
+    if(d.k==='disc') ellipse(DEC(d.p),d.n,d.r||1.6,col,d.op||0.2);
+    else if(d.k==='line') line3(DEC(d.a),DEC(d.b),col,d.dash,d.w);
+    else if(d.k==='arrow') arrow3(DEC(d.a),DEC(d.b),col);
+    else if(d.k==='tag') tag3(DEC(d.p),d.t,col,d.fs);
+  }
+
+  /* --- interaction --------------------------------------------------------- */
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY}; cv.setPointerCapture(e.pointerId);
+    spin=false; if(opt.onSpin) opt.onSpin(false); });
+  cv.addEventListener('pointermove',e=>{ if(!drag) return;
+    const dx=(e.clientX-drag.x)*0.011, dy=(e.clientY-drag.y)*0.011;
+    drag={x:e.clientX,y:e.clientY};
+    R=M3.mul(M3.mul(M3.rot([0,1,0],dx),M3.rot([1,0,0],dy)),R);
+    anim=null; draw(); });
+  const stop=()=>{ drag=null; };
+  cv.addEventListener('pointerup',stop); cv.addEventListener('pointercancel',stop);
+
+  let raf=null;
+  function tick(ts){
+    raf=null;
+    if(anim){
+      const t=Math.min(1,(ts-anim.t0)/anim.ms);
+      const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+      R=slerp3(anim.a,anim.b,e); draw();
+      if(t>=1){ anim=null; if(opt.onArrive) opt.onArrive(); }
+    } else if(spin){ R=M3.mul(M3.rot([0,1,0],0.012),R); draw(); }
+    if(anim||spin) raf=requestAnimationFrame(tick);
+  }
+  function kick(){ if(!raf) raf=requestAnimationFrame(tick); }
+
+  /* --- torsion autour de l'axe aryle-aryle -------------------------------- */
+  function applyTorsion(deg){
+    tors=deg;
+    if(!mol.axe||!mol.rotor){ return; }
+    const a=P0[mol.axe[0]], b=P0[mol.axe[1]];
+    const ax=[b[0]-a[0],b[1]-a[1],b[2]-a[2]];
+    const Rt=M3.rot(ax,deg*Math.PI/180);
+    for(let i=0;i<P0.length;i++){
+      if(mol.rotor.indexOf(i)<0){ POS[i]=P0[i].slice(); continue; }
+      const v=[P0[i][0]-a[0],P0[i][1]-a[1],P0[i][2]-a[2]];
+      const w=M3.app(Rt,v);
+      POS[i]=[w[0]+a[0],w[1]+a[1],w[2]+a[2]];
+    }
+  }
+  /* plus courte distance entre un atome de la partie fixe et un de la partie
+     qui tourne, en excluant les deux carbones de l'axe eux-mêmes */
+  function contact(){
+    if(!mol.axe||!mol.rotor) return null;
+    const rot=new Set(mol.rotor), ax=new Set(mol.axe);
+    let best=1e9, bi=-1, bj=-1;
+    for(let i=0;i<POS.length;i++){
+      if(rot.has(i)||ax.has(i)) continue;
+      for(const j of mol.rotor){
+        if(ax.has(j)) continue;
+        const d=Math.hypot(POS[i][0]-POS[j][0],POS[i][1]-POS[j][1],POS[i][2]-POS[j][2]);
+        if(d<best){ best=d; bi=i; bj=j; }
+      }
+    }
+    if(best===1e9) return null;
+    const A=mol.atoms[bi], B=mol.atoms[bj];
+    return {d:best, i:bi, j:bj, a:A.e, b:B.e, prof:Math.max(A.d||0, B.d||0)};
+  }
+
+  const api={
+    draw, resize, contact,
+    torsion(deg){ applyTorsion(deg); draw(); },
+    getTorsion(){ return tors; },
+    reset(){ anim={a:R.slice(),b:(opt.R0?opt.R0.slice():TILT.slice()),t0:performance.now(),ms:700}; kick(); },
+    goto(Rt,ms){ anim={a:R.slice(),b:Rt.slice(),t0:performance.now(),ms:ms||900}; kick(); },
+    turn(ax,ang,ms){ api.goto(M3.mul(M3.rot(ax,ang),R),ms); },
+    spin(v){ spin=v; if(v) kick(); },
+    isSpinning(){ return spin; },
+    setBadges(b){ badges.length=0; (b||[]).forEach(x=>badges.push(x)); draw(); },
+    setDecor(d){ decor.length=0; (d||[]).forEach(x=>decor.push(x)); draw(); }
+  };
+  requestAnimationFrame(()=>{ resize(); if(spin) kick(); });
+  window.addEventListener('resize',resize);
+  return api;
+}
+
+/* fabrique un bloc « molécule + boutons » prêt à insérer dans une section */
+function bloc3D(host,mol,opt){
+  opt=opt||{};
+  const wrap=el('div','cv3dwrap');
+  const hint=el('div','cv3dhint','👆 fais glisser ton doigt sur la molécule pour la tourner');
+  host.appendChild(wrap); host.appendChild(hint);
+  const v=Viewer3D(wrap,mol,opt);
+  const row=el('div','btnrow');
+  (opt.boutons||[]).forEach(b=>{
+    const t=el('button','btn'); t.textContent=b.t; t.style.flex=b.f||'1 1 46%';
+    t.onclick=()=>b.go(v,t); row.appendChild(t);
+  });
+  const rb=el('button','btn'); rb.textContent='↺ Remettre comme le dessin'; rb.style.flex='1 1 100%';
+  rb.onclick=()=>v.reset(); row.appendChild(rb);
+  host.appendChild(row);
+  return v;
+}
+
+/* ==== Coordonnées 3D du TD « catalyse » — .build/gen_td2.py, vérifiées RDKit ==== */
+const MOLTD2 = {"pyruvate": {"nom": "pyruvate d'éthyle", "atoms": [{"e": "C", "p": [-1.257, -0.819, -0.0], "d": 9}, {"e": "C", "p": [0.0, 0.0, 0.0], "d": 9}, {"e": "O", "p": [-0.0, 1.225, 0.0], "d": 9}, {"e": "C", "p": [1.307, -0.802, -0.0], "d": 9}, {"e": "O", "p": [1.314, -2.021, 0.005], "d": 9}, {"e": "O", "p": [2.372, 0.023, -0.011], "d": 9}, {"e": "C", "p": [3.657, -0.611, -0.008], "d": 9}, {"e": "C", "p": [4.09, -0.923, -1.428], "d": 9}], "bonds": [[0, 1, 1], [1, 2, 2], [1, 3, 1], [3, 4, 2], [3, 5, 1], [5, 6, 1], [6, 7, 1]], "sp2": 1, "prioF": [2, 3, 0]}, "produitA": {"nom": "A — (S)-2-hydroxy-2-méthyl-3-nitropropanoate d'éthyle", "atoms": [{"e": "C", "p": [-0.416, -0.896, -4.345], "d": 9}, {"e": "C", "p": [-0.96, -1.694, -3.175], "d": 9}, {"e": "O", "p": [-0.978, -0.885, -1.989], "d": 9}, {"e": "C", "p": [0.176, -0.863, -1.265], "d": 9}, {"e": "O", "p": [1.201, -1.471, -1.542], "d": 9}, {"e": "C", "p": [0.0, 0.0, 0.0], "d": 9}, {"e": "C", "p": [1.176, 0.983, 0.06], "d": 9}, {"e": "O", "p": [-1.169, 0.827, -0.0], "d": 9}, {"e": "C", "p": [0.026, -0.895, 1.239], "d": 9}, {"e": "N", "p": [-0.975, -2.0, 1.079], "d": 9}, {"e": "O", "p": [-2.156, -1.674, 0.903], "d": 9}, {"e": "O", "p": [-0.549, -3.159, 1.131], "d": 9}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [3, 4, 2], [3, 5, 1], [5, 6, 1], [5, 7, 1], [5, 8, 1], [8, 9, 1], [9, 10, 2], [9, 11, 1]], "centre": 5}, "box": {"nom": "(S,S)-t-Bu-box", "atoms": [{"e": "C", "p": [-0.27, 1.754, 1.5], "d": 2}, {"e": "C", "p": [0.007, 1.571, 0.0], "d": 1}, {"e": "C", "p": [-0.315, 2.88, -0.738], "d": 2}, {"e": "C", "p": [-0.893, 0.506, -0.579], "d": 0}, {"e": "N", "p": [-1.938, 0.0, -0.0], "d": 0}, {"e": "C", "p": [-2.391, -1.036, -0.951], "d": 0}, {"e": "C", "p": [-3.938, -1.133, -0.994], "d": 1}, {"e": "C", "p": [-4.457, -1.6, 0.382], "d": 2}, {"e": "C", "p": [-4.605, 0.215, -1.329], "d": 2}, {"e": "C", "p": [-4.366, -2.172, -2.047], "d": 2}, {"e": "C", "p": [-1.697, -0.671, -2.254], "d": 0}, {"e": "O", "p": [-0.591, 0.12, -1.844], "d": 0}, {"e": "C", "p": [1.464, 1.198, -0.134], "d": 0}, {"e": "N", "p": [1.938, -0.0, -0.0], "d": 0}, {"e": "C", "p": [3.389, 0.143, -0.224], "d": 0}, {"e": "C", "p": [3.831, -0.654, -1.487], "d": 1}, {"e": "C", "p": [5.361, -0.559, -1.655], "d": 2}, {"e": "C", "p": [3.469, -2.144, -1.309], "d": 2}, {"e": "C", "p": [3.16, -0.142, -2.776], "d": 2}, {"e": "C", "p": [3.621, 1.648, -0.26], "d": 0}, {"e": "O", "p": [2.323, 2.221, -0.34], "d": 0}], "bonds": [[0, 1, 1], [1, 2, 1], [1, 3, 1], [3, 4, 2], [4, 5, 1], [5, 6, 1], [6, 7, 1], [6, 8, 1], [6, 9, 1], [5, 10, 1], [10, 11, 1], [1, 12, 1], [12, 13, 2], [13, 14, 1], [14, 15, 1], [15, 16, 1], [15, 17, 1], [15, 18, 1], [14, 19, 1], [19, 20, 1], [11, 3, 1], [20, 12, 1]], "azotes": [4, 13], "centres": [5, 14]}, "acetophenone": {"nom": "acétophénone", "atoms": [{"e": "C", "p": [-1.291, -0.777, -0.0], "d": 2}, {"e": "C", "p": [0.0, 0.0, 0.0], "d": 1}, {"e": "O", "p": [0.0, 1.23, 0.0], "d": 2}, {"e": "C", "p": [1.294, -0.747, 0.0], "d": 0}, {"e": "C", "p": [1.349, -2.146, 0.0], "d": 0}, {"e": "C", "p": [2.585, -2.799, 0.0], "d": 0}, {"e": "C", "p": [3.768, -2.061, 0.0], "d": 0}, {"e": "C", "p": [3.721, -0.668, -0.0], "d": 0}, {"e": "C", "p": [2.488, -0.013, -0.0], "d": 0}], "bonds": [[0, 1, 1], [1, 2, 2], [1, 3, 1], [3, 4, 1], [4, 5, 1], [5, 6, 1], [6, 7, 1], [7, 8, 1], [8, 3, 1]], "sp2": 1, "prioF": [2, 3, 0]}, "prod4S": {"nom": "2-phényl-pent-4-én-2-ol (S)", "atoms": [{"e": "C", "p": [0.788, -0.548, -3.554], "d": 4}, {"e": "C", "p": [-0.065, -0.259, -2.562], "d": 3}, {"e": "C", "p": [-0.08, -0.958, -1.225], "d": 2}, {"e": "C", "p": [0.0, 0.0, 0.0], "d": 1}, {"e": "C", "p": [-0.06, -0.82, 1.3], "d": 2}, {"e": "O", "p": [-1.175, 0.831, 0.0], "d": 2}, {"e": "C", "p": [1.261, 0.866, 0.0], "d": 0}, {"e": "C", "p": [1.186, 2.268, 0.059], "d": 0}, {"e": "C", "p": [2.341, 3.055, 0.064], "d": 0}, {"e": "C", "p": [3.595, 2.454, 0.012], "d": 0}, {"e": "C", "p": [3.695, 1.067, -0.044], "d": 0}, {"e": "C", "p": [2.54, 0.281, -0.049], "d": 0}], "bonds": [[0, 1, 2], [1, 2, 1], [2, 3, 1], [3, 4, 1], [3, 5, 1], [3, 6, 1], [6, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 6, 1]], "centre": 3}, "prod4R": {"nom": "2-phényl-pent-4-én-2-ol (R)", "atoms": [{"e": "C", "p": [1.951, -1.967, 2.33], "d": 4}, {"e": "C", "p": [0.968, -1.959, 1.421], "d": 3}, {"e": "C", "p": [-0.054, -0.858, 1.296], "d": 2}, {"e": "C", "p": [0.0, 0.0, 0.0], "d": 1}, {"e": "C", "p": [-0.111, -0.858, -1.272], "d": 2}, {"e": "O", "p": [-1.179, 0.834, -0.0], "d": 2}, {"e": "C", "p": [1.227, 0.916, 0.0], "d": 0}, {"e": "C", "p": [2.478, 0.482, -0.471], "d": 0}, {"e": "C", "p": [3.595, 1.323, -0.443], "d": 0}, {"e": "C", "p": [3.485, 2.614, 0.064], "d": 0}, {"e": "C", "p": [2.261, 3.064, 0.547], "d": 0}, {"e": "C", "p": [1.146, 2.222, 0.519], "d": 0}], "bonds": [[0, 1, 2], [1, 2, 1], [2, 3, 1], [3, 4, 1], [3, 5, 1], [3, 6, 1], [6, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 6, 1]], "centre": 3}, "binolBr2": {"nom": "(aS)-3,3′-dibromo-BINOL", "atoms": [{"e": "O", "p": [1.711, 1.726, 0.803], "d": 1}, {"e": "C", "p": [0.864, 0.864, 1.454], "d": 0}, {"e": "C", "p": [0.883, 0.86, 2.85], "d": 0}, {"e": "Br", "p": [2.03, 2.008, 3.834], "d": 1}, {"e": "C", "p": [0.047, 0.002, 3.56], "d": 0}, {"e": "C", "p": [-0.822, -0.868, 2.89], "d": 0}, {"e": "C", "p": [-1.654, -1.727, 3.627], "d": 0}, {"e": "C", "p": [-2.527, -2.604, 2.987], "d": 0}, {"e": "C", "p": [-2.58, -2.633, 1.601], "d": 0}, {"e": "C", "p": [-1.759, -1.785, 0.855], "d": 0}, {"e": "C", "p": [-0.859, -0.882, 1.472], "d": 0}, {"e": "C", "p": [0.0, -0.0, 0.743], "d": 0}, {"e": "C", "p": [-0.0, 0.0, -0.743], "d": 0}, {"e": "C", "p": [0.852, -0.876, -1.454], "d": 0}, {"e": "O", "p": [1.687, -1.75, -0.803], "d": 1}, {"e": "C", "p": [0.871, -0.872, -2.85], "d": 0}, {"e": "Br", "p": [2.002, -2.036, -3.834], "d": 1}, {"e": "C", "p": [0.047, -0.002, -3.56], "d": 0}, {"e": "C", "p": [-0.81, 0.88, -2.89], "d": 0}, {"e": "C", "p": [-1.63, 1.75, -3.627], "d": 0}, {"e": "C", "p": [-2.491, 2.639, -2.987], "d": 0}, {"e": "C", "p": [-2.544, 2.668, -1.601], "d": 0}, {"e": "C", "p": [-1.734, 1.809, -0.855], "d": 0}, {"e": "C", "p": [-0.847, 0.894, -1.472], "d": 0}], "bonds": [[0, 1, 1], [1, 2, 1], [2, 3, 1], [2, 4, 1], [4, 5, 1], [5, 6, 1], [6, 7, 1], [7, 8, 1], [8, 9, 1], [9, 10, 1], [10, 11, 1], [11, 12, 1], [12, 13, 1], [13, 14, 1], [13, 15, 1], [15, 16, 1], [15, 17, 1], [17, 18, 1], [18, 19, 1], [19, 20, 1], [20, 21, 1], [21, 22, 1], [22, 23, 1], [11, 1, 1], [23, 12, 1], [10, 5, 1], [23, 18, 1]], "axe": [11, 12], "rotor": [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], "prioOrtho": [1, 13]}};
+
+/* ==========================================================================
+   FIGURES 2D du support « Voir en 3D »
+   ========================================================================== */
+function figVolant(k){
+  const W=360,H=272,cx=180,cy=126,R=64; let s='';
+  const horaire = (k===0);
+  s+=txt([180,20],horaire?'Sens des aiguilles d\'une montre':'Sens inverse des aiguilles',{fs:13,fw:800});
+  /* le volant */
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${C.ink2}" stroke-width="6" opacity=".35"/>`;
+  const pos=[0,120,240].map(a=>polar(cx,cy,R,a));
+  const ordre = horaire ? [0,1,2] : [0,2,1];
+  const cols=[C.red,C.ink,C.ink];
+  ordre.forEach((p,i)=>{ s+=lab(pos[p],String(i+1),{fs:16,fw:800,c:cols[i],r:17,bg:'var(--panel2)'}); });
+  /* la colonne de direction : le n°4, vers le fond */
+  s+=`<circle cx="${cx}" cy="${cy}" r="17" fill="var(--panel2)" stroke="${C.grey}" stroke-width="2" stroke-dasharray="4 3"/>`;
+  s+=txt([cx,cy],'4',{fs:15,fw:800,c:C.grey});
+  s+=txt([cx,cy+R+30],'le n° 4 part vers le fond',{fs:11,c:C.grey,fw:600});
+  /* la flèche de sens */
+  const r2=R+22, dep=polar(cx,cy,r2,horaire?24:336), arr=polar(cx,cy,r2,horaire?96:264);
+  s+=`<path d="M${E(dep[0])},${E(dep[1])} A${r2},${r2} 0 0 ${horaire?1:0} ${E(arr[0])},${E(arr[1])}"`
+   +` fill="none" stroke="${C.green}" stroke-width="3" stroke-linecap="round" marker-end="url(#mkGreen)"/>`;
+  s+=`<rect x="70" y="232" width="220" height="32" rx="16" fill="${horaire?C.green:C.blue}" opacity=".14"/>`;
+  s+=txt([180,248],horaire?'configuration R':'configuration S',{fs:16,fw:800,c:horaire?C.green:C.blue});
+  return svg(W,H,s,{alt:'volant '+(horaire?'R':'S')});
+}
+
+function figEchange(){
+  const W=360,H=264; let s='';
+  const dessine=(cx,cy,ordre)=>{
+    let t='';
+    const UL=[cx-34,cy-20], UR=[cx+34,cy-20], AV=[cx,cy+34], AR=[cx-2,cy-40];
+    t+=bond([cx,cy],UL,{e:14}); t+=bond([cx,cy],UR,{e:14});
+    t+=wedge([cx,cy],AV,{e:14}); t+=hashb([cx,cy],AR,{e:14});
+    t+=lab(UL,ordre[0],{fs:14,fw:800,c:C.red,r:13});
+    t+=lab(UR,ordre[1],{fs:14,fw:800,r:13});
+    t+=lab(AV,ordre[2],{fs:14,fw:800,r:13});
+    t+=lab(AR,ordre[3],{fs:14,fw:800,c:C.grey,r:13});
+    return t;
+  };
+  s+=txt([180,20],'Échanger deux groupes inverse la lettre',{fs:13,fw:800});
+  s+=dessine(86,112,['1','2','3','4']);
+  s+=txt([86,176],'on lit : R',{fs:13,fw:800,c:C.green});
+  s+=arrow([150,112],[212,112],{c:C.red,w:2.6});
+  s+=txt([181,92],'on échange',{fs:11,fw:700,c:C.red});
+  s+=txt([181,132],'2 et 3',{fs:11,fw:700,c:C.red});
+  s+=dessine(276,112,['1','3','2','4']);
+  s+=txt([276,176],'on lit : S',{fs:13,fw:800,c:C.blue});
+  s+=`<rect x="20" y="200" width="320" height="52" rx="12" fill="${C.purple}" opacity=".11"/>`;
+  s+=txt([180,218],'1 échange → lettre inversée',{fs:12.5,fw:800,c:C.purple});
+  s+=txt([180,238],'2 échanges → lettre inchangée',{fs:12.5,fw:800,c:C.purple});
+  return svg(W,H,s,{alt:'effet d\'un échange de deux groupes'});
+}
+
+function figMainDroite(){
+  const W=360,H=214; let s='';
+  s+=txt([180,22],'Le truc de la main droite',{fs:13.5,fw:800});
+  s+=`<rect x="18" y="40" width="324" height="60" rx="12" fill="${C.green}" opacity=".11"/>`;
+  s+=txtLines([180,60],['Ferme ta main DROITE, pouce levé.','Pointe le pouce vers le FOND (loin de toi).'],{fs:12.5,lh:18,fw:600});
+  s+=`<rect x="18" y="110" width="324" height="44" rx="12" fill="${C.green}" opacity=".18"/>`;
+  s+=txt([180,132],'tes doigts s\'enroulent dans le sens R',{fs:13,fw:800,c:C.green});
+  s+=`<rect x="18" y="164" width="324" height="40" rx="12" fill="${C.blue}" opacity=".13"/>`;
+  s+=txt([180,184],'main GAUCHE, même geste → sens S',{fs:12.5,fw:800,c:C.blue});
+  return svg(W,H,s,{alt:'règle de la main droite'});
+}
+
+function figDeuxProduits(){
+  const W=360,H=250; let s='';
+  s+=txt([180,20],'Une cétone, deux attaques possibles',{fs:13,fw:800});
+  const co=[180,110];
+  s+=dbond(co,[180,72],{e:10}); s+=lab([180,70],'O',{fs:13});
+  s+=bond(co,[142,132],{e:12}); s+=lab([136,136],'CH₃',{fs:11.5,r:15});
+  s+=bond(co,[218,132],{e:12}); s+=lab([228,136],'chaîne',{fs:11,r:20});
+  s+=arrow([116,60],[162,96],{c:C.green,w:2.6});
+  s+=txt([92,48],'face avant',{fs:11,fw:700,c:C.green});
+  s+=arrow([244,60],[198,96],{c:C.red,w:2.6});
+  s+=txt([270,48],'face arrière',{fs:11,fw:700,c:C.red});
+  s+=`<rect x="18" y="166" width="156" height="66" rx="12" fill="${C.green}" opacity=".12"/>`;
+  s+=txtLines([96,188],['produit (S)','alcool « main gauche »'],{fs:11.5,lh:17,fw:700,c:C.green});
+  s+=`<rect x="186" y="166" width="156" height="66" rx="12" fill="${C.red}" opacity=".12"/>`;
+  s+=txtLines([264,188],['produit (R)','alcool « main droite »'],{fs:11.5,lh:17,fw:700,c:C.red});
+  s+=txt([180,246],'deux énantiomères → les faces sont ÉNANTIOTOPES',{fs:11,fw:700});
+  return svg(W,H,s,{alt:'attaque des deux faces d\'une cétone'});
+}
+
+function figModeles(){
+  const W=360,H=250; let s='';
+  s+=txt([180,20],'Fabrique-toi un modèle en 2 minutes',{fs:13.5,fw:800});
+  const ligne=(y,t1,t2,col)=>`<rect x="18" y="${y}" width="324" height="48" rx="11" fill="${col}" opacity=".11"/>`
+   +txt([180,y+17],t1,{fs:12.5,fw:800,c:col})+txt([180,y+34],t2,{fs:11,c:C.ink2});
+  s+=ligne(40,'Une gomme + 4 cure-dents','plante 4 cure-dents dans une gomme, le plus écartés possible',C.blue);
+  s+=ligne(96,'Pâte à modeler + allumettes','4 couleurs de pâte au bout des allumettes = 4 groupes',C.green);
+  s+=ligne(152,'Rien du tout : tes doigts','pouce, index, majeur, annulaire écartés = un tétraèdre',C.purple);
+  s+=txt([180,226],'Les chimistes professionnels ont tous une boîte de modèles',{fs:11,c:C.ink2});
+  s+=txt([180,242],'sur leur bureau. Ce n\'est pas de la triche.',{fs:11,c:C.ink2});
+  return svg(W,H,s,{alt:'fabriquer un modèle moléculaire'});
+}
+
+function figAxeNewman(k){
+  /* k=0 : ligand 3 (cycle arrière prioritaire) vers la DROITE ; k=1 : vers la GAUCHE */
+  const W=360,H=296,cx=180,cy=150,R=62; let s='';
+  s+=txt([180,20],'Vue le long de l\'axe',{fs:13,fw:800});
+  s+=txt([180,38],'bleu = cycle AVANT (rangs 1 et 2)',{fs:10.5,c:C.blue,fw:700});
+  s+=txt([180,54],'violet = cycle ARRIÈRE (rangs 3 et 4)',{fs:10.5,c:C.purple,fw:700});
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${C.ink2}" stroke-width="2"/>`;
+  const droite = (k===0);
+  const f3 = droite ? [cx+R,cy] : [cx-R,cy];
+  const f4 = droite ? [cx-R,cy] : [cx+R,cy];
+  s+=seg(f3,[f3[0]+(droite?32:-32),cy],{c:C.purple,w:2.8});
+  s+=seg(f4,[f4[0]+(droite?-32:32),cy],{c:C.purple,w:2.8});
+  s+=lab([f3[0]+(droite?48:-48),cy],'3',{fs:14,fw:800,c:C.purple,r:12});
+  s+=lab([f4[0]+(droite?-48:48),cy],'4',{fs:14,fw:800,c:C.purple,r:12});
+  s+=seg([cx,cy],[cx,cy-R],{c:C.blue,w:3}); s+=seg([cx,cy],[cx,cy+R],{c:C.blue,w:3});
+  s+=lab([cx,cy-R-15],'1',{fs:14,fw:800,c:C.blue,r:12});
+  s+=lab([cx,cy+R+15],'2',{fs:14,fw:800,c:C.blue,r:12});
+  /* le trajet 1 → 2 → 3, en faisant les trois quarts du tour */
+  const r2=R-17, dep=[cx,cy-r2], arr=droite?[cx+r2,cy]:[cx-r2,cy];
+  const sweep = droite ? 0 : 1;      /* 0 = antihoraire à l'écran (y vers le bas) */
+  s+=`<path d="M${E(dep[0])},${E(dep[1])} A${r2},${r2} 0 1 ${sweep} ${E(arr[0])},${E(arr[1])}"`
+   + ` fill="none" stroke="${C.green}" stroke-width="2.4" stroke-linecap="round" marker-end="url(#mkGreen)"/>`;
+  s+=txt([180,250],'1 → 2 → 3 : sens '+(droite?'ANTIhoraire':'HORAIRE'),{fs:12.5,fw:800,c:C.green});
+  s+=txt([180,274],droite?'configuration aS':'configuration aR',{fs:15,fw:800,c:C.green});
+  return svg(W,H,s,{alt:'projection de Newman le long de l\'axe'});
+}
+
+/* ==========================================================================
+   FIGURES — TD « catalyse énantiosélective », exercices 3 et 4
+   ========================================================================== */
+
+/* flèche de réaction verticale, légende à droite */
+function flecheV(x,y1,y2,lignes){
+  let s=arrow([x,y1],[x,y2],{w:2.4});
+  (lignes||[]).forEach((t,i)=> s+=txt([x+14,y1+10+i*16],t,{fs:11,fw:600,anchor:'start'}));
+  return s;
+}
+
+/* --- ex.3 : Et3N fabrique le nucléophile ---------------------------------- */
+function figNitronate(){
+  const W=360,H=210; let s='';
+  s+=txt([180,20],'Et₃N ne catalyse pas : il déprotone',{fs:13,fw:800});
+  s+=txt([74,78],'CH₃–NO₂',{fs:14,fw:700});
+  s+=curve([74,96],[128,96],18,{c:C.green,w:2.2});
+  s+=txt([128,118],'Et₃N',{fs:12,fw:700,c:C.green});
+  s+=arrow([150,78],[214,78],{w:2.4});
+  s+=txt([182,60],'pKa ≈ 10',{fs:10.5,c:C.ink2});
+  s+=txt([286,78],'⁻CH₂–NO₂',{fs:14,fw:700,c:C.green});
+  s+=txt([286,98],'le nitronate',{fs:11,c:C.green,fw:700});
+  s+=`<rect x="18" y="134" width="324" height="62" rx="12" fill="${C.green}" opacity=".11"/>`;
+  s+=txtLines([180,154],['Le carbone du nitronate est le NUCLÉOPHILE.',
+    'Sans Et₃N, rien ne se passe : le nitrométhane',
+    'seul n\'attaque pas une cétone.'],{fs:11.5,lh:17});
+  return svg(W,H,s,{alt:'formation du nitronate'});
+}
+
+/* --- ex.3 : le modèle au cuivre ------------------------------------------- */
+function figCuModele(k){
+  const W=360,H=318, cx=176, cy=186; let s='';
+  s+=txt([180,20],k===0?'Les cinq places autour du cuivre':'Qui s\'assoit où',{fs:13,fw:800});
+  s+=`<path d="M${cx-92},${cy} L${cx},${cy-42} L${cx+92},${cy} L${cx},${cy+42} Z" fill="${C.purple}" opacity=".09" stroke="${C.purple}" stroke-dasharray="5 4"/>`;
+  /* la place axiale, en diagonale pour ne rien recouvrir */
+  const AX=[cx+70,cy-74];
+  s+=seg([cx,cy],AX,{c:C.red,dash:'5 4',w:2});
+  s+=lab(AX,k===0?'ax.':'O',{fs:12.5,fw:700,c:C.red,r:14});
+  s+=txt([AX[0]+22,AX[1]-16],k===0?'axiale':'ester',{fs:11,fw:700,c:C.red,anchor:'start'});
+  s+=lab([cx,cy],'Cu',{fs:15,fw:800,c:C.purple,r:17});
+  const site=(x,y,t,c,sub,dy)=>{ let o=bond([cx,cy],[x,y],{s:18,e:15,c:c});
+    o+=lab([x,y],t,{fs:12.5,fw:700,c:c,r:14});
+    if(sub) o+=txt([x,y+dy],sub,{fs:10.5,c:C.ink2});
+    return o; };
+  s+=site(cx-92,cy,'N',C.blue,'box',-22);
+  s+=site(cx,cy-42,'N',C.blue,'box',-22);
+  if(k===0){
+    s+=site(cx+92,cy,'éq.',C.ink2,null,0);
+    s+=site(cx,cy+42,'éq.',C.ink2,null,0);
+    s+=txt([180,262],'4 places ÉQUATORIALES (le losange)',{fs:11.5,fw:700,c:C.purple});
+    s+=txt([180,282],'+ 1 place AXIALE, perpendiculaire',{fs:11.5,fw:700,c:C.red});
+    s+=txt([180,304],'= pyramide à base carrée',{fs:11,c:C.ink2});
+  } else {
+    s+=site(cx+92,cy,'O',C.green,'nitronate',22);
+    s+=site(cx,cy+42,'O',C.ink,'cétone',22);
+    s+=curve([cx+74,cy+16],[cx+14,cy+48],-16,{c:C.green,w:2.4});
+    s+=txt([180,262],'nitronate et cétone sont VOISINS',{fs:11.5,fw:800,c:C.green});
+    s+=txt([180,280],'il n\'y a qu\'un pas à faire entre les deux',{fs:11,c:C.ink2});
+    s+=`<rect x="18" y="292" width="324" height="24" rx="10" fill="${C.ink2}" opacity=".10"/>`;
+    s+=txt([180,304],'cycle à 6 : Cu–O–C(cétone)···C(nitronate)–N–O',{fs:10.5,fw:700});
+  }
+  return svg(W,H,s,{alt:'modèle au cuivre'});
+}
+
+/* --- ex.3 : la réaction globale ------------------------------------------- */
+function figHenry(){
+  const W=360,H=270; let s='';
+  s+=txt([180,20],'Exercice 3 — réaction de Henry',{fs:13,fw:800});
+  const c=[96,78];
+  s+=dbond(c,[96,44],{e:10}); s+=lab([96,42],'O',{fs:13});
+  s+=bond(c,[66,96],{e:12}); s+=lab([60,98],'CH₃',{fs:11.5,r:15});
+  s+=bond(c,[126,96]); s+=dbond([126,96],[126,130],{e:10}); s+=lab([126,132],'O',{fs:13});
+  s+=bond([126,96],[156,78],{e:14}); s+=lab([164,78],'OEt',{fs:11.5,r:18});
+  s+=txt([96,120],'cétone',{fs:10.5,c:C.ink2});
+  s+=txt([206,90],'+ CH₃NO₂',{fs:13,fw:700,anchor:'start'});
+  s+=flecheV(120,152,196,['[Cu((S,S)-t-Bu-box)](OTf)₂','20 mol%','Et₃N 20 mol%, t.a., 16 h']);
+  s+=txt([180,222],'A — 95 %, e.e. = 92 %',{fs:12.5,fw:800,c:C.green});
+  s+=txt([180,244],'le carbone de la CÉTONE devient stéréogène',{fs:11,c:C.ink2});
+  s+=txt([180,262],'(celui de l\'ester reste un ester)',{fs:10.5,c:C.ink2});
+  return svg(W,H,s,{alt:'réaction de Henry'});
+}
+
+/* --- ex.4 : l'échange de ligands sur le bore ------------------------------ */
+function figBoronate(){
+  const W=360,H=266; let s='';
+  s+=txt([180,20],'D\'où vient le « boronate cyclique »',{fs:13,fw:800});
+  s+=txt([86,66],'allyl–B(OiPr)₂',{fs:12.5,fw:700});
+  s+=txt([86,88],'achiral',{fs:11,c:C.red,fw:700});
+  s+=txt([180,78],'+',{fs:15,fw:700});
+  s+=txt([274,66],'BINOL–Br₂',{fs:12.5,fw:700,c:C.blue});
+  s+=txt([274,88],'chiral, 15 mol%',{fs:11,c:C.blue,fw:700});
+  s+=arrow([180,108],[180,146],{w:2.4});
+  s+=txt([196,126],'− 2 iPrOH',{fs:11,anchor:'start',c:C.ink2});
+  s+=`<rect x="24" y="160" width="312" height="44" rx="12" fill="${C.blue}" opacity=".12"/>`;
+  s+=txt([180,176],'allyl–B(O–BINOL–O)',{fs:13,fw:800,c:C.blue});
+  s+=txt([180,194],'un allylborane CHIRAL',{fs:11.5,fw:700,c:C.blue});
+  s+=txtLines([180,224],['C\'est lui le vrai réactif. Le diol ne « catalyse » pas',
+    'de loin : il devient une partie du réactif, puis repart.'],{fs:11,lh:16,c:C.ink2});
+  return svg(W,H,s,{alt:'échange de ligands sur le bore'});
+}
+
+/* --- ex.4 : les deux états de transition ---------------------------------- */
+/* chaise réelle : projection d'une chaise idéale, tournée de -72° autour de x */
+const CH = {Cc:[234.7,136.2], O:[192.3,141.1], B:[107.7,113.5],
+            Ca:[65.3,163.8],  Cb:[107.7,158.9], Cg:[192.3,186.5],
+            AX:[234.7,92], EQ:[287,160], AXB:[107.7,69]};
+function figTS(k){
+  const W=360,H=312; let s='';
+  const ts1=(k===0);
+  s+=txt([180,20],ts1?'TS1 — phényle PSEUDO-AXIAL':'TS2 — phényle PSEUDO-ÉQUATORIAL',{fs:13,fw:800,c:ts1?C.red:C.green});
+  /* le cycle à six centres */
+  s+=bond(CH.B,CH.O,{s:12,e:11,c:C.blue});
+  s+=lab(CH.O,'O',{fs:12.5});
+  s+=dbond(CH.O,CH.Cc,{s:11,e:6});
+  s+=bond(CH.Cc,CH.Cg,{s:6,e:4,dash:'5 4',w:2.4,c:C.red});
+  s+=dbondIn(CH.Cg,CH.Cb,-1,{});
+  s+=bond(CH.Cb,CH.Ca); s+=bond(CH.Ca,CH.B,{e:12});
+  s+=lab(CH.B,'B',{fs:13,fw:800,c:C.blue,r:13});
+  /* la liaison axiale du bore : c'est le binaphtol */
+  s+=seg(CH.B,CH.AXB,{c:C.blue,w:2.6});
+  s+=lab(CH.AXB,'O–BINOL',{fs:10.5,fw:700,c:C.blue,r:30});
+  /* substituants du carbonyle */
+  const ph = ts1 ? CH.AX : CH.EQ, me = ts1 ? CH.EQ : CH.AX;
+  s+=bond(CH.Cc,me,{s:6,e:14}); s+=lab(me,'CH₃',{fs:11.5,r:15});
+  s+=bond(CH.Cc,ph,{s:6,e:12}); s+=lab(ph,'Ph',{fs:12.5,fw:800,c:ts1?C.red:C.green,r:13});
+  if(ts1){
+    s+=stericZone(171,80,74,30,{});
+    s+=txt([171,46],'ils se gênent',{fs:11.5,fw:800,c:C.red});
+    s+=txt([180,236],'le phényle axial pointe droit vers le binaphtol',{fs:11,c:C.ink2});
+    s+=txt([180,256],'(interaction 1,3-diaxiale avec le bore)',{fs:11,c:C.ink2});
+    s+=`<rect x="24" y="270" width="312" height="30" rx="12" fill="${C.red}" opacity=".13"/>`;
+    s+=txt([180,285],'état de transition DÉFAVORISÉ → minoritaire',{fs:12,fw:800,c:C.red});
+  } else {
+    s+=txt([180,236],'le phényle équatorial s\'étale vers l\'extérieur,',{fs:11,c:C.ink2});
+    s+=txt([180,256],'loin du bore et loin des brome du binaphtol',{fs:11,c:C.ink2});
+    s+=`<rect x="24" y="270" width="312" height="30" rx="12" fill="${C.green}" opacity=".13"/>`;
+    s+=txt([180,285],'état de transition FAVORISÉ → majoritaire',{fs:12,fw:800,c:C.green});
+  }
+  s+=txt([120,212],'chaise à 6 centres',{fs:10.5,c:C.ink2});
+  return svg(W,H,s,{alt:'état de transition '+(ts1?'TS1':'TS2')});
+}
+
+/* --- ex.4 : la réaction globale ------------------------------------------- */
+function figAllyl(){
+  const W=360,H=256; let s='';
+  s+=txt([180,20],'Exercice 4 — allylboration d\'une cétone',{fs:13,fw:800});
+  const c=[108,80];
+  s+=dbond(c,[108,46],{e:10}); s+=lab([108,44],'O',{fs:13});
+  s+=bond(c,[78,98],{e:12}); s+=lab([70,100],'Ph',{fs:12,r:13});
+  s+=bond(c,[138,98],{e:14}); s+=lab([146,100],'CH₃',{fs:11.5,r:16});
+  s+=txt([232,82],'+ allyl–B(OiPr)₂',{fs:12.5,fw:700,anchor:'start'});
+  s+=flecheV(120,128,180,['(aS)-3,3′-Br₂-BINOL','15 mol%','PhCH₃:PhCF₃ 1:3, −35 °C']);
+  s+=txt([180,206],'83 %, e.e. = 94 %',{fs:12.5,fw:800,c:C.green});
+  s+=txt([180,228],'un alcool TERTIAIRE : quatre groupes différents',{fs:11,c:C.ink2});
+  s+=txt([180,246],'OH, CH₃, Ph, CH₂–CH=CH₂',{fs:11,fw:700});
+  return svg(W,H,s,{alt:'allylboration d\'une cétone'});
+}
+
+/* ==========================================================================
+   EXERCICE 3 — la réaction de Henry asymétrique
+   ========================================================================== */
+const W1='Exercice 3 — Henry';
+
+S({
+  grp:W1, title:'Ce qu\'on te demande, et par où commencer',
+  consigne:'Lis la réaction, puis repère LE carbone qui va devenir stéréogène.',
+  build(host){
+    const f=el('div','figbox'); f.innerHTML=figHenry(); host.appendChild(f);
+    host.appendChild(el('div','statusline','Le cétoester a <b>deux</b> carbonyles. Seul celui de la <b>cétone</b> est attaqué : l\'ester, lui, ne sert qu\'à tenir le cuivre. C\'est le premier réflexe à avoir.'));
+  },
+  une:'Un nitroalcane s\'additionne sur une cétone : c\'est une réaction de Henry (ou nitroaldolisation). Le cuivre chiral décide de quel côté.',
+  probleme:'<p>L\'énoncé ne demande pas le mécanisme : il demande <b>la structure de A</b>, avec sa configuration, justifiée par le modèle d\'état de transition fourni.</p><p>Il faut donc quatre choses : qui est le nucléophile, comment le cuivre tient le substrat, quelle face est attaquée, et quel descripteur en découle.</p>',
+  etapes:[
+   {q:'Qui réagit avec qui.',t:'Le <b>nitrométhane</b> (déprotoné) attaque le carbone de la <b>cétone</b> du pyruvate d\'éthyle. On forme une liaison C–C et un alcool tertiaire.'},
+   {q:'Le carbone qui devient stéréogène.',t:'C\'est le carbone de la cétone. Après l\'attaque il porte : <b>OH</b>, <b>CH₃</b>, <b>CO₂Et</b> et <b>CH₂NO₂</b>. Quatre groupes différents → centre de chiralité.'},
+   {q:'Pourquoi il faut un catalyseur chiral.',t:'Le pyruvate d\'éthyle est <b>achiral</b> et plan autour de sa cétone : ses deux faces sont <b>énantiotopes</b>, donc de même énergie. Sans rien de chiral, on obtiendrait 50:50. Le complexe de cuivre chiral est ce qui départage.'},
+   {q:'La consigne générale du TD.',t:'« Assigner l\'ensemble des descripteurs stéréochimiques pertinents » : il faudra donc nommer <b>la face attaquée</b> (<i>Re</i> ou <i>Si</i>) <b>et</b> la configuration du produit (R ou S). Ce sont deux choses différentes.'}
+  ],
+  retenir:[
+   'Nucléophile = le nitrométhane déprotoné.',
+   'Électrophile = la <b>cétone</b> du cétoester, pas l\'ester.',
+   'Substrat achiral → faces énantiotopes → réaction <b>énantiosélective</b>.',
+   'À nommer : la face attaquée ET le descripteur du produit.'
+  ]
+});
+
+S({
+  grp:W1, title:'Étape 1 — ce que fait vraiment la triéthylamine',
+  consigne:'20 mol% d\'Et₃N : ce n\'est pas un catalyseur de transfert, c\'est une base.',
+  build(host){
+    const f=el('div','figbox'); f.innerHTML=figNitronate(); host.appendChild(f);
+    host.appendChild(el('div','statusline','Le nitrométhane est étonnamment acide (pKa ≈ 10 dans l\'eau) parce que la charge négative est délocalisée sur les deux oxygènes du groupe nitro. Une amine tertiaire suffit donc à l\'arracher.'));
+  },
+  une:'Et₃N déprotone le nitrométhane et fabrique le <b>nitronate</b>, qui est le vrai nucléophile de la réaction.',
+  etapes:[
+   {q:'Pourquoi CH₃NO₂ est acide.',t:'Le groupe NO₂ est très attracteur. Une fois le proton parti, le doublet se délocalise sur l\'azote et les deux oxygènes : l\'anion est bien stabilisé. D\'où un pKa d\'environ <b>10</b>, comparable à un phénol.'},
+   {q:'La forme du nitronate.',t:'On l\'écrit ⁻CH₂–NO₂, mais la forme la plus utile ici est <b>CH₂=N⁺(O⁻)–O⁻</b> : le carbone porte la charge et c\'est <b>lui</b> le nucléophile. C\'est pour cela que la liaison formée est une liaison C–C.'},
+   {q:'Pourquoi 20 mol% seulement.',t:'La base n\'est pas consommée : elle est rendue à la fin, quand le produit est protoné. Une quantité catalytique suffit à entretenir le cycle.'},
+   {q:'Ce que dit l\'énoncé.',t:'« Après la déprotonation de MeNO₂ pour former le nitronate, la configuration pyramidale carrée de Cu permet l\'attaque de l\'atome nucléophile du nitronate. » L\'énoncé te donne donc l\'étape 1 : il faut juste la citer.'}
+  ],
+  retenir:[
+   'Et₃N = base, pas catalyseur nucléophile.',
+   'CH₃NO₂ a un pKa d\'environ 10 : facile à déprotoner.',
+   'Le nitronate attaque par son <b>carbone</b>.',
+   'La base est régénérée : 20 mol% suffisent.'
+  ],
+  quiz:{q:'Pourquoi l\'énoncé précise-t-il « MeNO₂ en excès »&nbsp;?',
+    a:'Pour deux raisons.<br><br><b>Déplacer l\'équilibre de déprotonation</b> : Et₃N n\'est pas une base très forte, la proportion de nitronate à l\'équilibre reste faible. Un excès de nitrométhane entretient une concentration de nucléophile suffisante.<br><br><b>Éviter la réaction inverse</b> : la réaction de Henry est <b>réversible</b> (rétro-Henry). Un excès du partenaire le moins cher pousse dans le bon sens — c\'est le principe de Le Chatelier appliqué au laboratoire.'}
+});
+
+S({
+  grp:W1, title:'Étape 2 — les cinq places autour du cuivre',
+  consigne:'Change de panneau : d\'abord les places, ensuite qui occupe quoi.',
+  build(host){
+    const f=el('div','figbox'), row=el('div','btnrow'); let k=0;
+    const draw=()=>{ f.innerHTML=figCuModele(k); [...row.children].forEach((b,i)=>b.classList.toggle('on',i===k)); };
+    ['1. Les places','2. Qui s\'assoit où'].forEach((t,i)=>{ const b=el('button','btn'); b.textContent=t;
+      b.style.flex='1 1 46%'; b.onclick=()=>{k=i;draw();}; row.appendChild(b); });
+    host.appendChild(row); host.appendChild(f); draw();
+    host.appendChild(el('div','statusline','C\'est exactement ce que dit l\'énoncé : « la cétone du cétoester et le nitrométhane sont coordonnés en position <b>équatoriale</b> », « l\'oxygène de l\'ester est coordonné à la position <b>axiale</b> ».'));
+  },
+  une:'Le cuivre(II) adopte une <b>pyramide à base carrée</b> : quatre places dans un plan, une cinquième perpendiculaire. Tout le modèle tient dans cette phrase.',
+  probleme:'<p>On a tendance à voir le catalyseur comme une boîte noire. Ici il fait trois choses très concrètes : il <b>active</b> la cétone (acide de Lewis), il <b>rapproche</b> les deux partenaires, et il <b>bloque une face</b>.</p>',
+  etapes:[
+   {q:'Les deux places prises d\'avance.',t:'Les deux azotes du ligand <b>box</b> occupent deux places équatoriales. Ils ne bougent plus : c\'est le squelette du catalyseur.'},
+   {q:'La troisième place équatoriale : la cétone.',t:'L\'oxygène de la cétone se coordonne au cuivre. Conséquence chimique essentielle : le cuivre <b>aspire</b> de la densité électronique, le carbone de la cétone devient donc <b>plus électrophile</b>. C\'est l\'activation de type acide de Lewis.'},
+   {q:'La quatrième place équatoriale : le nitronate.',t:'Le nitronate se coordonne par un de ses oxygènes, <b>juste à côté</b> de la cétone. Les deux partenaires ne se cherchent plus : ils sont tenus côte à côte. C\'est l\'effet de <b>proximité</b>, et c\'est ce qui rend la réaction rapide.'},
+   {q:'La place axiale : l\'ester.',t:'L\'oxygène de l\'ester occupe la place perpendiculaire. Il ne sert pas à activer : il sert à <b>verrouiller</b> l\'orientation du cétoester. Sans lui, la molécule pourrait tourner et présenter n\'importe quelle face.'},
+   {q:'Et la chiralité, dans tout ça.',t:'Le ligand box est <b>C₂-symétrique</b> : ses deux <i>tert</i>-butyles pointent de part et d\'autre du plan équatorial. Il en résulte un creux chiral : une face du substrat est dégagée, l\'autre est encombrée.'},
+   {q:'Le cycle à six centres.',t:'En suivant Cu → O(cétone) → C(cétone) ··· C(nitronate) → N → O → Cu, tu comptes <b>six</b> chaînons. C\'est un état de transition cyclique, comme un Zimmerman–Traxler : rigide, donc sélectif.'}
+  ],
+  retenir:[
+   'Cu(II) = pyramide à base carrée : 4 équatoriales + 1 axiale.',
+   'Cétone et nitronate <b>voisins</b> en équatorial : proximité.',
+   'Ester en axial : il <b>verrouille</b> l\'orientation.',
+   'Les deux <i>t</i>-Bu du box créent le creux chiral.'
+  ]
+});
+
+S({
+  grp:W1, title:'Étape 3 — le creux chiral du ligand (S,S)',
+  consigne:'Tourne le ligand : regarde où partent les deux tert-butyles.',
+  build(host){
+    const m=MOLTD2.box;
+    bloc3D(host,m,{h:300, badges:[
+      {i:m.centres[0],t:'S',c:'--blue',o:[-22,-18]},{i:m.centres[1],t:'S',c:'--blue',o:[22,-18]}],
+      decor:[{k:'disc',p:[0,0,0],n:[0,1,0],r:3.2,c:'--purple',op:.10}],
+      boutons:[
+      {t:'↻ Voir par la tranche', go:(vv)=>vv.turn([1,0,0],Math.PI/2,900)},
+      {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+        btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+    ]});
+    host.appendChild(el('div','statusline','Les deux azotes bleus sont ceux qui se fixent au cuivre. Le disque violet figure le plan équatorial. Tourne la molécule par la tranche : tu verras qu\'un <i>tert</i>-butyle part <b>au-dessus</b> de ce plan et l\'autre <b>en dessous</b>.'));
+  },
+  une:'Le ligand est <b>C₂-symétrique</b> : un <i>tert</i>-butyle au-dessus du plan, l\'autre en dessous. C\'est ce décalage qui crée les quadrants encombrés.',
+  probleme:'<p>On s\'attend à ce qu\'un ligand chiral « bouche une face ». Ce n\'est pas ce qui se passe : le box bouche <b>un quadrant au-dessus et le quadrant opposé en dessous</b>. Le substrat n\'a alors qu\'une seule façon confortable de se poser.</p>',
+  etapes:[
+   {q:'Pourquoi les deux t-Bu ne sont pas du même côté.',t:'L\'axe C₂ du ligand est <b>dans</b> le plan de coordination, pas perpendiculaire. Une rotation de 180° autour de cet axe échange les deux oxazolines <b>et</b> échange le dessus et le dessous. Les deux <i>t</i>-Bu sont donc obligatoirement de part et d\'autre.'},
+   {q:'Le damier des quadrants.',t:'Vu de dessus, deux quadrants diagonalement opposés sont encombrés, les deux autres sont libres. C\'est la même image que l\'icône que l\'énoncé utilise pour le BINAP aux exercices 5 et 6.'},
+   {q:'Ce que ça impose au substrat.',t:'Le cétoester doit poser ses substituants dans les quadrants <b>libres</b>. Une fois posé, il ne présente plus qu\'une seule face au nitronate : la sélectivité est jouée.'},
+   {q:'Vérification.',t:'Les deux centres du ligand sont marqués <b>S</b> : RDKit les lit bien (S,S) sur les coordonnées du modèle, ce qui correspond au <b>[Cu((S,S)-tert-Bu-box)](OTf)₂</b> de l\'énoncé.'}
+  ],
+  retenir:[
+   'Axe C₂ <b>dans</b> le plan → les deux <i>t</i>-Bu de part et d\'autre.',
+   'Deux quadrants encombrés en diagonale, deux libres.',
+   'Le substrat n\'a qu\'une façon confortable de se poser.',
+   'Ligand vérifié (S,S).'
+  ]
+});
+
+S({
+  grp:W1, title:'Étape 4 — quelle face ? Le cours te le donne',
+  consigne:'Tourne le pyruvate pour voir ses deux faces, puis lis les priorités.',
+  build(host){
+    const m=MOLTD2.pyruvate;
+    bloc3D(host,m,{h:290, decor:[
+      {k:'disc',p:[0,0,0],n:[0,0,1],r:2.2,c:'--blue',op:.13},
+      {k:'arrow',a:[0,0,2.8],b:[0,0,0.9],c:'--green'},
+      {k:'arrow',a:[0,0,-2.8],b:[0,0,-0.9],c:'--red'},
+      {k:'tag',p:[0,0,3.4],t:'face Re',c:'--green',front:true},
+      {k:'tag',p:[0,0,-3.4],t:'face Si',c:'--red',front:true}
+    ], badges:[
+      {i:m.prioF[0],t:'1',c:'--red',o:[-20,-16]},
+      {i:m.prioF[1],t:'2',c:'--ink',o:[-22,16]},
+      {i:m.prioF[2],t:'3',c:'--ink',o:[22,16]}
+    ], boutons:[
+      {t:'↻ Voir par la tranche', go:(vv)=>vv.turn([1,0,0],Math.PI/2,900)}
+    ]});
+    const b=el('div','rassure');
+    b.innerHTML='<p style="margin:0"><b>Ton cours donne la réponse.</b> La structure calculée de [Cu((<i>S</i>)-<i>t</i>-Bu-Box)(pyruvate)]²⁺ porte une flèche annotée <b>« Nu (si face) »</b>. Le nucléophile attaque donc la face <b><i>Si</i></b> de la cétone.</p>';
+    host.appendChild(b);
+  },
+  une:'Avec le ligand (S,S), le nucléophile attaque la face <b><i>Si</i></b> de la cétone — c\'est écrit noir sur blanc dans le cours, sur la structure calculée du complexe cuivre–pyruvate.',
+  probleme:'<p>Déduire une face à partir d\'un modèle d\'état de transition dessiné à plat est très difficile. Heureusement, ce n\'est pas demandé : l\'énoncé fournit le modèle, et le cours fournit le résultat du calcul.</p>',
+  etapes:[
+   {q:'Classer les trois groupes du carbone de la cétone.',
+    t:'<b>1 · O</b> (numéro 8, il écrase tout).<br><b>2 · CO₂Et</b> : ce carbone porte (O, O, O) — un oxygène doublement lié compte deux fois, plus celui de l\'OEt.<br><b>3 · CH₃</b> : il porte (H, H, H). Il perd.'},
+   {q:'Nommer les deux faces.',
+    t:'On regarde la cétone depuis un côté. Si la séquence <b>O → CO₂Et → CH₃</b> tourne dans le sens des aiguilles, on voit la face <b><i>Re</i></b> ; dans l\'autre sens, la face <b><i>Si</i></b>. Sur le modèle ci-dessus, la flèche verte pointe la face <i>Re</i> et la rouge la face <i>Si</i>.'},
+   {q:'Ce que dit le cours.',
+    t:'La structure calculée (PM3) du complexe [Cu((<i>S</i>)-<i>t</i>-Bu-Box)(pyruvate)]²⁺ porte la mention <b>Nu (si face)</b>. Avec ce ligand, le nucléophile arrive donc par la face <b><i>Si</i></b>.'},
+   {q:'Pourquoi cette face-là.',
+    t:'Parce que les deux <i>tert</i>-butyles bouchent les quadrants qui donnent accès à la face <i>Re</i>. Le nitronate, tenu en équatorial juste à côté, n\'a qu\'un chemin libre.'},
+   {q:'Le piège à éviter.',
+    t:'Attaquer la face <i>Si</i> ne donne pas forcément un produit « S ». Les priorités changent quand le nucléophile arrive : il faut refaire le classement sur le produit. Ici, par chance, ça tombe sur S — mais c\'est une coïncidence, pas une règle.'}
+  ],
+  retenir:[
+   'Priorités sur la cétone : <b>O &gt; CO₂Et &gt; CH₃</b>.',
+   'Ligand (S,S) → attaque sur la face <b><i>Si</i></b> (source : le cours).',
+   'Les <i>t</i>-Bu bouchent l\'accès à la face <i>Re</i>.',
+   'Face <i>Si</i> ≠ produit (S) : il faut reclasser.'
+  ]
+});
+
+S({
+  grp:W1, title:'Étape 5 — le produit A et sa configuration',
+  consigne:'Tourne le produit : le groupe n° 4 (CH₃) doit partir vers le fond.',
+  build(host){
+    const m=MOLTD2.produitA;
+    bloc3D(host,m,{h:300, badges:[{i:m.centre,t:'S',c:'--green',o:[0,-26]}], boutons:[
+      {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+        btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+    ]});
+    const b=el('div','statusline');
+    b.innerHTML='<b style="color:var(--green)">A = 2-hydroxy-2-méthyl-3-nitropropanoate d\'éthyle, configuration (S)</b> — 95 %, e.e. = 92 %. Vérifié par RDKit à partir de la géométrie d\'attaque sur la face <i>Si</i>.';
+    host.appendChild(b);
+  },
+  une:'A est le <b>(S)</b>-2-hydroxy-2-méthyl-3-nitropropanoate d\'éthyle : un alcool tertiaire portant un ester, un méthyle et un CH₂NO₂.',
+  etapes:[
+   {q:'Écris d\'abord la structure, sans stéréochimie.',
+    t:'Le carbone du nitronate s\'est lié au carbone de la cétone. Le C=O est devenu C–O⁻, puis C–OH après protonation. Résultat : <b>CH₃–C(OH)(CO₂Et)–CH₂NO₂</b>.'},
+   {q:'Reclasse les quatre groupes du nouveau centre.',
+    t:'<b>1 · OH</b> (l\'oxygène).<br><b>2 · CO₂Et</b> : (O, O, O).<br><b>3 · CH₂NO₂</b> : (N, H, H) — l\'azote perd contre les oxygènes du 2.<br><b>4 · CH₃</b> : (H, H, H).'},
+   {q:'La comparaison qui tranche.',
+    t:'Entre CO₂Et et CH₂NO₂, on compare rang par rang : <b>(O,O,O)</b> contre <b>(N,H,H)</b>. Dès le premier rang, O (8) bat N (7). C\'est fini, l\'ester passe devant. Beaucoup d\'étudiants mettent le CH₂NO₂ devant parce que « le nitro c\'est plus gros » — c\'est une erreur, CIP ne regarde que les numéros atomiques.'},
+   {q:'Du côté attaqué au descripteur.',
+    t:'Le nitronate est arrivé par la face <i>Si</i>, donc le CH₂NO₂ se retrouve de ce côté-là et l\'OH de l\'autre. En appliquant le classement ci-dessus à cette géométrie, on obtient <b>(S)</b>. J\'ai construit explicitement les deux attaques possibles et laissé RDKit trancher : face <i>Si</i> → (S), face <i>Re</i> → (R).'},
+   {q:'Et l\'excès énantiomérique.',
+    t:'e.e. = 92 % signifie 96 % de (S) et 4 % de (R). Le rapport énantiomérique est donc 96:4, soit 24:1 — ce qui correspond à une différence d\'énergie entre les deux états de transition d\'environ <b>7,8 kJ·mol⁻¹</b> à 25 °C. Très peu : moins qu\'une liaison hydrogène.'}
+  ],
+  retenir:[
+   'A = <b>(S)</b>-2-hydroxy-2-méthyl-3-nitropropanoate d\'éthyle.',
+   'Priorités : OH &gt; CO₂Et &gt; CH₂NO₂ &gt; CH₃.',
+   '(O,O,O) bat (N,H,H) dès le premier rang.',
+   'e.e. 92 % → 96:4 → ΔΔG‡ ≈ 7,8 kJ·mol⁻¹.'
+  ],
+  quiz:{q:'Recalcule : e.e. = 92 % à 25 °C, quelle différence d\'énergie entre les deux états de transition&nbsp;?',
+    a:'e.e. = 92 % → <b>96 % / 4 %</b> → rapport énantiomérique <b>e.r. = 24</b>.<br><br>ΔΔG‡ = R·T·ln(e.r.) = 8,314 × 298 × ln(24) = 8,314 × 298 × 3,178 ≈ <b>7 873 J·mol⁻¹ ≈ 7,9 kJ·mol⁻¹</b>.<br><br>C\'est frappant : moins de 8 kJ·mol⁻¹ — l\'ordre de grandeur d\'une liaison hydrogène faible — suffisent à passer de 50:50 à 96:4. C\'est ce qui rend la catalyse asymétrique à la fois puissante et capricieuse : quelques degrés de température suffisent à tout changer.'}
+});
+
+S({
+  grp:W1, title:'Exercice 3 — la réponse à rédiger',
+  consigne:'Voilà ce que tu peux recopier, dans l\'ordre.',
+  build(host){
+    const d=el('div','dico');
+    d.innerHTML='<span class="m">1. Le nucléophile</span>Et₃N déprotone le nitrométhane (pKa ≈ 10) et forme le <b>nitronate</b> ⁻CH₂NO₂, nucléophile par son carbone.'
+     +'<div style="height:10px"></div><span class="m">2. L\'activation</span>Le Cu(II) adopte une géométrie de <b>pyramide à base carrée</b>. Les deux azotes du box et les deux partenaires occupent les quatre positions <b>équatoriales</b> ; l\'oxygène de l\'ester occupe la position <b>axiale</b>, ce qui verrouille l\'orientation du cétoester. La coordination de la cétone au cuivre l\'active (acide de Lewis) et la place juste à côté du nitronate.'
+     +'<div style="height:10px"></div><span class="m">3. La face attaquée</span>Le ligand (S,S)-<i>t</i>-Bu-box est C₂-symétrique : ses deux <i>tert</i>-butyles encombrent deux quadrants diagonalement opposés. Le nitronate attaque la face <b><i>Si</i></b> de la cétone (modèle calculé du cours).'
+     +'<div style="height:10px"></div><span class="m">4. Le produit</span><b>A = (S)-2-hydroxy-2-méthyl-3-nitropropanoate d\'éthyle</b>, CH₃–C(OH)(CO₂Et)–CH₂NO₂. Priorités au nouveau centre : OH &gt; CO₂Et &gt; CH₂NO₂ &gt; CH₃.'
+     +'<div style="height:10px"></div><span class="m">5. La sélectivité</span>Substrat achiral à faces énantiotopes + catalyseur chiral → réaction <b>énantiosélective</b>. e.e. = 92 %, soit 96:4, soit ΔΔG‡ ≈ 7,9 kJ·mol⁻¹ à 25 °C.';
+    host.appendChild(d);
+  },
+  une:'Cinq paragraphes : le nucléophile, l\'activation, la face, le produit, la sélectivité.',
+  retenir:[
+   'Toujours commencer par « qui est le nucléophile ».',
+   'Dire ce que le métal fait : activer + rapprocher + bloquer.',
+   'Nommer la face <b>et</b> le descripteur : ce sont deux réponses.',
+   'Finir par le mot <b>énantiosélective</b>, justifié.'
+  ]
+});
+
+/* ==========================================================================
+   EXERCICE 4 — allylboration énantiosélective d'une cétone
+   ========================================================================== */
+const W2='Exercice 4 — allylboration';
+
+S({
+  grp:W2, title:'Ce qu\'on te demande',
+  consigne:'Deux questions bien distinctes : le catalyseur, puis l\'état de transition.',
+  build(host){
+    const f=el('div','figbox'); f.innerHTML=figAllyl(); host.appendChild(f);
+    host.appendChild(el('div',null,recapHTML([
+      {t:'Question 1', c:'var(--blue)', v:'Configuration absolue du catalyseur — de quelle chiralité s\'agit-il ?',
+       d:'Il n\'y a <b>aucun carbone asymétrique</b> dans ce binaphtol. La chiralité est ailleurs : il faut la nommer, puis la mesurer.'},
+      {t:'Question 2', c:'var(--red)', v:'Quel état de transition est favorisé, et quelle configuration en résulte ?',
+       d:'TS1 et TS2 présentent les <b>deux faces</b> de la cétone. Il faut un argument stérique, puis lire le descripteur.'}
+    ])));
+  },
+  une:'Une cétone (donc un alcool <b>tertiaire</b> au bout) + un allylborane rendu chiral par un binaphtol : 94 % d\'excès énantiomérique.',
+  probleme:'<p>Fabriquer un alcool tertiaire énantiopur est difficile : les deux substituants de la cétone (ici Ph et CH₃) se ressemblent plus qu\'un H et un groupe. La différence d\'encombrement est faible, donc la sélectivité est dure à obtenir.</p><p>D\'où le catalyseur très encombré, et la température de −35 °C.</p>',
+  etapes:[
+   {q:'Le squelette du produit.',t:'L\'allyle s\'additionne par son carbone terminal. On obtient <b>Ph–C(CH₃)(OH)–CH₂–CH=CH₂</b>, le 2-phényl-pent-4-én-2-ol. Attention : la double liaison s\'est <b>déplacée</b> — c\'est la marque d\'une allylation par un allylborane (transposition allylique).'},
+   {q:'Le nouveau centre.',t:'Le carbone qui portait la cétone porte maintenant <b>OH, CH₃, Ph et CH₂–CH=CH₂</b> : quatre groupes différents, donc un centre de chiralité. C\'est un alcool tertiaire.'},
+   {q:'Pourquoi la réaction est énantiosélective.',t:'L\'acétophénone est <b>achirale</b> et plane autour de son carbonyle : ses deux faces sont <b>énantiotopes</b>. Il faut donc apporter la chiralité de l\'extérieur — c\'est le rôle du binaphtol.'},
+   {q:'Le mot « catalysée » mérite un commentaire.',t:'Le diol est en quantité <b>sous-stœchiométrique</b> (15 mol%) : c\'est bien de la catalyse. Mais il ne reste pas spectateur : il se fixe sur le bore, fait la réaction, puis repart. On verra ça dans deux pages.'}
+  ],
+  retenir:[
+   'Alcool <b>tertiaire</b> : deux substituants qui se ressemblent → difficile.',
+   'La double liaison se déplace : transposition allylique.',
+   'Substrat achiral à faces énantiotopes → <b>énantiosélective</b>.',
+   'Le diol est catalytique (15 mol%) mais devient partie du réactif.'
+  ]
+});
+
+S({
+  grp:W2, title:'Question 1a — de quelle chiralité s\'agit-il ?',
+  consigne:'Cherche un carbone à quatre groupes différents. Il n\'y en a pas. Puis appuie sur « regarder dans l\'axe ».',
+  build(host){
+    const m=MOLTD2.binolBr2;
+    const R0=M3.mul(M3.rot([0,1,0],0.22),M3.rot([1,0,0],Math.PI/2));
+    const v=bloc3D(host,m,{h:320, R0:R0, decor:[
+      {k:'line',a:[0,0,-5.0],b:[0,0,5.0],c:'--red',dash:true,w:2.2}
+    ], boutons:[
+      {t:'👁 Regarder DANS l\'axe', go:(vv)=>vv.goto(M3.id(),1400)},
+      {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+        btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+    ]});
+    const sl=document.createElement('input');
+    sl.type='range'; sl.min='-90'; sl.max='90'; sl.value='0'; sl.step='1'; sl.style.width='100%';
+    sl.setAttribute('aria-label','forcer la rotation autour de l\'axe');
+    const lab2=el('div','statusline');
+    const maj=()=>{ const a=+sl.value; v.torsion(a); const c=v.contact();
+      if(!c){ lab2.innerHTML=''; return; }
+      const serre=c.d<3.0;
+      lab2.innerHTML='<b>Rotation forcée de '+(a>0?'+':'')+a+'°.</b> Contact le plus serré : <b style="color:var('
+        +(serre?'--red':'--green')+')">'+c.d.toFixed(2)+' Å</b> entre un <b>'+c.a+'</b> et un <b>'+c.b+'</b>. '
+        +(serre?(c.prof===0?'Deux atomes de <b>cycle</b> : rien ne peut s\'écarter.'
+                 :(c.prof===1?'Directement accrochés aux cycles : ils ne bougent quasiment pas.'
+                   :'Un groupe latéral souple est impliqué : le curseur exagère ici.'))
+               :'Au-dessus de ~3,0 Å : ça passe.');
+    };
+    sl.oninput=maj;
+    const t=el('div','cv3dhint','↔ essaie de faire tourner les deux naphtalènes l\'un par rapport à l\'autre');
+    t.style.marginBottom='4px';
+    host.appendChild(t); host.appendChild(sl); host.appendChild(lab2); maj();
+    host.appendChild(el('div','statusline','Les <b>brome</b> en position 3 et 3′ sont les vrais verrous : ce sont des atomes de cycle aromatique voisins, rien ne peut s\'écarter. C\'est pour cela qu\'on les a mis là.'));
+  },
+  une:'Il s\'agit d\'une <b>chiralité axiale</b> (atropisomérie) : aucun atome n\'est asymétrique, c\'est la torsion bloquée entre les deux naphtalènes qui est chirale.',
+  probleme:'<p>Première chose à écrire dans la copie : <b>« aucun carbone asymétrique »</b>. Si on cherche un centre, on ne trouve rien et on se bloque. Il faut penser à l\'axe.</p>',
+  etapes:[
+   {q:'Vérifie qu\'il n\'y a pas de centre.',t:'Tourne le modèle : tous les carbones sont aromatiques (sp², trois voisins) ou portent deux hydrogènes. Aucun ne porte quatre groupes différents.'},
+   {q:'Où est la chiralité, alors.',t:'Dans la <b>liaison centrale</b> entre les deux naphtalènes. Les quatre positions ortho sont occupées (deux OH, deux Br), donc les cycles ne peuvent pas devenir coplanaires : ils restent croisés à environ 90°. Deux barres croisées, c\'est une hélice — et une hélice a un sens.'},
+   {q:'Le mot juste.',t:'On parle d\'un <b>axe de chiralité</b>, et les deux formes s\'appellent des <b>atropisomères</b> (de <i>a-tropos</i>, « qui ne tourne pas »). Les descripteurs sont a<i>R</i> / a<i>S</i>.'},
+   {q:'Pourquoi les brome en 3 et 3′.',t:'Un BINOL simple est déjà bloqué, mais son creux est trop ouvert pour différencier Ph de CH₃. Les brome en 3,3′ <b>referment</b> le creux juste au-dessus du bore : c\'est ce qui crée la sélectivité. Teste au curseur : ce sont eux qui coincent.'},
+   {q:'La condition de stabilité.',t:'Robinson donne le seuil : il faut une barrière de rotation supérieure à environ <b>90 kJ·mol⁻¹</b> pour pouvoir séparer les deux formes à température ambiante. Avec quatre substituants ortho dont deux brome, on est très au-dessus.'}
+  ],
+  retenir:[
+   'Aucun carbone asymétrique : c\'est une chiralité <b>axiale</b>.',
+   'Deux atropisomères, descripteurs a<i>R</i> / a<i>S</i>.',
+   'Les Br en 3,3′ referment le creux : c\'est eux qui font la sélectivité.',
+   'Barrière nécessaire : &gt; ~90 kJ·mol⁻¹.'
+  ]
+});
+
+S({
+  grp:W2, title:'Question 1b — et sa configuration : a<i>S</i>',
+  consigne:'Change de panneau pour voir les deux sens possibles, puis compare au dessin de l\'énoncé.',
+  build(host){
+    const f=el('div','figbox'), row=el('div','btnrow'); let k=0;
+    const draw=()=>{ f.innerHTML=figAxeNewman(k); [...row.children].forEach((b,i)=>b.classList.toggle('on',i===k)); };
+    ['Un sens','L\'autre sens'].forEach((t,i)=>{ const b=el('button','btn'); b.textContent=t;
+      b.style.flex='1 1 45%'; b.onclick=()=>{k=i;draw();}; row.appendChild(b); });
+    host.appendChild(row); host.appendChild(f); draw();
+    host.appendChild(el('div','statusline','Dans l\'encadré TS1/TS2 de l\'énoncé, le naphtalène dessiné en <b>trait plein</b> est devant et celui en <b>pointillés</b> derrière. Sur le trait plein, le côté O/Br pointe en haut à droite ; sur le pointillé, en bas à droite. En appliquant la procédure, on obtient <b>a<i>S</i></b>.'));
+  },
+  une:'En regardant dans l\'axe, les deux ligands du naphtalène <b>avant</b> prennent les rangs 1 et 2, ceux du naphtalène <b>arrière</b> les rangs 3 et 4. On lit ensuite 1 → 2 → 3 comme un volant.',
+  probleme:'<p>Sur le schéma de réaction, le catalyseur est dessiné <b>à plat</b> : impossible d\'en lire la configuration. Mais l\'encadré TS1/TS2, lui, le dessine <b>en perspective</b> (un trait plein et un trait pointillé qui se croisent). C\'est de là qu\'il faut partir.</p>',
+  etapes:[
+   {q:'Étape 1 — se placer dans l\'axe.',t:'Deux traits qui se croisent = les deux naphtalènes vus par la tranche, l\'axe pointant vers toi. Le trait <b>plein</b> est le cycle de devant, le trait <b>pointillé</b> celui de derrière.'},
+   {q:'Étape 2 — classer les deux ortho du cycle AVANT.',t:'Sur chaque naphtalène, les deux voisins du carbone de jonction sont : le carbone qui porte l\'<b>O</b> (c\'est‑à‑dire (O, C, C)) et le carbone de <b>soudure</b> des deux cycles ((C, C, C)). L\'oxygène l\'emporte : le côté <b>O/Br</b> est prioritaire. Rang <b>1</b>, l\'autre rang <b>2</b>.'},
+   {q:'Étape 3 — le cycle ARRIÈRE.',t:'Même raisonnement : rangs <b>3</b> et <b>4</b>. Règle propre aux axes : <b>un ligand proche bat toujours un ligand lointain</b>, quels que soient les numéros atomiques.'},
+   {q:'Étape 4 — lire.',t:'Sur le dessin de l\'énoncé : rang 1 en haut à droite, rang 2 en bas à gauche, rang 3 en bas à droite. La séquence 1 → 2 → 3 est <b>antihoraire</b> → configuration <b>a<i>S</i></b>. J\'ai refait ce calcul numériquement, et l\'image miroir donne bien a<i>R</i>.'},
+   {q:'Ce qu\'il faut écrire.',t:'« Le catalyseur ne possède pas de centre de chiralité : il présente un <b>axe de chiralité</b> (atropisomérie), de configuration <b>a<i>S</i></b>. »'}
+  ],
+  retenir:[
+   'Proche avant lointain : rangs 1–2 devant, 3–4 derrière.',
+   'Sur chaque naphtalène, le côté <b>OH</b> est prioritaire.',
+   '1 → 2 → 3 antihoraire → <b>a<i>S</i></b>.',
+   'Un dessin plat ne permet jamais de conclure : il faut la perspective.'
+  ],
+  flag:'<b>À vérifier avec ta prof.</b> La lecture de la configuration repose sur l\'interprétation du dessin en perspective de l\'encadré TS1/TS2 (quel naphtalène est devant). Ma lecture donne <b>a<i>S</i></b>. Si elle annonce a<i>R</i>, c\'est que le dessin se lit dans l\'autre sens — et alors toutes les conclusions de la question 2 s\'inversent aussi.'
+});
+
+S({
+  grp:W2, title:'Le mécanisme — d\'où sort le « boronate cyclique »',
+  consigne:'Comprends ce point et la question 2 devient facile.',
+  build(host){
+    const f=el('div','figbox'); f.innerHTML=figBoronate(); host.appendChild(f);
+    host.appendChild(el('div','statusline','C\'est ce que l\'énoncé appelle « une activation de type acide de Lewis <i>via</i> la formation d\'un intermédiaire boronate cyclique ». Le bore devient à la fois <b>plus acide de Lewis</b> (les O du binaphtol sont attracteurs) et <b>chiral</b>.'));
+  },
+  une:'Le binaphtol <b>chasse les deux isopropanolates</b> du bore et prend leur place. L\'allylborane devient alors chiral — et c\'est lui qui réagit.',
+  etapes:[
+   {q:'Étape 1 — la transestérification sur le bore.',t:'Les boronates d\'alkyle échangent très facilement leurs groupes alcoxy avec un diol. Le binaphtol, qui est un diol rigide, se fixe en formant un cycle à cinq chaînons et libère deux iPrOH.'},
+   {q:'Étape 2 — pourquoi ça accélère la réaction.',t:'Les deux oxygènes aryliques sont bien plus attracteurs que des OiPr. Le bore devient <b>plus pauvre en électrons</b>, donc meilleur acide de Lewis : il se lie mieux à l\'oxygène de la cétone, et l\'addition est plus rapide. C\'est une vraie catalyse, pas seulement une induction.'},
+   {q:'Étape 3 — l\'état de transition.',t:'L\'oxygène de la cétone se lie au bore. On forme alors un cycle à <b>six</b> chaînons : B – O – C(cétone) ··· C(terminal de l\'allyle) – CH = CH – retour au B. C\'est une <b>chaise de Zimmerman–Traxler</b>, exactement comme pour une aldolisation.'},
+   {q:'Étape 4 — pourquoi la double liaison se déplace.',t:'Parce que c\'est le carbone <b>terminal</b> de l\'allyle qui attaque, pendant que la liaison C–B se rompt. Le réarrangement est concerté et se fait dans le cycle à six : c\'est une transposition allylique obligatoire.'},
+   {q:'Étape 5 — le catalyseur repart.',t:'Après l\'addition, le binaphtol est libéré par l\'alcoolate formé et recommence un cycle. D\'où les 15 mol% seulement.'}
+  ],
+  retenir:[
+   'Le diol <b>remplace</b> les OiPr sur le bore.',
+   'Bore plus acide de Lewis → réaction plus rapide.',
+   'État de transition = <b>chaise à six centres</b> (Zimmerman–Traxler).',
+   'Le carbone terminal attaque → la double liaison se déplace.'
+  ]
+});
+
+S({
+  grp:W2, title:'Question 2a — TS1 ou TS2 ?',
+  consigne:'Change de panneau et regarde où part le phényle dans chaque cas.',
+  build(host){
+    const f=el('div','figbox'), row=el('div','btnrow'); let k=0;
+    const draw=()=>{ f.innerHTML=figTS(k); [...row.children].forEach((b,i)=>b.classList.toggle('on',i===k)); };
+    ['TS1','TS2'].forEach((t,i)=>{ const b=el('button','btn'); b.textContent=t;
+      b.style.flex='1 1 45%'; b.onclick=()=>{k=i;draw();}; row.appendChild(b); });
+    host.appendChild(row); host.appendChild(f); draw();
+    const m=MOLTD2.acetophenone;
+    host.appendChild(el('div','statusline','Les deux états de transition ne diffèrent que par un point : <b>quelle face de la cétone</b> est présentée à l\'allyle. Ci-dessous l\'acétophénone et ses deux faces.'));
+    bloc3D(host,m,{h:280, decor:[
+      {k:'disc',p:[0,0,0],n:[0,0,1],r:2.4,c:'--blue',op:.12},
+      {k:'arrow',a:[0,0,3.0],b:[0,0,1.0],c:'--green'},
+      {k:'arrow',a:[0,0,-3.0],b:[0,0,-1.0],c:'--red'},
+      {k:'tag',p:[0,0,3.6],t:'une face',c:'--green',front:true},
+      {k:'tag',p:[0,0,-3.6],t:'l\'autre',c:'--red',front:true}
+    ], badges:[
+      {i:m.prioF[0],t:'1',c:'--red',o:[-20,-16]},
+      {i:m.prioF[1],t:'2',c:'--ink',o:[24,14]},
+      {i:m.prioF[2],t:'3',c:'--ink',o:[-24,16]}
+    ]});
+  },
+  une:'<b>TS2 est favorisé</b> : il place le phényle en position pseudo-<b>équatoriale</b>, pointant vers l\'extérieur. TS1 l\'enfonce en pseudo-axial, dans le creux du binaphtol.',
+  probleme:'<p>Dans une chaise, chaque substituant est soit pseudo-équatorial (étalé vers l\'extérieur), soit pseudo-axial (dressé perpendiculairement). Le gros groupe préfère <b>toujours</b> l\'équatorial — c\'est la même règle que pour le cyclohexane.</p><p>Ici s\'ajoute un second argument : la position pseudo-axiale pointe droit vers les brome en 3,3′.</p>',
+  etapes:[
+   {q:'Ce qui distingue les deux.',t:'Le squelette est identique : même chaise, même catalyseur. Seule la cétone est <b>retournée</b>. Dans TS1 le phényle est pseudo-axial et le méthyle pseudo-équatorial ; dans TS2 c\'est l\'inverse.'},
+   {q:'Argument 1 — la chaise.',t:'Un substituant pseudo-axial subit des interactions <b>1,3-diaxiales</b> avec le reste du cycle. Plus il est gros, plus ça coûte cher. Phényle ≫ méthyle, donc le phényle veut l\'équatorial : <b>TS2</b>.'},
+   {q:'Argument 2 — le catalyseur.',t:'La position pseudo-axiale plonge <b>sous</b> le cycle, c\'est-à-dire du côté où le binaphtol présente ses brome en 3,3′. Y mettre un phényle est doublement coûteux. Les deux arguments vont dans le même sens.'},
+   {q:'Pourquoi les Br sont indispensables.',t:'Sans eux, le creux est trop ouvert : la différence entre Ph pseudo-axial et pseudo-équatorial reste faible et l\'excès énantiomérique s\'effondre. Les brome <b>amplifient</b> une petite préférence conformationnelle en une grosse préférence énergétique.'},
+   {q:'Et la température.',t:'−35 °C : à basse température, une même différence d\'énergie donne un meilleur rapport. e.e. = 94 % correspond à 97:3, soit e.r. ≈ 32,3 — c\'est-à-dire ΔΔG‡ = R·T·ln(32,3) = 8,314 × 238 × 3,48 ≈ <b>6,9 kJ·mol⁻¹</b>. À 25 °C, cette même différence ne donnerait que 94:6, soit 88 % d\'e.e.'}
+  ],
+  retenir:[
+   'TS1 et TS2 = les deux <b>faces</b> de la cétone.',
+   'Le gros groupe va en pseudo-<b>équatorial</b> : c\'est TS2.',
+   'Le pseudo-axial pointe vers les Br en 3,3′ : double pénalité.',
+   '−35 °C amplifie une différence de seulement ~7 kJ·mol⁻¹.'
+  ],
+  quiz:{q:'Pourquoi cette réaction marche-t-elle beaucoup moins bien sur une cétone portant deux groupes alkyle de taille voisine&nbsp;?',
+    a:'Parce que la sélectivité repose entièrement sur la <b>différence de taille</b> entre les deux substituants de la cétone.<br><br>Avec Ph et CH₃, l\'écart est net : le phényle est plat mais large, et il paie cher la position pseudo-axiale. Avec par exemple un éthyle et un méthyle, les deux états de transition coûtent presque la même chose : ΔΔG‡ s\'effondre, et avec lui l\'excès énantiomérique.<br><br>C\'est la limite générale de l\'allylboration de cétones, et c\'est pour ça que les alcools tertiaires énantiopurs restent une cible difficile.'}
+});
+
+S({
+  grp:W2, title:'Question 2b — la configuration du nouveau centre',
+  consigne:'Tourne le produit et vérifie le classement toi-même.',
+  build(host){
+    const m=MOLTD2.prod4S;
+    bloc3D(host,m,{h:300, badges:[{i:m.centre,t:'S',c:'--green',o:[0,-26]}], boutons:[
+      {t:'▶ Tourner doucement', go:(vv,btn)=>{ const on=!vv.isSpinning(); vv.spin(on);
+        btn.textContent=on?'⏸ Arrêter':'▶ Tourner doucement'; btn.classList.toggle('on',on); }}
+    ]});
+    const b=el('div','statusline');
+    b.innerHTML='<b style="color:var(--green)">(S)-2-phényl-pent-4-én-2-ol</b> — 83 %, e.e. = 94 %. Priorités : <b>OH &gt; Ph &gt; CH₂–CH=CH₂ &gt; CH₃</b>.';
+    host.appendChild(b);
+  },
+  une:'TS2 conduit au <b>(S)</b>-2-phényl-pent-4-én-2-ol.',
+  etapes:[
+   {q:'Classe les quatre groupes.',
+    t:'<b>1 · OH</b> — l\'oxygène.<br><b>2 · Ph</b> — le carbone ipso porte (C, C, C).<br><b>3 · CH₂–CH=CH₂</b> — ce carbone porte (C, H, H).<br><b>4 · CH₃</b> — (H, H, H).'},
+   {q:'La comparaison à ne pas rater.',
+    t:'Entre le phényle et la chaîne allylique, on compare <b>(C,C,C)</b> et <b>(C,H,H)</b>. Premier rang : C = C. Deuxième rang : <b>C bat H</b>. Le phényle passe devant. On n\'a pas besoin d\'aller plus loin dans le cycle.'},
+   {q:'Du TS au descripteur.',
+    t:'Dans TS2, le phényle est pseudo-équatorial, le méthyle pseudo-axial, l\'oxygène de la cétone est tenu par le bore et l\'allyle arrive de l\'autre côté. En plaçant ces quatre groupes dans cette géométrie et en appliquant le classement ci-dessus, on obtient <b>(S)</b>. TS1 donnerait (R).'},
+   {q:'Vérification.',
+    t:'J\'ai construit explicitement les deux dispositions et fait attribuer le descripteur par RDKit : TS2 → <b>(S)</b>, TS1 → (R). Les deux états de transition donnent bien des énantiomères, ce qui est cohérent avec ce qu\'annonce l\'énoncé.'},
+   {q:'L\'excès énantiomérique.',
+    t:'e.e. = 94 % → 97 % de (S) et 3 % de (R), c\'est-à-dire e.r. ≈ 32:1. Les 3 % viennent du chemin TS1, qui reste accessible : un état de transition défavorisé n\'est jamais interdit, il est seulement plus cher.'}
+  ],
+  retenir:[
+   'Produit : <b>(S)</b>-2-phényl-pent-4-én-2-ol.',
+   'Priorités : OH &gt; Ph &gt; CH₂-allyle &gt; CH₃.',
+   '(C,C,C) bat (C,H,H) au deuxième rang.',
+   'TS2 → (S) ; TS1 → (R), minoritaire à 3 %.'
+  ],
+  flag:'<b>À confirmer.</b> Cette configuration découle de deux lectures du dessin de l\'énoncé : quel naphtalène est devant (question 1b) et quel substituant est pseudo-axial dans chaque TS. Le <b>raisonnement</b> est solide et c\'est lui qui est noté ; si ta prof annonce (R), c\'est qu\'une de ces deux lectures s\'inverse — et dans ce cas tout s\'inverse de façon cohérente. La référence d\'origine est Lou, Moquist &amp; Schaus, <i>J. Am. Chem. Soc.</i> <b>2006</b>, <i>128</i>, 12660.'
+});
+
+S({
+  grp:W2, title:'Exercice 4 — la réponse à rédiger',
+  consigne:'À recopier dans cet ordre.',
+  build(host){
+    const d=el('div','dico');
+    d.innerHTML='<span class="m">1. Nature de la chiralité</span>Le catalyseur ne possède <b>aucun centre de chiralité</b>. Les quatre positions ortho de la liaison internaphtylique sont occupées (deux OH, deux Br) : les cycles ne peuvent pas devenir coplanaires. Il s\'agit d\'une <b>chiralité axiale</b> (atropisomérie).'
+     +'<div style="height:10px"></div><span class="m">2. Configuration du catalyseur</span>On regarde dans l\'axe. Sur chaque naphtalène, le carbone porteur de l\'OH ((O,C,C)) l\'emporte sur le carbone de soudure ((C,C,C)). Les ligands du cycle avant prennent les rangs 1 et 2, ceux du cycle arrière les rangs 3 et 4. La séquence 1 → 2 → 3 est antihoraire : <b>a<i>S</i></b>.'
+     +'<div style="height:10px"></div><span class="m">3. Mode d\'activation</span>Le binaphtol déplace les deux OiPr du bore (transestérification) et forme un <b>boronate cyclique chiral</b>. Les oxygènes aryliques rendent le bore plus <b>acide de Lewis</b> : il lie mieux l\'oxygène de la cétone et accélère l\'addition. L\'état de transition est une <b>chaise de Zimmerman–Traxler à six centres</b>, avec transposition allylique.'
+     +'<div style="height:10px"></div><span class="m">4. TS favorisé</span><b>TS2</b>, parce qu\'il place le phényle — le plus gros substituant — en position pseudo-<b>équatoriale</b>. Dans TS1, le phényle est pseudo-axial : il subit les interactions 1,3-diaxiales <b>et</b> pointe vers les brome en 3,3′ du binaphtol. Double pénalité.'
+     +'<div style="height:10px"></div><span class="m">5. Produit</span><b>(S)-2-phényl-pent-4-én-2-ol</b>, alcool tertiaire. Priorités : OH &gt; Ph &gt; CH₂–CH=CH₂ &gt; CH₃. e.e. = 94 %, soit 97:3, soit ΔΔG‡ ≈ 6,9 kJ·mol⁻¹ à −35 °C.';
+    host.appendChild(d);
+  },
+  une:'Cinq paragraphes : la nature de la chiralité, sa configuration, le mode d\'activation, le TS favorisé, le produit.',
+  retenir:[
+   'Commencer par « aucun centre de chiralité » : c\'est le réflexe attendu.',
+   'Nommer le mode d\'activation : acide de Lewis <i>via</i> boronate cyclique.',
+   'Justifier le TS par <b>deux</b> arguments : la chaise et les Br.',
+   'Finir par le descripteur et le lien e.e. → ΔΔG‡.'
+  ]
+});
+
+/* ==========================================================================
+   Rendu, navigation, thème
+   ========================================================================== */
+const stage=document.getElementById('stage');
+const tocEl=document.getElementById('toc');
+const navpos=document.getElementById('navpos');
+const prevbtn=document.getElementById('prevbtn'), nextbtn=document.getElementById('nextbtn');
+let idx=0;
+const STORE='tdcat';
+function store(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){} return null; }
+
+function blk(titre,inner){ return '<div class="blk"><h3>'+titre+'</h3>'+inner+'</div>'; }
+
+function renderSection(i){
+  idx=i; stage.innerHTML='';
+  const d=SECTIONS[i];
+  const sec=el('section','sec');
+  sec.appendChild(el('div','kicker',d.grp));
+  sec.appendChild(el('h2','sectitle',d.title));
+  if(d.une) sec.appendChild(el('div','une','<span class="t">En une phrase</span>'+d.une));
+  if(d.probleme) sec.appendChild(el('div','blk','<h3>Le problème</h3>'+d.probleme));
+  if(d.consigne) sec.appendChild(el('div','consigne','<span class="ic">👉</span><span>'+d.consigne+'</span>'));
+  const card=el('div','card'); d.build(card); sec.appendChild(card);
+  if(d.flag) sec.appendChild(el('div','warnbox',d.flag));
+  if(d.etapes){
+    const ol='<ol class="steps">'+d.etapes.map(s=>'<li>'+(s.q?'<span class="q">'+s.q+'</span>':'')+s.t+'</li>').join('')+'</ol>';
+    sec.appendChild(el('div','blk','<h3>Le raisonnement, pas à pas</h3>'+ol));
+  }
+  if(d.expl) sec.appendChild(el('div','expl',d.expl));
+  if(d.retenir){
+    sec.appendChild(el('div','blk','<h3>À retenir</h3><ul class="keys">'+d.retenir.map(r=>'<li>'+r+'</li>').join('')+'</ul>'));
+  }
+  if(d.plus){
+    const dt=el('details','plus');
+    dt.innerHTML='<summary>Pour aller plus loin — '+d.plus.titre+'</summary><div class="body">'+d.plus.body
+      +(d.plus.src?'<div class="src">Source : '+d.plus.src+'</div>':'')+'</div>';
+    sec.appendChild(dt);
+  }
+  if(d.quiz){
+    const q=el('div','quiz');
+    q.innerHTML='<p class="q">'+d.quiz.q+'</p><button type="button">Voir la réponse</button><div class="a">'+d.quiz.a+'</div>';
+    q.querySelector('button').onclick=()=>{ q.classList.toggle('show');
+      q.querySelector('button').textContent=q.classList.contains('show')?'Masquer la réponse':'Voir la réponse'; };
+    sec.appendChild(q);
+  }
+  stage.appendChild(sec);
+  navpos.textContent=(i+1)+' / '+SECTIONS.length;
+  prevbtn.disabled=(i===0); nextbtn.disabled=(i===SECTIONS.length-1);
+  document.getElementById('hsub').textContent=d.grp;
+  buildToc(); window.scrollTo(0,0); store(STORE+'.sec',String(i));
+}
+function buildToc(){
+  let g=null, h='';
+  SECTIONS.forEach((d,i)=>{
+    if(d.grp!==g){ g=d.grp; h+='<div class="tocgroup">'+g+'</div>'; }
+    h+='<button class="tocitem'+(i===idx?' cur':'')+'" data-i="'+i+'"><span class="n">'+(i+1)+'</span><span>'+d.title+'</span></button>';
+  });
+  tocEl.innerHTML='<button class="tocitem" id="toclose" style="font-weight:600"><span class="n">✕</span><span>Fermer le sommaire</span></button>'+h;
+  tocEl.querySelector('#toclose').onclick=()=>tocEl.classList.remove('open');
+  tocEl.querySelectorAll('.tocitem[data-i]').forEach(b=>b.onclick=()=>{tocEl.classList.remove('open');renderSection(+b.dataset.i);});
+}
+prevbtn.onclick=()=>{ if(idx>0) renderSection(idx-1); };
+nextbtn.onclick=()=>{ if(idx<SECTIONS.length-1) renderSection(idx+1); };
+document.getElementById('tocbtn').onclick=()=>{ tocEl.classList.toggle('open'); };
+
+const lbar=document.getElementById('legendbar'), ltog=document.getElementById('legendtoggle');
+ltog.onclick=()=>{ const o=lbar.classList.toggle('open'); ltog.setAttribute('aria-expanded',o?'true':'false'); store(STORE+'.leg',o?'1':'0'); };
+if(store(STORE+'.leg')==='1'){ lbar.classList.add('open'); ltog.setAttribute('aria-expanded','true'); }
+
+const tbtn=document.getElementById('themebtn');
+function applyTheme(t){
+  if(t==='light'||t==='dark') document.documentElement.setAttribute('data-theme',t);
+  else document.documentElement.removeAttribute('data-theme');
+  tbtn.textContent = t==='light'?'☀':(t==='dark'?'☾':'◐');
+  store(STORE+'.theme',t||'auto');
+}
+let theme=store(STORE+'.theme')||'auto'; applyTheme(theme);
+tbtn.onclick=()=>{ theme = theme==='auto'?'light':(theme==='light'?'dark':'auto'); applyTheme(theme); renderSection(idx); };
+
+const saved=parseInt(store(STORE+'.sec')||'0',10);
+renderSection(Number.isFinite(saved)&&saved>=0&&saved<SECTIONS.length?saved:0);
+</script>
+</body>
+</html>
